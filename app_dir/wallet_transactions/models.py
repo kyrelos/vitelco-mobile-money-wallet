@@ -4,7 +4,7 @@ from app_dir.customer_wallet_management.models import CustomerWallet
 
 class Transaction(models.Model):
     """
-    This model defines a transaction, i.e. Movement of cash from one wallet_transactions
+    This model defines a transaction, i.e. Movement of cash from one wallet
     to another
     """
 
@@ -55,6 +55,11 @@ class Transaction(models.Model):
 
 
 class BulkTransaction(models.Model):
+    """
+    This model defines a Bulk transaction, i.e. Movement of cash from one
+    wallet to multiple wallets
+    to another
+    """
     bulk_trid = models.UUIDField(unique=True)
     merchant = models.ForeignKey(
             CustomerWallet
@@ -72,6 +77,27 @@ class BulkTransaction(models.Model):
         verbose_name = 'Bulk Transaction'
         verbose_name_plural = 'Bulk Transactions'
 
+
+class BulkTransactionLookup(models.Model):
+    """
+    This model defines an interface for retrieving individual transactions
+    of a bulk transaction
+    """
+    transaction = models.ForeignKey(Transaction)
+    bulk_transaction = models.ForeignKey(BulkTransaction)
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now=True)
+
+
+    def __unicode__(self):
+        return "{from_}: {to}".format(
+                from_=self.bulk_transaction.merchant,
+                to=self.transaction.destination
+        )
+
+    class Meta:
+        verbose_name = 'Bulk Transaction Lookup'
+        verbose_name_plural = 'Bulk Transactions Lookup'
 
 
 
