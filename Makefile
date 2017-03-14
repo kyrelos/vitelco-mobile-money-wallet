@@ -81,7 +81,7 @@ run2:
 	@python manage.py runserver 0.0.0.0:3000 --settings=settings.development
 
 mk:
-	@python manage.py makemigrations --settings=settings.development core
+	@python manage.py makemigrations --settings=settings.development notification_management user_management wallet
 
 migrate:
 	@python manage.py migrate --settings=settings.development
