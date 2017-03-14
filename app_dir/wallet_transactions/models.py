@@ -88,7 +88,6 @@ class BulkTransactionLookup(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
 
-
     def __unicode__(self):
         return "{from_}: {to}".format(
                 from_=self.bulk_transaction.merchant,
