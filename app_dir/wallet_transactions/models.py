@@ -22,7 +22,7 @@ class Transaction(models.Model):
         ("statement", "statement"),
         ("p2p", "p2p")
     )
-    transaction_id = models.UUIDField(primary_key=True, unique=True)
+    trid = models.UUIDField(unique=True)
     source = models.ForeignKey(
             CustomerWallet,
             related_name="tansaction_source"
@@ -55,7 +55,7 @@ class Transaction(models.Model):
 
 
 class BulkTransaction(models.Model):
-    bulk_transaction_id = models.UUIDField(primary_key=True, unique=True)
+    bulk_trid = models.UUIDField(unique=True)
     merchant = models.ForeignKey(
             CustomerWallet
     )

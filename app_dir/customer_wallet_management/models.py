@@ -14,7 +14,7 @@ class CustomerWallet(models.Model):
         ("normal", "normal"),
         ("merchant", "merchant")
     )
-    cusomer_wallet_id = models.UUIDField(primary_key=True, unique=True)
+    wallet_id = models.UUIDField(unique=True)
     msisdn = models.CharField(max_length=20, unique=True)
     token = models.CharField(max_length=256, unique=True)
     name = models.CharField(max_length=120)
