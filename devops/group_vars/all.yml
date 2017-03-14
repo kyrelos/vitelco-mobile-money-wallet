@@ -1,0 +1,28 @@
+---
+APP_NAME: vitelco
+APP_REPOSITORY: git@github.com:kyrelos/vitelco-mobile-money-wallet.git
+DB_PASSWORD: secretpass
+APP_USER: "{{ ansible_ssh_user }}"
+APP_HOME: "/home/{{ APP_USER }}"
+APP_DIR: "{{ APP_HOME }}/{{ APP_NAME }}"
+APP_VIRTUALENV: "{{ APP_HOME }}/.virtualenvs/{{ APP_NAME }}"
+APP_STATIC_DIR: "{{ APP_DIR }}/static"
+APP_MEDIA_DIR: "{{ APP_DIR }}/media"
+APP_PORT: 80
+SECURE_APP_PORT: 443
+DB_NAME: "{{ APP_NAME }}"
+DB_USER: "{{ APP_NAME }}"
+DB_PASSWORD: secretpassword
+WsgiDirectroy: "{{ APP_HOME }}/"
+RABBIT_MONIT_INTERVAL: 600 #in seconds
+
+CELERY_USER: "celery_user"
+CELERY_WORKERS: 2
+GROUP: admin
+
+
+GUNICORN_PORT: 3000
+GUNICORN_BIND_ADDRESS: "0.0.0.0:{{ GUNICORN_PORT }}"
+GUNICORN_WORKERS: 3
+
+DEPLOY_USER: ubuntu

@@ -1,0 +1,11 @@
+localhost ansible_connection=local environment=staging
+
+[app_servers]
+localhost
+
+[db_servers]
+localhost
+
+[development:children]
+app_servers
+db_servers

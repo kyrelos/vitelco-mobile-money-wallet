@@ -1,0 +1,16 @@
+---
+- hosts: app_servers
+  gather_facts: no
+  sudo: yes
+
+  tasks:
+    - name: Last commit deployed
+      command:  git rev-parse --verify HEAD  chdir="{{APP_DIR}}"
+      register: commit
+
+    - name: git status
+      command: git status  chdir="{{APP_DIR}}"
+      register: status
+
+
+    - debug: msg="The last commit was {{commit.stdout}} and git status is :{{status.stdout}} "

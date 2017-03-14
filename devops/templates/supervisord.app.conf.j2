@@ -1,0 +1,50 @@
+[rpcinterface:supervisor]
+supervisor.rpcinterface_factory = supervisor.rpcinterface:make_main_rpcinterface
+
+[inet_http_server]         ; inet (TCP) server disabled by default
+port=127.0.0.1:9012        ; (ip_address:port specifier, *:port for all iface)
+
+[supervisorctl]
+serverurl=http://127.0.0.1:9012 ; use an http:// url to specify an inet socket
+
+[group:{{ APP_NAME }}]
+programs=gunicorn ,celery, celerybeat
+
+[program:gunicorn]
+user={{ APP_USER }}
+directory={{ APP_DIR }}
+environment=DJANGO_SETTINGS_MODULE="settings.{{ APP_ENVIRONMENT }}"
+command=authbind {{ APP_VIRTUALENV }}/bin/gunicorn wsgi:application
+    --workers=3
+    --timeout=120
+    --bind="{{ GUNICORN_BIND_ADDRESS }}"
+     --access-logfile {{ APP_DIR }}/log/%(program_name)s_access.log
+stdout_logfile={{ APP_DIR }}/log/%(program_name)s.log
+stderr_logfile={{ APP_DIR }}/log/%(program_name)s.log
+autorestart=true
+stopasgroup=true
+startsecs=5
+
+[program:celery]
+user={{ APP_USER }}
+command={{ APP_VIRTUALENV }}/bin/celery worker --app=app_dir.celeryapp --loglevel=INFO  --concurrency={{ CELERY_WORKERS }}
+directory={{ APP_DIR }}
+environment=DJANGO_SETTINGS_MODULE="settings.{{ APP_ENVIRONMENT }}"
+stdout_logfile={{ APP_DIR }}/log/%(program_name)s.log
+stderr_logfile={{ APP_DIR }}/log/%(program_name)s.log
+autorestart=true
+stopasgroup=true
+startsecs=5
+
+
+
+[program:celerybeat]
+user={{ APP_USER }}
+command={{ APP_VIRTUALENV }}/bin/celery beat --app=app_dir.celeryapp --loglevel=INFO
+directory={{ APP_DIR }}
+environment=DJANGO_SETTINGS_MODULE="settings.{{ APP_ENVIRONMENT }}"
+stdout_logfile={{ APP_DIR }}/log/%(program_name)s.log
+stderr_logfile={{ APP_DIR }}/log/%(program_name)s.log
+autorestart=true
+stopasgroup=true
+startsecs=5

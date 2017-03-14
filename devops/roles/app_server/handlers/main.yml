@@ -1,0 +1,5 @@
+---
+# handlers file for app_server
+
+- name: reload nginx
+  service: name=nginx state=reloaded

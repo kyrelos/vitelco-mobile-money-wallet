@@ -1,0 +1,48 @@
+import json
+import mock
+
+class LogEncoder(json.JSONEncoder):
+    """
+    Render particular types in an appropriate way for logging. Allow
+    the json module to handle the rest as usual.
+    """
+
+    def default(self, obj):
+        if isinstance(obj, mock.Mock):
+            # We have to handle mock objects carefully. A mock object
+            # will answer True to any hasattr(mock, 'x') call, and
+            # executing mock.x yields another mock - which leads to an
+            # infinite loop when testing(!)
+            return str(obj)
+        if hasattr(obj, 'isoformat'):
+            # Datetime
+            return obj.isoformat()
+        elif hasattr(obj, 'hex'):
+            # UUID
+            return obj.hex
+        elif hasattr(obj, 'getvalue'):
+            # StringIO
+            return obj.getvalue()
+        else:
+            # Let the base class default method raise the TypeError
+            return json.JSONEncoder.default(self, obj)
+    
+        
+
+
+class KeyValueRenderer(object):
+    """
+    Render event_dict as a list of Key=json.dumps(str(Value)) pairs.
+
+    This is a drop-in replacement for the structlog
+    KeyValueRenderer. The primary motivation for using it is to avoid
+    logging Python object representations for things like datetimes
+    and unicode strings. json.dumps ensures that strings are
+    double-quoted, with embedded quotes conveniently escaped.
+    """
+
+    def __call__(self, logger, name, event_dict):
+        serialize = lambda v: json.dumps(v, cls=LogEncoder)
+
+        return ', '.join('{0}={1}'.format(k, serialize(v))
+                         for k, v in event_dict.items())

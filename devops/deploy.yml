@@ -1,0 +1,74 @@
+---
+- hosts: app_servers
+  gather_facts: no
+  sudo: no
+
+  tasks:
+    - name: Check out code on app server
+      git: >
+        repo={{ APP_REPOSITORY }} 
+        dest={{ APP_DIR }} 
+        version={{ APP_VERSION }}
+        accept_hostkey=yes
+      when: APP_ENVIRONMENT != "development"
+      notify: restart app
+
+    - name: Ensure runtime directories
+      file: path={{ APP_DIR }}/{{ item }} state=directory
+      with_items:
+        - log
+
+    - name: Remove build artifacts from failed pip installations
+      sudo: yes
+      file: path={{ APP_VIRTUALENV }}/build state=absent
+
+    - name: Install application requirements
+      # Due to a bug in Ansible local connection mode, have to specify
+      # app user as sudo user ("sudo: no" has no effect).
+      sudo: yes
+      pip: >
+        requirements={{ APP_DIR }}/requirements/{{ APP_ENVIRONMENT }}.txt
+        virtualenv={{ APP_VIRTUALENV }} 
+      tags:
+        - pip
+
+    - name: Sync and migrate DB
+      django_manage: >
+        app_path={{ APP_DIR }} 
+        virtualenv={{ APP_VIRTUALENV }}
+        settings=settings.{{ APP_ENVIRONMENT }}
+        command={{ item }} 
+      with_items:
+        - check
+        - collectstatic
+        - migrate
+
+    - name: Configure supervisord
+      template: src=templates/supervisord.app.conf.j2 
+                dest={{ APP_DIR }}/supervisord.conf
+      notify: 
+        - restart supervisord
+
+    - name: rabbitmq monit configuration
+      sudo: yes
+      template: src=templates/monit.conf.d.j2 
+                dest=/etc/monit/conf.d/rabbitmq
+                owner=root group=root
+      notify: restart monit
+
+
+  handlers:
+
+    - name: restart app
+      command: supervisorctl restart {{ APP_NAME }}:*
+      tags:
+        - restart
+
+    - name: restart supervisord
+      service: name=supervisor state=restarted enabled=yes
+      sudo: yes
+      tags:
+        - restart_supervisor
+
+    - name: restart monit
+      service: name=monit state=restarted

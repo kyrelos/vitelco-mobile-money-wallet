@@ -1,0 +1,16 @@
+# file: postgresql/handlers/main.yml
+
+- name: restart postgresql
+  service:
+    name: postgresql
+    state: restarted
+
+
+- name: convert_database_to_postgis
+  command: psql -d "{{ DB_NAME }}" -c "CREATE EXTENSION postgis;" -U "postgres"
+  ignore_errors: yes #if the postgis extension has already been created an error results.
+                     #this stops the error from stopping the configuration
+
+#- name: convert database to postgis topology
+#  command: psql -d $dbname -c "CREATE EXTENSION postgis_topology;" -U "postgres"
+

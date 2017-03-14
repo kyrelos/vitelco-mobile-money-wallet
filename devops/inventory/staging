@@ -1,0 +1,13 @@
+[staging:vars]
+ansible_ssh_user=vagrant
+
+
+[app_servers]
+10.0.0.77
+
+[db_servers]
+10.0.0.77
+
+[staging:children]
+app_servers
+db_servers

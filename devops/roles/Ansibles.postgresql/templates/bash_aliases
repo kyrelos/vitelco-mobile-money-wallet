@@ -1,0 +1,2 @@
+cd /vagrant
+. /home/vagrant/.virtualenvs/{{ APP_NAME }}/bin/activate

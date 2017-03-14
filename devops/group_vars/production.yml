@@ -1,0 +1,6 @@
+---
+APP_ENVIRONMENT: production
+APP_VERSION: master
+APP_PORT: 80
+local_env:
+    DJANGO_SETTINGS_MODULE:
