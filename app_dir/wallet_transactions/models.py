@@ -22,7 +22,7 @@ class Transaction(models.Model):
         ("statement", "statement"),
         ("p2p", "p2p")
     )
-
+    transaction_id = models.UUIDField(primary_key=True, unique=True)
     source = models.ForeignKey(
             CustomerWallet,
             related_name="tansaction_source"
@@ -52,3 +52,26 @@ class Transaction(models.Model):
     class Meta:
         verbose_name = 'Transaction'
         verbose_name_plural = 'Transactions'
+
+
+class BulkTransaction(models.Model):
+    bulk_transaction_id = models.UUIDField(primary_key=True, unique=True)
+    merchant = models.ForeignKey(
+            CustomerWallet
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now=True)
+
+    def __unicode__(self):
+        return "{name}: {msisdn}".format(
+                name=self.merchant.name,
+                msisdn=self.merchant.msisdn
+        )
+
+    class Meta:
+        verbose_name = 'Bulk Transaction'
+        verbose_name_plural = 'Bulk Transactions'
+
+
+
+
