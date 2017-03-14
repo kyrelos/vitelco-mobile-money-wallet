@@ -1,6 +1,6 @@
 ---
 APP_NAME: vitelco
-APP_REPOSITORY: git@github.com:kyrelos/vitelco-mobile-money-wallet.git
+APP_REPOSITORY: git@github.com:kyrelos/vitelco-mobile-money-wallet_transactions.git
 DB_PASSWORD: secretpass
 APP_USER: "{{ ansible_ssh_user }}"
 APP_HOME: "/home/{{ APP_USER }}"

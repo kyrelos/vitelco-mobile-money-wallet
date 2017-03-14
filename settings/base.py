@@ -49,8 +49,8 @@ THIRD_PARTY_APPS = (
 
 LOCAL_APPS = (
     'app_dir.notification_management.apps.NotificationManagementConfig',
-    'app_dir.user_management.apps.UserManagementConfig',
-    'app_dir.wallet.apps.WalletConfig',
+    'app_dir.customer_wallet_management.apps.CustomerWalletManagementConfig',
+    'app_dir.wallet_transactions.apps.WalletTransactionsConfig',
 
 )
 
@@ -168,7 +168,7 @@ LOGGING = {
             'handlers': ['console', 'sentry'],
             'level': 'DEBUG',
         },
-        'wallet': {
+        'wallet_transactions': {
             'handlers': ['console', 'sentry'],
             'level': 'DEBUG',
         },

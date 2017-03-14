@@ -1,7 +1,7 @@
 from django.db import models
 
 
-class Customer(models.Model):
+class CustomerWallet(models.Model):
     """
     This model defines The Customer and thier attributes
 
@@ -21,6 +21,7 @@ class Customer(models.Model):
                             choices=CUSTOMER_TYPES,
                             default="normal"
                             )
+    balance = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
 
