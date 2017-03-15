@@ -2,7 +2,7 @@ Django==1.10
 psycopg2==2.7
 gunicorn==19.7
 celery==4.0
-raven==5.32
+raven==6.0
 mock==1.0
 requests==2.13
 djangorestframework==3.6
