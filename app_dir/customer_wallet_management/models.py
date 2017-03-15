@@ -16,7 +16,7 @@ class CustomerWallet(models.Model):
     )
 
     STATUS_TYPES = (
-        ("active","active"),
+        ("active", "active"),
         ("dormant", "dormant"),
         ("inactive", "inactive")
     )
