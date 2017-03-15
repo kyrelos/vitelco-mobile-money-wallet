@@ -5,5 +5,5 @@ celery==4.0
 raven==5.32
 mock==1.0
 requests==2.10
-djangorestframework==3.5
+djangorestframework==3.6
 structlog
