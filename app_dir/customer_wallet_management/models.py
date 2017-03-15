@@ -15,7 +15,7 @@ class CustomerWallet(models.Model):
         ("merchant", "merchant")
     )
 
-    STATUS_TYPES = (
+    CUSTOMER_STATUS_TYPES = (
         ("active", "active"),
         ("dormant", "dormant"),
         ("inactive", "inactive")
@@ -26,7 +26,7 @@ class CustomerWallet(models.Model):
     token = models.CharField(max_length=256, unique=True)
     name = models.CharField(max_length=120)
     status = models.CharField(max_length=20,
-                              choices=STATUS_TYPES,
+                              choices=CUSTOMER_STATUS_TYPES,
                               default="active"
                               )
     type = models.CharField(max_length=20,
