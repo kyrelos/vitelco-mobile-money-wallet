@@ -12,15 +12,18 @@ class CustomerWallet(models.Model):
     name: name of the customer
     type: type of the customer
     """
+    active, dormant, inactive = "active", "dormant", "inactive"
+    normal, merchant = "normal", "merchant"
+
     CUSTOMER_TYPES = (
-        ("normal", "normal"),
-        ("merchant", "merchant")
+        (normal, normal),
+        (merchant, merchant)
     )
 
     CUSTOMER_STATUS_TYPES = (
-        ("active", "active"),
-        ("dormant", "dormant"),
-        ("inactive", "inactive")
+        (active, active),
+        (dormant, dormant),
+        (inactive, inactive)
     )
 
     wallet_id = models.UUIDField(unique=True, default=uuid.uuid4)
