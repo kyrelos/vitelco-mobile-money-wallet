@@ -158,14 +158,14 @@ LOGGING = {
         },
         'celery': {
             'handlers': ['console', 'sentry'],
-            'level': 'DEBUG',
+            'level': 'INFO',
             'propagate': True
         },
         'wallet_api': {
             'handlers': ['console', 'sentry'],
             'level': 'DEBUG',
         },
-        'wallet_transactions': {
+        'transactions': {
             'handlers': ['console', 'sentry'],
             'level': 'DEBUG',
         },
