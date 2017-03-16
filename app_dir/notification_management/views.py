@@ -29,4 +29,4 @@ class NotificationList(generics.ListCreateAPIView):
     """
     queryset = Notification.objects.all()
     serializer_class = NotificationSerializer
-    permission_classes = (IsAdminUser,)
+    permission_classes = (IsAdminUser, )

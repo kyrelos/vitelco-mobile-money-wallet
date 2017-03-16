@@ -1,3 +1,5 @@
+import uuid
+
 from django.db import models
 
 
@@ -21,9 +23,9 @@ class CustomerWallet(models.Model):
         ("inactive", "inactive")
     )
 
-    wallet_id = models.UUIDField(unique=True)
+    wallet_id = models.UUIDField(unique=True, default=uuid.uuid4)
     msisdn = models.CharField(max_length=20, unique=True)
-    token = models.CharField(max_length=256, unique=True)
+    token = models.CharField(max_length=256, unique=True, null=True)
     name = models.CharField(max_length=120)
     status = models.CharField(max_length=20,
                               choices=CUSTOMER_STATUS_TYPES,
@@ -44,5 +46,5 @@ class CustomerWallet(models.Model):
         )
 
     class Meta:
-        verbose_name = 'Customer'
-        verbose_name_plural = 'Customers'
+        verbose_name = 'Account'
+        verbose_name_plural = 'Accounts'
