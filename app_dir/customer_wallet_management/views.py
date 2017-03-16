@@ -5,10 +5,14 @@ from django.http import Http404
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from structlog import get_logger
 
 from .models import CustomerWallet
 from .serializers import CustomerWalletSerializer, \
     CustomerWalletStatusSerializer
+
+
+logger = get_logger("accounts")
 
 
 class CustomerWalletViewSet(APIView):
@@ -101,6 +105,12 @@ class GetAccountName(APIView):
     def get(self, request, msisdn):
         date = request.META.get("HTTP_DATE")
         if not date:
+            logger.info("get_accountname_400",
+                        message="DATE Header not supplied",
+                        status=status.HTTP_400_BAD_REQUEST,
+                        msisdn=msisdn,
+                        key="DATE"
+                        )
             return self.send_error_response(
                     message="DATE Header not supplied",
                     key="DATE",
@@ -128,8 +138,17 @@ class GetAccountName(APIView):
                                     content_type="application/json",
                                     status=status.HTTP_200_OK
                                     )
+                logger.info("get_accountname_200",
+                            status=status.HTTP_200_OK,
+                            msisdn=msisdn
+                            )
                 return response
             else:
+                logger.info("get_accountname_404",
+                            status=status.HTTP_404_NOT_FOUND,
+                            msisdn=msisdn,
+                            key="msisdn_inactive"
+                            )
                 return self.send_error_response(
                             message="Requested resource not active",
                             key="msisdn",
@@ -138,6 +157,11 @@ class GetAccountName(APIView):
                 )
 
         except ObjectDoesNotExist:
+            logger.info("get_accountname_404",
+                        status=status.HTTP_404_NOT_FOUND,
+                        msisdn=msisdn,
+                        key="msisdn"
+                        )
 
             return self.send_error_response(
                     message="Requested resource not available",
