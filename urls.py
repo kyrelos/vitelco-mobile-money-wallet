@@ -7,5 +7,5 @@ from app_dir.customer_wallet_management import urls as customer_wallet_urls
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
     url(r'^api/v1/notification/', include(notification_urls)),
-    url(r'^api/v1', include(customer_wallet_urls)),
+    url(r'^api/v1/wallet/', include(customer_wallet_urls)),
 ]

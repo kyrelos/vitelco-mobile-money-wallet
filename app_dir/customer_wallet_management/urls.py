@@ -1,6 +1,8 @@
 from django.conf.urls import url
-from . import views
+from .views import CustomerWalletView, CustomerWalletList
 
 urlpatterns = [
-    url(r'^wallets/$', views.wallets_list),
+    url(r'^retrieve_update/(?P<wallet_id>[\w\-]+)/$', CustomerWalletView.as_view(), name='retrieve_update_wallet'),
+    url(r'^list_create/', CustomerWalletList.as_view(), name='list_create_wallet'),
+
 ]
