@@ -3,7 +3,7 @@ from django.db import models
 
 class CustomerWallet(models.Model):
     """
-    This model defines The Customer and thier attributes
+    This model defines The Customer and their attributes
 
     msisdn: phone number of the customer
     token: unique notification token of the customer
