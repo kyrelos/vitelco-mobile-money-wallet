@@ -54,8 +54,6 @@ LOCAL_APPS = (
 
 )
 
-# maintain the given order, because we want the post-migrate signal for our local app('core')
-# to run before those of 'django.contrib.admin', otherwise you'll get an error.
 INSTALLED_APPS = LOCAL_APPS + DEFAULT_APPS + THIRD_PARTY_APPS
 
 MIDDLEWARE_CLASSES = (
@@ -127,7 +125,6 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 STATIC_URL = '/static/'
 
 
-# MEDIA_URL = 'https://{0}/kenblest/kenblestkenya/attachments/'.format(conn.server_name())
 MEDIA_URL = '/media/'
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
@@ -169,6 +166,10 @@ LOGGING = {
             'level': 'DEBUG',
         },
         'wallet_transactions': {
+            'handlers': ['console', 'sentry'],
+            'level': 'DEBUG',
+        },
+        'accounts': {
             'handlers': ['console', 'sentry'],
             'level': 'DEBUG',
         },
