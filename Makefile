@@ -74,10 +74,9 @@ test:
 run2:
 	@sudo killall -9 supervisord &
 	@sudo killall -9 gunicorn &
-	@python manage.py validate --settings=settings.development &
+	@python manage.py check --settings=settings.development &
 	@python manage.py collectstatic --noinput --settings=settings.development  &
-	@python manage.py migrate core --settings=settings.development --verbosity 3
-	#@python manage.py loaddata core/fixtures/app_fixtures.json --settings=settings.development
+	@python manage.py migrate --settings=settings.development --verbosity 3
 	@python manage.py runserver 0.0.0.0:3000 --settings=settings.development
 
 mk:
