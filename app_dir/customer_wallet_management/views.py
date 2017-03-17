@@ -420,4 +420,4 @@ def is_valid_uuid(uuid_to_test, version=4):
     except:
         return False
 
-    return str(uuid_obj) == uuid_to_test
+    return str(uuid_obj) == str(uuid_obj)
