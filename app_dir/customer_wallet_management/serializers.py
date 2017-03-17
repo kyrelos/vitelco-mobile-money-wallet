@@ -8,11 +8,4 @@ class CustomerWalletSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = CustomerWallet
-        fields = ("id", "msisdn", "balance", "type", "status")
-
-
-class CustomerWalletStatusSerializer(serializers.HyperlinkedModelSerializer):
-
-    class Meta:
-        model = CustomerWallet
-        fields = ("msisdn", "status")
+        fields = ("wallet_id", "msisdn", "balance", "type", "status")
