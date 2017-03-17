@@ -1,6 +1,7 @@
 import uuid
 
 from django.db import models
+from django.db.models import Sum
 
 
 class CustomerWallet(models.Model):
@@ -41,9 +42,26 @@ class CustomerWallet(models.Model):
 
     def __unicode__(self):
         return "{name}: {msisdn}".format(
-                name=self.name,
-                msisdn=self.msisdn
+            name=self.name,
+            msisdn=self.msisdn
         )
+
+    def get_available_balance(self):
+        from app_dir.wallet_transactions.models import Transaction
+        debit_amounts = Transaction.objects.filter(destination=self.wallet_id, state='completed').aggregate(
+            Sum('amount'))
+        credit_amounts = Transaction.objects.filter(source=self.wallet_id, state='completed').aggregate(Sum('amount'))
+        balance = debit_amounts - credit_amounts
+        return balance
+
+    def get_actual_balance(self):
+        from app_dir.wallet_transactions.models import Transaction
+        debit_amounts = Transaction.objects \
+            .filter(destination=self.wallet_id, state__in=['completed', 'in_progress']).aggregate(Sum('amount'))
+        credit_amounts = Transaction.objects \
+            .filter(source=self.wallet_id, state__in=['completed', 'in_progress']).aggregate(Sum('amount'))
+        balance = debit_amounts - credit_amounts
+        return balance
 
     class Meta:
         verbose_name = 'Account'

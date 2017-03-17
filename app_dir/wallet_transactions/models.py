@@ -13,7 +13,8 @@ class Transaction(models.Model):
     TRANSACTION_STATES = (
         ("received", "received"),
         ("in_progress", "in_progress"),
-        ("completed", "completed")
+        ("completed", "completed"),
+        ("failed", "failed")
     )
 
     TRANSACTION_TYPES = (
@@ -27,11 +28,11 @@ class Transaction(models.Model):
     trid = models.UUIDField(unique=True)
     source = models.ForeignKey(
             CustomerWallet,
-            related_name="tansaction_source"
+            related_name="transaction_source"
     )
     destination = models.ForeignKey(
             CustomerWallet,
-            related_name="tansaction_destination"
+            related_name="transaction_destination"
     )
     amount = models.IntegerField()
     type = models.CharField(max_length=20,
