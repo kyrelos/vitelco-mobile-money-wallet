@@ -1,3 +1,5 @@
+import uuid
+
 from django.db import models
 from app_dir.customer_wallet_management.models import CustomerWallet
 
@@ -54,13 +56,13 @@ class Transaction(models.Model):
         verbose_name_plural = 'Transactions'
 
 
-class BulkTransaction(models.Model):
+class BatchTransaction(models.Model):
     """
     This model defines a Bulk transaction, i.e. Movement of cash from one
     wallet to multiple wallets
     to another
     """
-    bulk_trid = models.UUIDField(unique=True)
+    batch_trid = models.UUIDField(unique=True, default=uuid.uuid4)
     merchant = models.ForeignKey(
             CustomerWallet
     )
@@ -74,29 +76,29 @@ class BulkTransaction(models.Model):
         )
 
     class Meta:
-        verbose_name = 'Bulk Transaction'
-        verbose_name_plural = 'Bulk Transactions'
+        verbose_name = 'BatchTransaction'
+        verbose_name_plural = 'BatchTransactions'
 
 
-class BulkTransactionLookup(models.Model):
+class BatchTransactionLookup(models.Model):
     """
     This model defines an interface for retrieving individual transactions
-    of a bulk transaction
+    of a batch transaction
     """
     transaction = models.ForeignKey(Transaction)
-    bulk_transaction = models.ForeignKey(BulkTransaction)
+    batch_transaction = models.ForeignKey(BatchTransaction, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
 
     def __unicode__(self):
         return "{from_}: {to}".format(
-                from_=self.bulk_transaction.merchant,
+                from_=self.batch_transaction.merchant,
                 to=self.transaction.destination
         )
 
     class Meta:
-        verbose_name = 'Bulk Transaction Lookup'
-        verbose_name_plural = 'Bulk Transactions Lookup'
+        verbose_name = 'Batch Transaction Lookup'
+        verbose_name_plural = 'Batch Transactions Lookup'
 
 
 

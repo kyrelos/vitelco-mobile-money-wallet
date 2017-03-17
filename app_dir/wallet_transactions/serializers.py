@@ -28,7 +28,7 @@ class TransactionSerializer(serializers.ModelSerializer):
         fields = ["trid", "source", "destination", "amount", "type"]
 
 
-class BulkTransactionSerializer(serializers.ModelSerializer):
+class BatchTransactionSerializer(serializers.ModelSerializer):
     """
     This is a serializer for the CreateNotification view.
     """
@@ -42,4 +42,4 @@ class BulkTransactionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Transaction
-        fields = ["bulk_trid", "merchant"]
+        fields = ["batch_trid", "merchant"]

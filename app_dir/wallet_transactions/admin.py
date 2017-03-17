@@ -1,6 +1,6 @@
 from django.contrib import admin
-from .models import Transaction, BulkTransaction, BulkTransactionLookup
+from .models import Transaction, BatchTransaction, BatchTransactionLookup
 
 admin.site.register(Transaction)
-admin.site.register(BulkTransaction)
-admin.site.register(BulkTransactionLookup)
+admin.site.register(BatchTransaction)
+admin.site.register(BatchTransactionLookup)
