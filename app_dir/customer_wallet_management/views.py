@@ -57,7 +57,143 @@ class getAccountStatus(APIView):
             return Response(status.HTTP_404_NOT_FOUND)
 
 
+class GetAccountName(APIView):
+    """
+    This API retrieves the customers name details given a msisdn
+    HTTP Method: GET
+    URI: /api/v1/accounts/msisdn/{msisdn}/accountname/
+    Required HTTP Headers:
+    DATE: todays date
+    AUTHORIZATION: api-key
+    CONTENT-TYPE: application/json
+    Success response:
+    HTTP status code: 200
+    {
+        "name": {
+            "title": "",
+            "firstName": first_name,
+            "middleName": "",
+            "lastName": "",
+            "fullName": "",
+            "nativeName": ""
+        },
+        "status": "",
+        "lei": ""
+    }
+    Error response: [404, 400, account in inactive state,
+                    DATE header not supplied]
+    {
+        "errorCategory": "businessRule",
+        "errorCode": "genericError",
+        "errorDescription": "string",
+        "errorDateTime": "string",
+        "errorParameters": [
+            {
+                "key": key,
+                "value": value
+            }
+        ]
+    }
+    """
+
+    def get(self, request, msisdn):
+        date = request.META.get("HTTP_DATE")
+        if not date:
+            logger.info("get_accountname_400",
+                        message="DATE Header not supplied",
+                        status=status.HTTP_400_BAD_REQUEST,
+                        msisdn=msisdn,
+                        key="DATE"
+                        )
+            return send_error_response(
+                message="DATE Header not supplied",
+                key="DATE",
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            account = CustomerWallet.objects.get(msisdn=msisdn)
+            first_name = account.name
+            account_status = account.status
+            if account_status == CustomerWallet.active:
+                payload = {
+                    "name": {
+                        "title": "",
+                        "firstName": first_name,
+                        "middleName": "",
+                        "lastName": "",
+                        "fullName": "",
+                        "nativeName": ""
+                    },
+                    "status": "",
+                    "lei": ""
+                }
+                response = Response(data=payload,
+                                    content_type="application/json",
+                                    status=status.HTTP_200_OK
+                                    )
+                logger.info("get_accountname_200",
+                            status=status.HTTP_200_OK,
+                            msisdn=msisdn
+                            )
+                return response
+            else:
+                logger.info("get_accountname_404",
+                            status=status.HTTP_404_NOT_FOUND,
+                            msisdn=msisdn,
+                            key="msisdn_inactive"
+                            )
+                return send_error_response(
+                    message="Requested resource not active",
+                    key="msisdn",
+                    value=msisdn,
+                    status=status.HTTP_404_NOT_FOUND
+                )
+
+        except ObjectDoesNotExist:
+            logger.info("get_accountname_404",
+                        status=status.HTTP_404_NOT_FOUND,
+                        msisdn=msisdn,
+                        key="msisdn"
+                        )
+
+            return send_error_response(
+                message="Requested resource not available",
+                key="msisdn",
+                value=msisdn,
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+
 class AccountBalanceByMsisdn(APIView):
+    """
+    This API fetches the customers balance details given a msisdn
+    HTTP Method: GET
+    URI: /api/v1/accounts/msisdn/{msisdn}/balance/
+    Required HTTP Headers:
+    DATE: todays date
+    AUTHORIZATION: api-key
+    CONTENT-TYPE: application/json
+    Success response:
+    HTTP status code: 200
+    {
+        "balance": ""
+    }
+    Error response: [404, 400, account in inactive state, DATE header not supplied]
+    {
+        "errorCategory": "businessRule",
+        "errorCode": "genericError",
+        "errorDescription": "string",
+        "errorDateTime": "string",
+        "errorParameters": [
+            {
+                "key": key,
+                "value": value
+            }
+        ]
+    }
+    """
+
     def get(self, request, msisdn):
         date = request.META.get("HTTP_DATE")
         if not date:
@@ -121,6 +257,34 @@ class AccountBalanceByMsisdn(APIView):
 
 
 class AccountBalanceByAccountId(APIView):
+    """
+    This API fetches the customers balance details given an account_id
+    HTTP Method: GET
+    URI: /api/v1/accounts/{account_id}/balance/
+    Required HTTP Headers:
+    DATE: todays date
+    AUTHORIZATION: api-key
+    CONTENT-TYPE: application/json
+    Success response:
+    HTTP status code: 200
+    {
+        "balance": ""
+    }
+    Error response: [404, 400, account in inactive state, DATE header not supplied]
+    {
+        "errorCategory": "businessRule",
+        "errorCode": "genericError",
+        "errorDescription": "string",
+        "errorDateTime": "string",
+        "errorParameters": [
+            {
+                "key": key,
+                "value": value
+            }
+        ]
+    }
+    """
+
     def get(self, request, account_id):
         date = request.META.get("HTTP_DATE")
         if not date:
@@ -201,6 +365,18 @@ def send_error_response(message="404",
                         value=None,
                         status=None,
                         ):
+    """
+    Creates and outputs given error message
+    Parameters
+    ----------
+    message : error message
+    key : key errorParameter
+    value: value errorParameter
+    status: status code
+    Returns
+    -------
+    a application/json rest_framework.response
+    """
     date_time = datetime.now().isoformat()
     error_payload = {
         "errorCategory": "businessRule",
@@ -225,16 +401,13 @@ def send_error_response(message="404",
 def is_valid_uuid(uuid_to_test, version=4):
     """
     Check if uuid_to_test is a valid UUID.
-
     Parameters
     ----------
     uuid_to_test : str
     version : {1, 2, 3, 4}
-
     Returns
     -------
     `True` if uuid_to_test is a valid UUID, otherwise `False`.
-
     Examples
     --------
     >>> is_valid_uuid('c9bf9e57-1685-4c89-bafb-ff5af830be8a')
