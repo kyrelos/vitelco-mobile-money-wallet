@@ -84,21 +84,6 @@ class GetTransaction(APIView):
 
         try:
             transaction = Transaction.objects.get(trid=transaction_reference)
-
-            if not transaction:
-                logger.info("get_transaction_404",
-                            status=status.HTTP_404_NOT_FOUND,
-                            trid=transaction_reference,
-                            key="trid"
-                            )
-
-                return self.send_error_response(
-                    message="Requested resource not available",
-                    key="trid",
-                    value=transaction_reference,
-                    status=status.HTTP_404_NOT_FOUND
-                )
-
             transaction_state = transaction.state
             transaction_type = transaction.type
             transaction_amount = transaction.amount
