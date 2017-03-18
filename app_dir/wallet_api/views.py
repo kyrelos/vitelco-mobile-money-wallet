@@ -104,6 +104,40 @@ class BatchTransactions(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class Transactions(APIView):
+    """
+      This API posts a transaction
+      HTTP Method: POST
+      URI: /api/v1/transactions/list_create
+
+      Required HTTP Headers:
+      DATE: todays date
+      AUTHORIZATION: api-key
+      CONTENT-TYPE: application/json
+
+      Example Payload:
+      {
+      "amount": "456522",
+      "currency": "UGX",
+      "type": "transfer",
+      "requestDate": "2017-02-28 16:00:00",
+      "requestingOrganisationTransactionReference": "MWCAPIWorkshop001",
+      "debitParty": [
+        {
+          "key": "msisdn",
+          "value": "+4491509874561"
+        } ],
+      "creditParty": [
+        {
+          "key": "msisdn",
+          "value": "+25691508523697"
+        }
+      ]}
+
+        Success Response:
+        HTTP status Code: 201 Created
+        # To be updated
+
+    """
     def post(self, request, format=None):
         try:
             data = request.data;
