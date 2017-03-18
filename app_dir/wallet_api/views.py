@@ -213,7 +213,7 @@ class CreateTransactions(APIView):
                 source=source,
                 destination=destination,
                 amount=amount,
-                type=transaction_type
+                transaction_type=transaction_type
             )
         except KeyError as e:
             error_message = "Missing required field"
