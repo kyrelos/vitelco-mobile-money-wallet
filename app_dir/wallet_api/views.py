@@ -7,10 +7,13 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 from rest_framework.views import APIView
+from structlog import get_logger
 
 from app_dir.customer_wallet_management.models import CustomerWallet
 from app_dir.wallet_transactions.models import BatchTransaction, Transaction
 from app_dir.wallet_transactions.serializers import BatchTransactionSerializer
+
+logger = get_logger('transactions')
 
 
 class APIRootView(APIView):
@@ -27,7 +30,7 @@ class APIRootView(APIView):
                         }
 
                 ),
-                "Create Transaction": reverse(
+                "Create transactions": reverse(
                     "create_transactions",
                     request=request
                 )
@@ -122,6 +125,8 @@ def send_error_response(message="404",
     return response
 
 
+
+
 class BatchTransactions(APIView):
     def get_object(self, pk):
         try:
@@ -182,6 +187,18 @@ class CreateTransactions(APIView):
     """
 
     def post(self, request):
+        date = request.META.get("HTTP_DATE")
+        if not date:
+            logger.info("create_transaction_400",
+                        message="DATE Header not supplied",
+                        status=status.HTTP_400_BAD_REQUEST,
+                        key="DATE"
+                        )
+            return send_error_response(
+                    message="DATE Header not supplied",
+                    key="DATE",
+                    status=status.HTTP_400_BAD_REQUEST
+            )
         try:
             data = request.data
             trid = uuid.uuid4()
@@ -210,6 +227,10 @@ class CreateTransactions(APIView):
                     value=value,
                     status=status_code
             )
+            logger.info("create_transaction_400",
+                        status=status.HTTP_400_BAD_REQUEST,
+                        key=key
+                        )
 
             return error_response
         else:
@@ -233,6 +254,11 @@ class CreateTransactions(APIView):
                 "error": None
 
             }
+            logger.info("create_transaction_202",
+                        status=status.HTTP_202_ACCEPTED,
+                        trid=trid,
+                        response_payload=response_payload
+                        )
             return Response(response_payload,
                             status=status.HTTP_202_ACCEPTED
                             )
@@ -241,8 +267,14 @@ class CreateTransactions(APIView):
     def create_transaction(create_transaction_data):
         try:
             transaction = Transaction.objects.create(**create_transaction_data)
+            logger.info("create_transaction_success",
+                        data=create_transaction_data
+                        )
             return transaction
         except IntegrityError:
+            logger.info("create_transaction_duplicate_uuid",
+                        data=create_transaction_data
+                        )
             return False
 
 
