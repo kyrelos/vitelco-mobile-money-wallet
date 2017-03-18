@@ -1,13 +1,13 @@
 from django.apps import AppConfig
 
 
-class NotificationManagementConfig(AppConfig):
+class DebitMandateManagementConfig(AppConfig):
     """
-    Notification manager app Config
+    Debit mandate manager app Config
     """
-    name = 'app_dir.notification_management'
-    verbose_name = 'Notification Management'
-    app_label = 'notification_management'
+    name = 'app_dir.debit_mandate_management'
+    verbose_name = 'Debit Mandate Management'
+    app_label = 'debit_mandate_management'
 
     def ready(self, ):
         pass
