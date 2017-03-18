@@ -27,6 +27,7 @@ class Transaction(models.Model):
         ("p2p", "p2p")
     )
     trid = models.UUIDField(unique=True)
+    currency = models.CharField(max_length=10, default="KES")
     source = models.ForeignKey(
             CustomerWallet,
             related_name="transaction_source"
