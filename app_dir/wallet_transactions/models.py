@@ -11,7 +11,7 @@ class Transaction(models.Model):
     """
 
     TRANSACTION_STATES = (
-        ("received", "received"),
+        ("pending", "pending"),
         ("in_progress", "in_progress"),
         ("completed", "completed"),
         ("failed", "failed")
@@ -38,13 +38,13 @@ class Transaction(models.Model):
     )
     amount = models.IntegerField()
     server_correlation_id = models.UUIDField(unique=True)
-    type = models.CharField(max_length=20,
-                            choices=TRANSACTION_TYPES,
-                            )
+    transaction_type = models.CharField(max_length=20,
+                                        choices=TRANSACTION_TYPES,
+                                        )
 
     state = models.CharField(max_length=20,
                              choices=TRANSACTION_STATES,
-                             default="received"
+                             default="pending"
                              )
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
