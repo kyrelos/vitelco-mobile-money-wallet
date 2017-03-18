@@ -11,7 +11,6 @@ from structlog import get_logger
 from .models import CustomerWallet
 from .serializers import CustomerWalletSerializer
 
-
 logger = get_logger("accounts")
 
 
@@ -47,7 +46,6 @@ def send_error_response(message="404",
     }
 
     response = Response(data=error_payload,
-                        content_type="application/json",
                         status=status
                         )
     return response
@@ -124,45 +122,44 @@ class GetAccountStatusByMsisdn(APIView):
       """
 
     def get(self, request, msisdn):
-            date = request.META.get("HTTP_DATE")
-            if not date:
-                logger.info("get_accountname_400",
-                            message="DATE Header not supplied",
-                            status=status.HTTP_400_BAD_REQUEST,
-                            msisdn=msisdn,
-                            key="DATE"
-                            )
-                return send_error_response(
+        date = request.META.get("HTTP_DATE")
+        if not date:
+            logger.info("get_accountname_400",
+                        message="DATE Header not supplied",
+                        status=status.HTTP_400_BAD_REQUEST,
+                        msisdn=msisdn,
+                        key="DATE"
+                        )
+            return send_error_response(
                     message="DATE Header not supplied",
                     key="DATE",
                     status=status.HTTP_400_BAD_REQUEST
-                )
+            )
 
-            try:
-                account = CustomerWallet.objects.get(msisdn=msisdn)
-                account_status = account.status
-                payload = {
-                    "status" : account_status,
-                    "subStatus" : "",
-                    "lei" : ""}
+        try:
+            account = CustomerWallet.objects.get(msisdn=msisdn)
+            account_status = account.status
+            payload = {
+                "status": account_status,
+                "subStatus": "",
+                "lei": ""}
 
-                response = Response(data=payload,
-                                    content_type="application/json",
-                                    status=status.HTTP_200_OK
-                                    )
-                logger.info("get_accountname_200",
-                            status=status.HTTP_200_OK,
-                            msisdn=msisdn
-                            )
-                return response
+            response = Response(data=payload,
+                                status=status.HTTP_200_OK
+                                )
+            logger.info("get_accountname_200",
+                        status=status.HTTP_200_OK,
+                        msisdn=msisdn
+                        )
+            return response
 
-            except ObjectDoesNotExist:
-                logger.info("get_accountname_404",
-                            status=status.HTTP_404_NOT_FOUND,
-                            msisdn=msisdn,
-                            key="msisdn"
-                            )
-                return send_error_response(
+        except ObjectDoesNotExist:
+            logger.info("get_accountname_404",
+                        status=status.HTTP_404_NOT_FOUND,
+                        msisdn=msisdn,
+                        key="msisdn"
+                        )
+            return send_error_response(
                     message="Requested resource not available",
                     key="msisdn",
                     value=msisdn,
@@ -207,57 +204,56 @@ class GetAccountStatusByAccountId(APIView):
       """
 
     def get(self, request, wallet_id):
-            date = request.META.get("HTTP_DATE")
-            if not date:
-                logger.info("get_accountstatus_400",
-                            message="DATE Header not supplied",
-                            status=status.HTTP_400_BAD_REQUEST,
-                            wallet_id=wallet_id,
-                            key="DATE"
-                            )
-                return send_error_response(
+        date = request.META.get("HTTP_DATE")
+        if not date:
+            logger.info("get_accountstatus_400",
+                        message="DATE Header not supplied",
+                        status=status.HTTP_400_BAD_REQUEST,
+                        wallet_id=wallet_id,
+                        key="DATE"
+                        )
+            return send_error_response(
                     message="DATE Header not supplied",
                     key="DATE",
                     status=status.HTTP_400_BAD_REQUEST
-                )
+            )
 
-            try:
-                account = CustomerWallet.objects.get(wallet_id=wallet_id)
-                account_status = account.status
-                payload = {
-                    "status": account_status,
-                    "subStatus": "",
-                    "lei": ""}
+        try:
+            account = CustomerWallet.objects.get(wallet_id=wallet_id)
+            account_status = account.status
+            payload = {
+                "status": account_status,
+                "subStatus": "",
+                "lei": ""}
 
-                response = Response(data=payload,
-                                    content_type="application/json",
-                                    status=status.HTTP_200_OK
-                                    )
-                logger.info("get_accountstatus_200",
-                            status=status.HTTP_200_OK,
-                            wallet_id=wallet_id
-                            )
-                return response
+            response = Response(data=payload,
+                                status=status.HTTP_200_OK
+                                )
+            logger.info("get_accountstatus_200",
+                        status=status.HTTP_200_OK,
+                        wallet_id=wallet_id
+                        )
+            return response
 
-            except ObjectDoesNotExist:
-                logger.info("get_accountstatus_404",
-                            status=status.HTTP_404_NOT_FOUND,
-                            wallet_id=wallet_id,
-                            key="wallet_id"
-                            )
-                return send_error_response(
+        except ObjectDoesNotExist:
+            logger.info("get_accountstatus_404",
+                        status=status.HTTP_404_NOT_FOUND,
+                        wallet_id=wallet_id,
+                        key="wallet_id"
+                        )
+            return send_error_response(
                     message="Requested resource not available",
                     key="wallet_id",
                     value=wallet_id,
                     status=status.HTTP_404_NOT_FOUND)
 
-            except ValueError:
-                logger.info("get_accountstatus_404",
-                            status=status.HTTP_404_NOT_FOUND,
-                            wallet_id=wallet_id,
-                            key="wallet_id"
-                            )
-                return send_error_response(
+        except ValueError:
+            logger.info("get_accountstatus_404",
+                        status=status.HTTP_404_NOT_FOUND,
+                        wallet_id=wallet_id,
+                        key="wallet_id"
+                        )
+            return send_error_response(
                     message="Malformed UUID",
                     key="wallet_id",
                     value=wallet_id,
@@ -336,7 +332,6 @@ class GetAccountNameByMsisdn(APIView):
                     "lei": ""
                 }
                 response = Response(data=payload,
-                                    content_type="application/json",
                                     status=status.HTTP_200_OK
                                     )
                 logger.info("get_accountname_200",
@@ -351,10 +346,10 @@ class GetAccountNameByMsisdn(APIView):
                             key="msisdn_inactive"
                             )
                 return send_error_response(
-                            message="Requested resource not active",
-                            key="msisdn",
-                            value=msisdn,
-                            status=status.HTTP_404_NOT_FOUND
+                        message="Requested resource not active",
+                        key="msisdn",
+                        value=msisdn,
+                        status=status.HTTP_404_NOT_FOUND
                 )
 
         except ObjectDoesNotExist:
@@ -427,7 +422,6 @@ class AccountBalanceByMsisdn(APIView):
                     'balance': account.get_available_balance()
                 }
                 response = Response(data=payload,
-                                    content_type="application/json",
                                     status=status.HTTP_200_OK
                                     )
                 logger.info("get_accountbalancebymsisdn_200",
@@ -532,7 +526,6 @@ class AccountBalanceByAccountId(APIView):
                     'balance': account.get_available_balance()
                 }
                 response = Response(data=payload,
-                                    content_type="application/json",
                                     status=status.HTTP_200_OK
                                     )
                 logger.info("get_accountbalancebyaccountid_200",
