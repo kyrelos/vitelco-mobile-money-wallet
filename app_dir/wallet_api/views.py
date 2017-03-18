@@ -104,17 +104,6 @@ class BatchTransactions(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class Transactions(APIView):
-    def get_object(self, pk):
-        try:
-            return Transaction.objects.get(pk=pk)
-        except Transaction.DoesNotExist:
-            raise Http404
-
-    def get(self, request, format=None):
-        bulk_transactions = Transaction.objects.all()
-        serializer = TransactionSerializer(bulk_transactions, many=True)
-        return Response(serializer.data)
-
     def post(self, request, format=None):
         try:
             data = request.data;
@@ -122,7 +111,7 @@ class Transactions(APIView):
             source_msisdn = data["debitParty"][0]["value"];
             source = CustomerWallet.objects.get(msisdn=source_msisdn)
             destination_msisdn = data["creditParty"][0]["value"];
-            destination = CustomerWallet.objects.get(msisdn=destination_msisdn4)
+            destination = CustomerWallet.objects.get(msisdn=destination_msisdn)
             amount = data["amount"];
             type = data["type"];
             transaction = Transaction(trid=trid, source=source, destination=destination,amount=amount, type=type)
