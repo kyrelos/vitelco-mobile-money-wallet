@@ -187,18 +187,18 @@ class CreateTransactions(APIView):
     """
 
     def post(self, request):
-        # date = request.META.get("HTTP_DATE")
-        # if not date:
-        #     logger.info("create_transaction_400",
-        #                 message="DATE Header not supplied",
-        #                 status=status.HTTP_400_BAD_REQUEST,
-        #                 key="DATE"
-        #                 )
-        #     return send_error_response(
-        #             message="DATE Header not supplied",
-        #             key="DATE",
-        #             status=status.HTTP_400_BAD_REQUEST
-        #     )
+        date = request.META.get("HTTP_DATE")
+        if not date:
+            logger.info("create_transaction_400",
+                        message="DATE Header not supplied",
+                        status=status.HTTP_400_BAD_REQUEST,
+                        key="DATE"
+                        )
+            return send_error_response(
+                    message="DATE Header not supplied",
+                    key="DATE",
+                    status=status.HTTP_400_BAD_REQUEST
+            )
         try:
             data = request.data
             trid = str(uuid.uuid4())
@@ -271,9 +271,6 @@ class CreateTransactions(APIView):
                 value="Duplicate UUID"
 
             )
-
-
-
 
     @staticmethod
     def create_transaction(create_transaction_data):

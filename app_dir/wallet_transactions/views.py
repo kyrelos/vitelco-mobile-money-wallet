@@ -68,19 +68,19 @@ class GetTransaction(APIView):
     """
 
     def get(self, request, transaction_reference):
-        # date = request.META.get("HTTP_DATE")
-        # if not date:
-        #     logger.info("get_transaction_400",
-        #                 message="DATE Header not supplied",
-        #                 status=status.HTTP_400_BAD_REQUEST,
-        #                 transaction_reference=transaction_reference,
-        #                 key="DATE"
-        #                 )
-        #     return self.send_error_response(
-        #             message="DATE Header not supplied",
-        #             key="DATE",
-        #             status=status.HTTP_400_BAD_REQUEST
-        #     )
+        date = request.META.get("HTTP_DATE")
+        if not date:
+            logger.info("get_transaction_400",
+                        message="DATE Header not supplied",
+                        status=status.HTTP_400_BAD_REQUEST,
+                        transaction_reference=transaction_reference,
+                        key="DATE"
+                        )
+            return self.send_error_response(
+                    message="DATE Header not supplied",
+                    key="DATE",
+                    status=status.HTTP_400_BAD_REQUEST
+            )
 
         try:
             transaction = Transaction.objects.get(trid=transaction_reference)
