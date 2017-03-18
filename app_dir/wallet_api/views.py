@@ -187,21 +187,21 @@ class CreateTransactions(APIView):
     """
 
     def post(self, request):
-        date = request.META.get("HTTP_DATE")
-        if not date:
-            logger.info("create_transaction_400",
-                        message="DATE Header not supplied",
-                        status=status.HTTP_400_BAD_REQUEST,
-                        key="DATE"
-                        )
-            return send_error_response(
-                    message="DATE Header not supplied",
-                    key="DATE",
-                    status=status.HTTP_400_BAD_REQUEST
-            )
+        # date = request.META.get("HTTP_DATE")
+        # if not date:
+        #     logger.info("create_transaction_400",
+        #                 message="DATE Header not supplied",
+        #                 status=status.HTTP_400_BAD_REQUEST,
+        #                 key="DATE"
+        #                 )
+        #     return send_error_response(
+        #             message="DATE Header not supplied",
+        #             key="DATE",
+        #             status=status.HTTP_400_BAD_REQUEST
+        #     )
         try:
             data = request.data
-            trid = uuid.uuid4()
+            trid = str(uuid.uuid4())
             source_msisdn = data["debitParty"][0]["value"]
             source = CustomerWallet.objects.get(msisdn=source_msisdn)
             destination_msisdn = data["creditParty"][0]["value"]
@@ -211,6 +211,7 @@ class CreateTransactions(APIView):
             create_transaction_data = dict(
                 trid=trid,
                 source=source,
+                server_correlation_id=str(uuid.uuid4()),
                 destination=destination,
                 amount=amount,
                 transaction_type=transaction_type
@@ -234,46 +235,57 @@ class CreateTransactions(APIView):
 
             return error_response
         else:
-            duplicate_transaction = True
             count = 0
-            while duplicate_transaction:
+            while count < 10:
                 transaction = self.create_transaction(create_transaction_data)
                 if transaction:
-                    break
+                    response_payload = {
+                        "objectReference": trid,
+                        "serverCorrelationId": "",
+                        "status": "pending",
+                        "notificationMethod": "callback",
+                        "expiryTime": "",
+                        "pollLimit": 0,
+                        "error": None
+
+                    }
+                    logger.info("create_transaction_202",
+                                status=status.HTTP_202_ACCEPTED,
+                                trid=trid,
+                                response_payload=response_payload
+                                )
+                    return Response(response_payload,
+                                    status=status.HTTP_202_ACCEPTED
+                                    )
+
                 else:
-                    trid, create_transaction_data['trid'] = uuid.uuid4()
+                    trid = str(uuid.uuid4())
+                    create_transaction_data['trid'] = trid
                     count += 1
 
-            response_payload = {
-                "objectReference": trid,
-                "serverCorrelationId": "",
-                "status": "pending",
-                "notificationMethod": "callback",
-                "expiryTime": "",
-                "pollLimit": 0,
-                "error": None
+            return send_error_response(
+                message="Unable to get a unique "
+                        "transaction reference. Please retry",
+                key="transaction_reference",
+                status=status.HTTP_409_CONFLICT,
+                value="Duplicate UUID"
 
-            }
-            logger.info("create_transaction_202",
-                        status=status.HTTP_202_ACCEPTED,
-                        trid=trid,
-                        response_payload=response_payload
-                        )
-            return Response(response_payload,
-                            status=status.HTTP_202_ACCEPTED
-                            )
+            )
+
+
+
 
     @staticmethod
     def create_transaction(create_transaction_data):
         try:
             transaction = Transaction.objects.create(**create_transaction_data)
             logger.info("create_transaction_success",
-                        data=create_transaction_data
+                        trid=create_transaction_data.get('trid')
                         )
             return transaction
         except IntegrityError:
             logger.info("create_transaction_duplicate_uuid",
-                        data=create_transaction_data
+                        trid=create_transaction_data.get('trid')
                         )
             return False
 
