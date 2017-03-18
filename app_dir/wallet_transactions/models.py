@@ -21,6 +21,7 @@ class Transaction(models.Model):
         ("reversal", "reversal"),
         ("payment", "payment"),
         ("deposit", "deposit"),
+        ("transfer", "transfer"),
         ("withdrawal", "withdrawal"),
         ("statement", "statement"),
         ("p2p", "p2p")
@@ -47,9 +48,9 @@ class Transaction(models.Model):
     modified_at = models.DateTimeField(auto_now=True)
 
     def __unicode__(self):
-        return "{name}: {msisdn}".format(
-                name=self.customer.name,
-                msisdn=self.customer.msisdn
+        return "{source}: {destination}".format(
+                source=self.source,
+                destination=self.destination
         )
 
     class Meta:
