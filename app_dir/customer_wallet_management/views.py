@@ -9,7 +9,8 @@ from rest_framework.views import APIView
 from structlog import get_logger
 
 from .models import CustomerWallet
-from .serializers import CustomerWalletSerializer, CustomerWalletStatusSerializer
+from .serializers import CustomerWalletSerializer, \
+    CustomerWalletStatusSerializer
 
 logger = get_logger("accounts")
 
@@ -106,9 +107,9 @@ class GetAccountName(APIView):
                         key="DATE"
                         )
             return send_error_response(
-                message="DATE Header not supplied",
-                key="DATE",
-                status=status.HTTP_400_BAD_REQUEST
+                    message="DATE Header not supplied",
+                    key="DATE",
+                    status=status.HTTP_400_BAD_REQUEST
             )
 
         try:
@@ -144,10 +145,10 @@ class GetAccountName(APIView):
                             key="msisdn_inactive"
                             )
                 return send_error_response(
-                    message="Requested resource not active",
-                    key="msisdn",
-                    value=msisdn,
-                    status=status.HTTP_404_NOT_FOUND
+                        message="Requested resource not active",
+                        key="msisdn",
+                        value=msisdn,
+                        status=status.HTTP_404_NOT_FOUND
                 )
 
         except ObjectDoesNotExist:
@@ -158,10 +159,10 @@ class GetAccountName(APIView):
                         )
 
             return send_error_response(
-                message="Requested resource not available",
-                key="msisdn",
-                value=msisdn,
-                status=status.HTTP_404_NOT_FOUND
+                    message="Requested resource not available",
+                    key="msisdn",
+                    value=msisdn,
+                    status=status.HTTP_404_NOT_FOUND
             )
 
 
@@ -179,7 +180,8 @@ class AccountBalanceByMsisdn(APIView):
     {
         "balance": ""
     }
-    Error response: [404, 400, account in inactive state, DATE header not supplied]
+    Error response: [404, 400, account in inactive state,
+                    DATE header not supplied]
     {
         "errorCategory": "businessRule",
         "errorCode": "genericError",
@@ -204,10 +206,10 @@ class AccountBalanceByMsisdn(APIView):
                         key="DATE"
                         )
             return send_error_response(
-                message="DATE Header not supplied",
-                key="DATE",
-                value=msisdn,
-                status=status.HTTP_400_BAD_REQUEST
+                    message="DATE Header not supplied",
+                    key="DATE",
+                    value=msisdn,
+                    status=status.HTTP_400_BAD_REQUEST
             )
 
         # try to get the wallet id this msisdn maps to
@@ -235,10 +237,10 @@ class AccountBalanceByMsisdn(APIView):
                             key="account_inactive"
                             )
                 return send_error_response(
-                    message="Requested resource not active",
-                    key="msisdn",
-                    value=msisdn,
-                    status=status.HTTP_404_NOT_FOUND
+                        message="Requested resource not active",
+                        key="msisdn",
+                        value=msisdn,
+                        status=status.HTTP_404_NOT_FOUND
                 )
 
         except ObjectDoesNotExist:
@@ -249,10 +251,10 @@ class AccountBalanceByMsisdn(APIView):
                         )
 
             return send_error_response(
-                message="Requested resource not available",
-                key="msisdn",
-                value=msisdn,
-                status=status.HTTP_404_NOT_FOUND
+                    message="Requested resource not available",
+                    key="msisdn",
+                    value=msisdn,
+                    status=status.HTTP_404_NOT_FOUND
             )
 
 
@@ -270,7 +272,8 @@ class AccountBalanceByAccountId(APIView):
     {
         "balance": ""
     }
-    Error response: [404, 400, account in inactive state, DATE header not supplied]
+    Error response: [404, 400, account in inactive state,
+                    DATE header not supplied]
     {
         "errorCategory": "businessRule",
         "errorCode": "genericError",
@@ -295,9 +298,9 @@ class AccountBalanceByAccountId(APIView):
                         key="DATE"
                         )
             return send_error_response(
-                message="DATE Header not supplied",
-                key="DATE",
-                status=status.HTTP_400_BAD_REQUEST
+                    message="DATE Header not supplied",
+                    key="DATE",
+                    status=status.HTTP_400_BAD_REQUEST
             )
 
         if not is_valid_uuid(account_id):
@@ -308,10 +311,10 @@ class AccountBalanceByAccountId(APIView):
                         key="account_id"
                         )
             return send_error_response(
-                message="account_id invalid",
-                key="account_id",
-                value=account_id,
-                status=status.HTTP_400_BAD_REQUEST
+                    message="account_id invalid",
+                    key="account_id",
+                    value=account_id,
+                    status=status.HTTP_400_BAD_REQUEST
             )
 
         # try to get the account for this account id
@@ -339,10 +342,10 @@ class AccountBalanceByAccountId(APIView):
                             key="account_inactive"
                             )
                 return send_error_response(
-                    message="Requested resource not active",
-                    key="account_id",
-                    value=account_id,
-                    status=status.HTTP_404_NOT_FOUND
+                        message="Requested resource not active",
+                        key="account_id",
+                        value=account_id,
+                        status=status.HTTP_404_NOT_FOUND
                 )
 
         except ObjectDoesNotExist:
@@ -353,10 +356,10 @@ class AccountBalanceByAccountId(APIView):
                         )
 
             return send_error_response(
-                message="Requested resource not available",
-                key="account_id",
-                value=account_id,
-                status=status.HTTP_404_NOT_FOUND
+                    message="Requested resource not available",
+                    key="account_id",
+                    value=account_id,
+                    status=status.HTTP_404_NOT_FOUND
             )
 
 
@@ -417,7 +420,7 @@ def is_valid_uuid(uuid_to_test, version=4):
     """
     try:
         uuid_obj = UUID(uuid_to_test, version=version)
-    except:
+    except ValueError:
         return False
 
     return str(uuid_obj) == str(uuid_obj)
