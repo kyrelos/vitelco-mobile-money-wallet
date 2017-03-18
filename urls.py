@@ -7,8 +7,18 @@ from app_dir.wallet_api import views
 
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
-    url(r'^api/v1/notification/', include(notification_urls)),
-    url(r'^api/v1/accounts/', include(customer_wallet_urls)),
+    url(r'^api/$', views.APIRootView.as_view(),
+        name="api"),
+    url(r'^api/v1/notification/',
+        include(notification_urls,
+                namespace='notify',
+                app_name="notification_management")),
+    url(r'^api/v1/accounts/',
+        include(customer_wallet_urls,
+                namespace='account',
+                app_name="customer_wallet_management"
+                )),
     url(r'^api/v1/transactions/', include(transaction_urls)),
-    url(r'^api/v1/batchtransactions', views.BatchTransactions.as_view(), name="batchtransactions"),
+    url(r'^api/v1/batchtransactions', views.BatchTransactions.as_view(),
+        name="batchtransactions"),
 ]
