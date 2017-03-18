@@ -36,6 +36,7 @@ class Transaction(models.Model):
             related_name="transaction_destination"
     )
     amount = models.IntegerField()
+    server_correlation_id = models.UUIDField(unique=True)
     type = models.CharField(max_length=20,
                             choices=TRANSACTION_TYPES,
                             )
