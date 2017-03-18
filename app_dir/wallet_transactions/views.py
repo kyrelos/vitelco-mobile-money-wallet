@@ -1,14 +1,14 @@
 from datetime import datetime
+
 from django.core.exceptions import ObjectDoesNotExist
-from rest_framework import generics
-from rest_framework import status
+from rest_framework import generics, status
+from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from structlog import get_logger
 
 from .models import Transaction
 from .serializers import TransactionSerializer
-from rest_framework.permissions import IsAdminUser
-from structlog import get_logger
 
 logger = get_logger("transactions")
 
@@ -77,9 +77,9 @@ class GetTransaction(APIView):
                         key="DATE"
                         )
             return self.send_error_response(
-                message="DATE Header not supplied",
-                key="DATE",
-                status=status.HTTP_400_BAD_REQUEST
+                    message="DATE Header not supplied",
+                    key="DATE",
+                    status=status.HTTP_400_BAD_REQUEST
             )
 
         try:
@@ -99,7 +99,6 @@ class GetTransaction(APIView):
                 }
             }
             response = Response(data=payload,
-                                content_type="application/json",
                                 status=status.HTTP_200_OK
                                 )
             logger.info("get_transaction_200",
@@ -116,10 +115,10 @@ class GetTransaction(APIView):
                         )
 
             return self.send_error_response(
-                message="Requested resource not available",
-                key="trid",
-                value=transaction_reference,
-                status=status.HTTP_404_NOT_FOUND
+                    message="Requested resource not available",
+                    key="trid",
+                    value=transaction_reference,
+                    status=status.HTTP_404_NOT_FOUND
             )
 
         except ValueError:
@@ -130,10 +129,10 @@ class GetTransaction(APIView):
                         )
 
             return self.send_error_response(
-                message="Malformed UUID",
-                key="trid",
-                value=transaction_reference,
-                status=status.HTTP_404_NOT_FOUND
+                    message="Malformed UUID",
+                    key="trid",
+                    value=transaction_reference,
+                    status=status.HTTP_404_NOT_FOUND
             )
 
     @staticmethod
@@ -157,7 +156,6 @@ class GetTransaction(APIView):
         }
 
         response = Response(data=error_payload,
-                            content_type="application/json",
                             status=status
                             )
         return response
