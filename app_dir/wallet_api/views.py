@@ -50,6 +50,13 @@ class APIRootView(APIView):
                     current_app="customer_wallet_management",
                     kwargs={"msisdn": "254711111111"}
                 ),
+                "Get Account name by accountId": reverse(
+                        "account:get_account_name_by_account_id",
+                        request=request,
+                        current_app="customer_wallet_management",
+                        kwargs={"account_id":
+                                    "753bcd19-7230-40ba-a975-09ac94ace0d2"}
+                ),
                 "Get Account balance by msisdn": reverse(
                     "account:get_account_balance_by_msisdn",
                     request=request,
