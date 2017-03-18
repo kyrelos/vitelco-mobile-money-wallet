@@ -2,7 +2,6 @@ from django.http import Http404
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
-from django.core.urlresolvers import reverse as django_reverse
 from rest_framework.views import APIView
 from app_dir.wallet_transactions.models import BatchTransaction
 from app_dir.wallet_transactions.serializers import BatchTransactionSerializer
