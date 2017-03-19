@@ -202,16 +202,20 @@ class CreateTransactions(APIView):
     """
 
     def post(self, request):
-        date = request.META.get("HTTP_DATE")
-        if not date:
+        error_message = None
+        error_key = None
+        try:
+            server_correlation_id = request.META['HTTP_X_CORRELATIONID']
+            # date = request.META["HTTP_DATE"]
+        except KeyError as e:
             logger.info("create_transaction_400",
-                        message="DATE Header not supplied",
+                        message="Required Headers not supplied",
                         status=status.HTTP_400_BAD_REQUEST,
-                        key="DATE"
+                        key=e.message
                         )
             return send_error_response(
-                    message="DATE Header not supplied",
-                    key="DATE",
+                    message="Required Headers not supplied",
+                    key=e.message,
                     status=status.HTTP_400_BAD_REQUEST
             )
         try:
@@ -226,7 +230,7 @@ class CreateTransactions(APIView):
             create_transaction_data = dict(
                 trid=trid,
                 source=source,
-                server_correlation_id=str(uuid.uuid4()),
+                server_correlation_id=server_correlation_id,
                 destination=destination,
                 amount=amount,
                 transaction_type=transaction_type
@@ -252,11 +256,12 @@ class CreateTransactions(APIView):
         else:
             count = 0
             while count < 10:
-                transaction = self.create_transaction(create_transaction_data)
+                transaction, exception = self.create_transaction(
+                        create_transaction_data)
                 if transaction:
                     response_payload = {
                         "objectReference": trid,
-                        "serverCorrelationId": "",
+                        "serverCorrelationId": server_correlation_id,
                         "status": "pending",
                         "notificationMethod": "callback",
                         "expiryTime": "",
@@ -274,14 +279,21 @@ class CreateTransactions(APIView):
                                     )
 
                 else:
+                    if "trid" in exception:
+                        error_message = "Unable to get a unique " \
+                                        "transaction reference. Please retry"
+                        error_key = "transaction_reference"
+                    else:
+                        error_message = exception
+                        error_key = "serverCorrelationId"
+                        break
                     trid = str(uuid.uuid4())
                     create_transaction_data['trid'] = trid
                     count += 1
 
             return send_error_response(
-                message="Unable to get a unique "
-                        "transaction reference. Please retry",
-                key="transaction_reference",
+                message=error_message,
+                key=error_key,
                 status=status.HTTP_409_CONFLICT,
                 value="Duplicate UUID"
 
@@ -294,11 +306,12 @@ class CreateTransactions(APIView):
             logger.info("create_transaction_success",
                         trid=create_transaction_data.get('trid')
                         )
-            return transaction
-        except IntegrityError:
+            return True, transaction
+        except IntegrityError as e:
+            exception = str(e).split("DETAIL:")[1]
             logger.info("create_transaction_duplicate_uuid",
-                        trid=create_transaction_data.get('trid')
+                        exception=exception,
                         )
-            return False
+            return False, exception
 
 
