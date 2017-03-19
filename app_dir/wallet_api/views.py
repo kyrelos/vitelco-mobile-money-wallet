@@ -33,6 +33,14 @@ class APIRootView(APIView):
                 "Create transactions": reverse(
                     "create_transactions",
                     request=request
+                ),
+                "Get transaction state": reverse(
+                    "get_transaction_state",
+                    request=request,
+                    kwargs={
+                        "server_correlation_id":
+                            "753bcd19-7230-40ba-a975-09ac94ace0d2"
+                    }
                 )
 
             },

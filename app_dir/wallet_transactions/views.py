@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import generics, status
 from rest_framework.permissions import IsAdminUser
@@ -96,7 +97,7 @@ class GetTransaction(APIView):
 
     def get(self, request, transaction_reference):
         date = request.META.get("HTTP_DATE")
-        if not date:
+        if not date and not settings.DEBUG:
             logger.info("get_transaction_400",
                         message="DATE Header not supplied",
                         status=status.HTTP_400_BAD_REQUEST,
@@ -181,6 +182,7 @@ class GetTransactionState(APIView):
         "reference": transaction_reference,
         "transaction_type": transaction_type,
         "amount": transaction_amount,
+        "currency": "currency",
         "date": transaction_date,
         "status": transaction_state
 
@@ -200,14 +202,13 @@ class GetTransactionState(APIView):
     }
     """
 
-    def get(self, request, transaction_reference):
+    def get(self, request, server_correlation_id):
         date = request.META.get("HTTP_DATE")
-        server_correlation_id = request.META.get("HTTP_X_CORRELATION_ID")
-        if not date:
+        if not date and not settings.DEBUG:
             logger.info("get_transaction_400",
                         message="DATE Header not supplied",
                         status=status.HTTP_400_BAD_REQUEST,
-                        transaction_reference=transaction_reference,
+                        server_correlation_id=server_correlation_id,
                         key="DATE"
                         )
             return send_error_response(
@@ -223,11 +224,14 @@ class GetTransactionState(APIView):
             transaction_type = transaction.transaction_type
             transaction_amount = transaction.amount
             transaction_date = transaction.created_at
+            transaction_reference = transaction.trid
+            transaction_currency = transaction.currency
 
             payload = {
                 "reference": transaction_reference,
                 "transaction_type": transaction_type,
                 "amount": transaction_amount,
+                "currency": transaction_currency,
                 "date": transaction_date,
                 "status": transaction_state,
                 "serverCorrelationId": server_correlation_id,
@@ -245,8 +249,8 @@ class GetTransactionState(APIView):
         except ObjectDoesNotExist:
             logger.info("get_transaction_state_404",
                         status=status.HTTP_404_NOT_FOUND,
-                        trid=transaction_reference,
-                        key="trid"
+                        server_correlation_id=server_correlation_id,
+                        key="server_correlation_id"
                         )
 
             return send_error_response(
@@ -259,7 +263,7 @@ class GetTransactionState(APIView):
         except ValueError:
             logger.info("get_transaction_state_malformed_uuid",
                         status=status.HTTP_400_BAD_REQUEST,
-                        trid=transaction_reference,
+                        server_correlation_id=server_correlation_id,
                         key="serverCorrelationId"
                         )
 
