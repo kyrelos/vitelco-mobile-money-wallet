@@ -2,7 +2,8 @@ import uuid
 from datetime import datetime
 
 from django.db import IntegrityError
-from django.http import Http404
+from django.conf import settings
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
@@ -47,6 +48,9 @@ class APIRootView(APIView):
             "BatchTransactions": {
                 "Create batch transactions": reverse(
                         "batchtransactions", request=request
+                ),
+                "Get batch transaction": reverse(
+                    "get_batch_transaction", request=request
                 )
             },
             "Account": {
@@ -140,19 +144,79 @@ def send_error_response(message="404",
     return response
 
 
-
-
 class BatchTransactions(APIView):
-    def get_object(self, pk):
-        try:
-            return BatchTransaction.objects.get(pk=pk)
-        except BatchTransaction.DoesNotExist:
-            raise Http404
+    """
+    This API allows two functions:
+    1. Creating transactions in bulk given a payload via POST
+    2. Retrieve transaction given a bulk transaction ID
+    """
+    def get(self, request, batch_trid):
+        date = request.META.get("HTTP_DATE")
+        if not date and not settings.DEBUG:
+            logger.info(
+                "get_bulk_transaction_400",
+                message="DATE Header not supplied",
+                status=status.HTTP_400_BAD_REQUEST,
+                key="DATE"
+            )
 
-    def get(self, request, format=None):
-        bulk_transactions = BatchTransaction.objects.all()
-        serializer = BatchTransactionSerializer(bulk_transactions, many=True)
-        return Response(serializer.data)
+            return send_error_response(
+                message="DATE Header not supplied",
+                key="DATE",
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            batch_transaction = BatchTransaction.objects.get(
+                batch_trid=batch_trid
+            )
+
+            payload = {
+                "transaction": {
+                    "reference": batch_trid,
+                    "merchant": batch_transaction.merchant,
+                    "created_at": batch_transaction.created_at,
+                }
+            }
+            response = Response(
+                data=payload, status=status.HTTP_200_OK
+            )
+            logger.info(
+                "get_batch_transaction_200",
+                status=status.HTTP_200_OK,
+                batch_trid=batch_trid
+            )
+            return response
+
+        except ObjectDoesNotExist:
+            logger.info(
+                "get_batch_transaction_404",
+                status=status.HTTP_404_NOT_FOUND,
+                batch_trid=batch_trid,
+                key="batch_trid"
+            )
+
+            return send_error_response(
+                message="Requested resource not available",
+                key="batch_transaction_reference",
+                value=batch_trid,
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        except ValueError:
+            logger.info(
+                "get_transaction_malformed_uuid",
+                status=status.HTTP_404_NOT_FOUND,
+                batch_trid=batch_trid,
+                key="batch_trid"
+            )
+
+            return send_error_response(
+                message="Malformed UUID",
+                key="batch_transaction_reference",
+                value=batch_trid,
+                status=status.HTTP_404_NOT_FOUND
+            )
 
     def post(self, request, format=None):
         serializer = BatchTransactionSerializer(data=request.data)
