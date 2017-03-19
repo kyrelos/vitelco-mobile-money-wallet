@@ -41,6 +41,7 @@ class Transaction(models.Model):
     transaction_type = models.CharField(max_length=20,
                                         choices=TRANSACTION_TYPES,
                                         )
+    callback_url = models.URLField(null=True)
 
     state = models.CharField(max_length=20,
                              choices=TRANSACTION_STATES,
