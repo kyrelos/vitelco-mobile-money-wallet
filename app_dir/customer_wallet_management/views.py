@@ -367,6 +367,114 @@ class GetAccountNameByMsisdn(APIView):
             )
 
 
+class GetAccountNameByAccountId(APIView):
+    """
+    This API retrieves the customers name details given a account_id
+
+    HTTP Method: GET
+    URI: /api/v1/accounts/{account_id}/accountname/
+    Required HTTP Headers:
+    DATE: todays date
+    AUTHORIZATION: api-key
+    CONTENT-TYPE: application/json
+    Success response:
+    HTTP status code: 200
+    {
+        "name": {
+            "title": "",
+            "firstName": first_name,
+            "middleName": "",
+            "lastName": "",
+            "fullName": "",
+            "nativeName": ""
+        },
+        "status": "",
+        "lei": ""
+    }
+    Error response: [404, 400, account in inactive state,
+                    DATE header not supplied]
+    {
+        "errorCategory": "businessRule",
+        "errorCode": "genericError",
+        "errorDescription": "string",
+        "errorDateTime": "string",
+        "errorParameters": [
+            {
+                "key": key,
+                "value": value
+            }
+        ]
+    }
+    """
+
+    def get(self, request, account_id):
+        date = request.META.get("HTTP_DATE")
+        if not date:
+            logger.info("get_accountname_400",
+                        message="DATE Header not supplied",
+                        status=status.HTTP_400_BAD_REQUEST,
+                        account_id=account_id,
+                        key="DATE"
+                        )
+            return send_error_response(
+                    message="DATE Header not supplied",
+                    key="DATE",
+                    status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            account = CustomerWallet.objects.get(wallet_id=account_id)
+            first_name = account.name
+            account_status = account.status
+            if account_status == CustomerWallet.active:
+                payload = {
+                    "name": {
+                        "title": "",
+                        "firstName": first_name,
+                        "middleName": "",
+                        "lastName": "",
+                        "fullName": "",
+                        "nativeName": ""
+                    },
+                    "status": "",
+                    "lei": ""
+                }
+                response = Response(data=payload,
+                                    status=status.HTTP_200_OK
+                                    )
+                logger.info("get_accountname_200",
+                            status=status.HTTP_200_OK,
+                            account_id=account_id
+                            )
+                return response
+            else:
+                logger.info("get_accountname_404",
+                            status=status.HTTP_404_NOT_FOUND,
+                            account_id=account_id,
+                            key="msisdn_inactive"
+                            )
+                return send_error_response(
+                        message="Requested resource not active",
+                        key="account_id",
+                        value=account_id,
+                        status=status.HTTP_404_NOT_FOUND
+                )
+
+        except ObjectDoesNotExist:
+            logger.info("get_accountname_404",
+                        status=status.HTTP_404_NOT_FOUND,
+                        account_id=account_id,
+                        key="account_id"
+                        )
+
+            return send_error_response(
+                    message="Requested resource not available",
+                    key="account_id",
+                    value=account_id,
+                    status=status.HTTP_404_NOT_FOUND
+            )
+
+
 class AccountBalanceByMsisdn(APIView):
     """
     This API fetches the customers balance details given a msisdn
