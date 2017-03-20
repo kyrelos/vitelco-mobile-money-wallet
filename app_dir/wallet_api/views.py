@@ -4,6 +4,9 @@ from time import gmtime, strftime
 import requests
 from django.conf import settings
 from django.db import IntegrityError
+from django.conf import settings
+from django.core.exceptions import ObjectDoesNotExist
+from django.forms.models import model_to_dict
 from django.http import Http404
 from rest_framework import status
 from rest_framework.response import Response
@@ -51,6 +54,9 @@ class APIRootView(APIView):
             "BatchTransactions": {
                 "Create batch transactions": reverse(
                     "batchtransactions", request=request
+                ),
+                "Get batch transaction": reverse(
+                    "get_batch_transaction", request=request
                 )
             },
             "Account": {
@@ -143,6 +149,92 @@ def send_error_response(message="404",
                         )
     return response
 
+class GetBatchTransaction(APIView):
+    """
+    This API allows retrieving a bulk transaction given an ID
+    """
+    def get(self, request, batch_trid=None):
+        if not batch_trid:
+            logger.info(
+                "get_transaction_invalid_uuid",
+                status=status.HTTP_400_BAD_REQUEST,
+                batch_trid=batch_trid,
+                key="batch_trid"
+            )
+
+            return send_error_response(
+                message="Invalid UUID",
+                key="batch_transaction_reference",
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        date = request.META.get("HTTP_DATE")
+        if not date and not settings.DEBUG:
+            logger.info(
+                "get_bulk_transaction_400",
+                message="DATE Header not supplied",
+                status=status.HTTP_400_BAD_REQUEST,
+                key="DATE"
+            )
+
+            return send_error_response(
+                message="DATE Header not supplied",
+                key="DATE",
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            batch_transactions = BatchTransactionLookup.objects.filter(
+                batch_transaction__batch_trid=batch_trid
+            )
+
+            if not batch_transactions:
+                logger.info(
+                    "get_batch_transaction_404",
+                    status=status.HTTP_404_NOT_FOUND,
+                    batch_trid=batch_trid,
+                    key="batch_trid"
+                )
+
+                return send_error_response(
+                    message="Requested resource not available",
+                    key="batch_transaction_reference",
+                    value=batch_trid,
+                    status=status.HTTP_404_NOT_FOUND
+                )
+
+            payload = {
+                "reference": batch_trid,
+                "transactions": []
+            }
+
+            for transaction in batch_transactions:
+                payload['transactions'].append(
+                    model_to_dict(transaction.transaction))
+
+            response = Response(
+                data=payload, status=status.HTTP_200_OK
+            )
+            logger.info(
+                "get_batch_transaction_200",
+                status=status.HTTP_200_OK,
+                batch_trid=batch_trid
+            )
+            return response
+        except ValueError:
+            logger.info(
+                "get_transaction_malformed_uuid",
+                status=status.HTTP_404_NOT_FOUND,
+                batch_trid=batch_trid,
+                key="batch_trid"
+            )
+
+            return send_error_response(
+                message="Malformed UUID",
+                key="batch_transaction_reference",
+                value=batch_trid,
+                status=status.HTTP_404_NOT_FOUND
+            )
 
 class BatchTransactions(APIView):
     """
@@ -333,6 +425,17 @@ class CreateTransactions(APIView):
                 amount=amount,
                 transaction_type=transaction_type
             )
+            source_balance = source.get_available_balance()
+            if transaction_type == 'transfer':
+                if source_balance < amount:
+                    insufficient_funds_response = send_error_response(
+                        message="You have insufficient funds",
+                        key="Balance",
+                        value=source_balance,
+                        status=status.HTTP_402_PAYMENT_REQUIRED
+                    )
+                    return insufficient_funds_response
+
         except KeyError as e:
             error_message = "Missing required field"
             key = e.message

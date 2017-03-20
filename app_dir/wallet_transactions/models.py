@@ -67,7 +67,10 @@ class BatchTransaction(models.Model):
     wallet to multiple wallets
     to another
     """
-    BATCH_STATUS =(("created","created"), ("finished", "finished"))
+    BATCH_STATUS = (
+        ("created", "created"),
+        ("finished", "finished"),
+    )
 
     batch_trid = models.UUIDField(unique=True, default=uuid.uuid4)
     merchant = models.ForeignKey(
