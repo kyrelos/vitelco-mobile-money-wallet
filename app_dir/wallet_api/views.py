@@ -145,6 +145,61 @@ def send_error_response(message="404",
 
 
 class BatchTransactions(APIView):
+    """
+    This API posts batch transactions
+      HTTP Method: POST
+      URI: /api/v1/batchtransactions/
+
+    ===== SAMPLE PAY LOAD ======
+    {
+  "batchTitle": "BatchMWCDemo",
+  "batchDescription": "DemoMWCBatch",
+  "processingFlag": true,
+   "batchStatus": "created",
+   "merchant":"<merchant_id>"
+  "transactions":[
+            {
+          "amount": "456522",
+          "currency": "UGX",
+          "type": "transfer",
+          "requestDate": "2017-02-28 16:00:00",
+          "requestingOrganisationTransactionReference": "MWCAPIWorkshop001",
+          "debitParty": [
+            {
+              "key": "msisdn",
+              "value": "+4491509874561"
+            }
+          ],
+          "creditParty": [
+            {
+              "key": "msisdn",
+              "value": "+25691508523697"
+            }
+          ]
+      },
+      {
+          "amount": "456522",
+          "currency": "UGX",
+          "type": "transfer",
+          "requestDate": "2017-02-28 16:00:00",
+          "requestingOrganisationTransactionReference": "MWCAPIWorkshop001",
+          "debitParty": [
+            {
+              "key": "msisdn",
+              "value": "+4491509874561"
+            }
+          ],
+          "creditParty": [
+            {
+              "key": "msisdn",
+              "value": "+25691508523697"
+            }
+          ]
+      }
+  ]
+}
+    """
+
     def get_object(self, pk):
         try:
             return BatchTransaction.objects.get(pk=pk)
@@ -198,12 +253,9 @@ class BatchTransactions(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             return_errors = dict(
-                batch_transaction_errors=serializer.error_messages,)
+                batch_transaction_errors=serializer.error_messages, )
             return Response(return_errors,
                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-
 
 
 class CreateTransactions(APIView):
