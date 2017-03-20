@@ -24,26 +24,18 @@ class APIRootView(APIView):
         api_registry = {
             "Transactions": {
                 "Get transaction by transaction_reference": reverse(
-                        "get_transaction_by_transaction_reference",
-                        request=request,
-                        current_app="wallet_transactions",
-                        kwargs={
-                            "transaction_reference":
-                                "753bcd19-7230-40ba-a975-09ac94ace0d2"
-                        }
+                    "get_transaction_by_transaction_reference",
+                    request=request,
+                    current_app="wallet_transactions",
+                    kwargs={
+                        "transaction_reference":
+                            "753bcd19-7230-40ba-a975-09ac94ace0d2"
+                    }
 
                 ),
                 "Create transactions": reverse(
                     "create_transactions",
                     request=request
-                ),
-                "Get transaction state": reverse(
-                    "get_transaction_state",
-                    request=request,
-                    kwargs={
-                        "server_correlation_id":
-                            "753bcd19-7230-40ba-a975-09ac94ace0d2"
-                    }
                 )
 
             },
@@ -57,52 +49,45 @@ class APIRootView(APIView):
             },
             "Account": {
                 "Get Account status by msisdn": reverse(
-                        "account:msisdn",
-                        request=request,
-                        current_app="customer_wallet_management",
-                        kwargs={"msisdn": "+254711111111"}
+                    "account:msisdn",
+                    request=request,
+                    current_app="customer_wallet_management",
+                    kwargs={"msisdn": "+254711111111"}
                 ),
                 "Get Account status by accountId": reverse(
-                        "account:get_account_status_by_account_id",
-                        request=request,
-                        current_app="customer_wallet_management",
-                        kwargs={
-                            "wallet_id": "753bcd19-7230-40ba-a975-09ac94ace0d2"
-                        }
+                    "account:get_account_status_by_account_id",
+                    request=request,
+                    current_app="customer_wallet_management",
+                    kwargs={
+                        "wallet_id": "753bcd19-7230-40ba-a975-09ac94ace0d2"
+                    }
                 ),
                 "Get Account name by msisdn": reverse(
-                        "account:get_account_name_by_msisdn",
-                        request=request,
-                        current_app="customer_wallet_management",
-                        kwargs={"msisdn": "254711111111"}
-                ),
-                "Get Account name by accountId": reverse(
-                        "account:get_account_name_by_account_id",
-                        request=request,
-                        current_app="customer_wallet_management",
-                        kwargs={"account_id":
-                                    "753bcd19-7230-40ba-a975-09ac94ace0d2"}
+                    "account:get_account_name_by_msisdn",
+                    request=request,
+                    current_app="customer_wallet_management",
+                    kwargs={"msisdn": "254711111111"}
                 ),
                 "Get Account balance by msisdn": reverse(
-                        "account:get_account_balance_by_msisdn",
-                        request=request,
-                        current_app="customer_wallet_management",
-                        kwargs={"msisdn": "254711111111"}
+                    "account:get_account_balance_by_msisdn",
+                    request=request,
+                    current_app="customer_wallet_management",
+                    kwargs={"msisdn": "254711111111"}
                 ),
                 "Get Account balance by accountId": reverse(
-                        "account:get_account_balance_by_account_id",
-                        request=request,
-                        current_app="customer_wallet_management",
-                        kwargs={"account_id":
-                                    "753bcd19-7230-40ba-a975-09ac94ace0d2"}
+                    "account:get_account_balance_by_account_id",
+                    request=request,
+                    current_app="customer_wallet_management",
+                    kwargs={"account_id":
+                                "753bcd19-7230-40ba-a975-09ac94ace0d2"}
                 ),
 
             },
             "Notification": {
                 "ListCreate Notifications": reverse(
-                        "notify:notifications",
-                        request=request,
-                        current_app="notification_management"
+                    "notify:notifications",
+                    request=request,
+                    current_app="notification_management"
                 )
             }
         }
@@ -241,8 +226,8 @@ class BatchTransactions(APIView):
             raise Http404
 
     def get(self, request, format=None):
-        batch_transactions = BatchTransaction.objects.all()
-        serializer = BatchTransactionSerializer(batch_transactions, many=True)
+        bulk_transactions = BatchTransaction.objects.all()
+        serializer = BatchTransactionSerializer(bulk_transactions, many=True)
         return Response(serializer.data)
 
     def post(self, request, format=None):
@@ -293,39 +278,46 @@ class CreateTransactions(APIView):
     """
 
     def post(self, request):
-        error_message = None
-        error_key = None
-        try:
-            server_correlation_id = request.META['HTTP_X_CORRELATIONID']
-            # date = request.META["HTTP_DATE"]
-        except KeyError as e:
+        date = request.META.get("HTTP_DATE")
+        if not date:
             logger.info("create_transaction_400",
-                        message="Required Headers not supplied",
+                        message="DATE Header not supplied",
                         status=status.HTTP_400_BAD_REQUEST,
-                        key=e.message
+                        key="DATE"
                         )
             return send_error_response(
-                    message="Required Headers not supplied",
-                    key=e.message,
-                    status=status.HTTP_400_BAD_REQUEST
+                message="DATE Header not supplied",
+                key="DATE",
+                status=status.HTTP_400_BAD_REQUEST
             )
         try:
             data = request.data
-            trid = str(uuid.uuid4())
+            trid = uuid.uuid4()
             source_msisdn = data["debitParty"][0]["value"]
             source = CustomerWallet.objects.get(msisdn=source_msisdn)
             destination_msisdn = data["creditParty"][0]["value"]
             destination = CustomerWallet.objects.get(msisdn=destination_msisdn)
             amount = data["amount"]
             transaction_type = data["type"]
-            create_transaction_data = dict(
-                trid=trid,
-                source=source,
-                server_correlation_id=server_correlation_id,
-                destination=destination,
-                amount=amount,
-                transaction_type=transaction_type
-            )
+            source_balance = source.get_available_balance()
+            if transaction_type == 'transfer':
+                if source_balance < amount:
+                    insufficient_funds_response = send_error_response(
+                        message="You have insufficient funds",
+                        status=402
+                    )
+                    return insufficient_funds_response
+                else:
+                    create_transaction_data = dict(
+                        trid=trid,
+                        source=source,
+                        destination=destination,
+                        amount=amount,
+                        type=transaction_type
+                    )
+                    transaction = self.create_transaction(
+                        create_transaction_data)
+                    return transaction
         except KeyError as e:
             error_message = "Missing required field"
             key = e.message
@@ -333,10 +325,10 @@ class CreateTransactions(APIView):
             status_code = status.HTTP_400_BAD_REQUEST
 
             error_response = send_error_response(
-                    message=error_message,
-                    key=key,
-                    value=value,
-                    status=status_code
+                message=error_message,
+                key=key,
+                value=value,
+                status=status_code
             )
             logger.info("create_transaction_400",
                         status=status.HTTP_400_BAD_REQUEST,
@@ -345,62 +337,45 @@ class CreateTransactions(APIView):
 
             return error_response
         else:
+            duplicate_transaction = True
             count = 0
-            while count < 10:
-                transaction, exception = self.create_transaction(
-                        create_transaction_data)
+            while duplicate_transaction:
+                transaction = self.create_transaction(create_transaction_data)
                 if transaction:
-                    response_payload = {
-                        "objectReference": trid,
-                        "serverCorrelationId": server_correlation_id,
-                        "status": "pending",
-                        "notificationMethod": "callback",
-                        "expiryTime": "",
-                        "pollLimit": 0,
-                        "error": None
-
-                    }
-                    logger.info("create_transaction_202",
-                                status=status.HTTP_202_ACCEPTED,
-                                trid=trid,
-                                response_payload=response_payload
-                                )
-                    return Response(response_payload,
-                                    status=status.HTTP_202_ACCEPTED
-                                    )
-
+                    break
                 else:
-                    if "trid" in exception:
-                        error_message = "Unable to get a unique " \
-                                        "transaction reference. Please retry"
-                        error_key = "transaction_reference"
-                    else:
-                        error_message = exception
-                        error_key = "serverCorrelationId"
-                        break
-                    trid = str(uuid.uuid4())
-                    create_transaction_data['trid'] = trid
+                    trid, create_transaction_data['trid'] = uuid.uuid4()
                     count += 1
 
-            return send_error_response(
-                message=error_message,
-                key=error_key,
-                status=status.HTTP_409_CONFLICT,
-                value="Duplicate UUID"
+            response_payload = {
+                "objectReference": trid,
+                "serverCorrelationId": "",
+                "status": "pending",
+                "notificationMethod": "callback",
+                "expiryTime": "",
+                "pollLimit": 0,
+                "error": None
 
-            )
+            }
+            logger.info("create_transaction_202",
+                        status=status.HTTP_202_ACCEPTED,
+                        trid=trid,
+                        response_payload=response_payload
+                        )
+            return Response(response_payload,
+                            status=status.HTTP_202_ACCEPTED
+                            )
 
     @staticmethod
     def create_transaction(create_transaction_data):
         try:
             transaction = Transaction.objects.create(**create_transaction_data)
             logger.info("create_transaction_success",
-                        trid=create_transaction_data.get('trid')
+                        data=create_transaction_data
                         )
-            return True, transaction
-        except IntegrityError as e:
-            exception = str(e).split("DETAIL:")[1]
+            return transaction
+        except IntegrityError:
             logger.info("create_transaction_duplicate_uuid",
-                        exception=exception,
+                        data=create_transaction_data
                         )
-            return False, exception
+            return False
