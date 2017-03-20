@@ -473,52 +473,13 @@ class AccountTransactionsByMsisdn(APIView):
     [ {
   "amount" : "451238",
   "currency" : "UGX",
-  "displayType" : "transfer",
-  "transactionStatus" : "checkSum value should be between 64 to 64",
+  "type" : "transfer",
+  "subType" : "",
   "descriptionText" : "",
   "requestDate" : "2016-12-15 09:27:16",
-  "creationDate" : "",
-  "modificationDate" : "",
-  "transactionReference" : "TPXX000000055604",
-  "transactionReceipt" : "",
-  "debitParty" : [ {
-    "key" : "msisdn",
-    "value" : "+4491509874561"
-  } ],
-  "creditParty" : [ {
-    "key" : "msisdn",
-    "value" : "+25691508523697"
-  } ]
-}, {
-  "amount" : "456522",
-  "currency" : "UGX",
-  "displayType" : "transfer",
-  "transactionStatus" : "Quote expired",
-  "descriptionText" : "",
-  "requestDate" : "2017-02-28 16:00:00",
-  "creationDate" : "",
-  "modificationDate" : "",
-  "transactionReference" : "TPGS000000055797",
-  "transactionReceipt" : "",
-  "debitParty" : [ {
-    "key" : "msisdn",
-    "value" : "+4491509874561"
-  } ],
-  "creditParty" : [ {
-    "key" : "msisdn",
-    "value" : "+25691508523697"
-  } ]
-}, {
-  "amount" : "451238",
-  "currency" : "UGX",
-  "displayType" : "transfer",
-  "transactionStatus" : "Quote and Remit parameters do not match",
-  "descriptionText" : "",
-  "requestDate" : "2016-12-15 09:27:16",
-  "creationDate" : "",
-  "modificationDate" : "",
-  "transactionReference" : "TPGS000000055795",
-  "transactionReceipt" : "",
+  "requestingOrganisationTransactionReference" : "",
+  "oneTimeCode" : "",
+  "geoCode" : "",
   "debitParty" : [ {
     "key" : "msisdn",
     "value" : "+4491509874561"
@@ -529,26 +490,105 @@ class AccountTransactionsByMsisdn(APIView):
   "creditParty" : [ {
     "key" : "msisdn",
     "value" : "+25691508523697"
-  } ]
-}, {
-  "amount" : "456522",
-  "currency" : "UGX",
-  "displayType" : "transfer",
+  } ],
+  "senderKyc" : {
+    "nationality" : "UK",
+    "dateOfBirth" : "",
+    "occupation" : "",
+    "employerName" : "",
+    "contactPhone" : "+4491509874561",
+    "gender" : "",
+    "idDocument" : [ {
+      "idType" : "VOTER_CARD",
+      "idNumber" : "13321115521",
+      "issueDate" : "",
+      "expiryDate" : "",
+      "issuer" : "",
+      "issuerPlace" : "",
+      "issuerCountry" : "",
+      "otherIdDescription" : ""
+    } ],
+    "postalAddress" : {
+      "addressLine1" : "49 , park street",
+      "addressLine2" : "",
+      "addressLine3" : "",
+      "city" : "",
+      "stateProvince" : "",
+      "postalCode" : "",
+      "country" : ""
+    },
+    "subjectName" : {
+      "title" : "",
+      "firstName" : "Einstein ",
+      "middleName" : "",
+      "lastName" : "BELA",
+      "fullName" : "",
+      "nativeName" : ""
+    },
+    "emailAddress" : "",
+    "birthCountry" : ""
+  },
+  "recipientKyc" : {
+    "nationality" : "",
+    "dateOfBirth" : "",
+    "occupation" : "",
+    "employerName" : "",
+    "contactPhone" : "",
+    "gender" : "",
+    "idDocument" : [ {
+      "idType" : "",
+      "idNumber" : "",
+      "issueDate" : "",
+      "expiryDate" : "",
+      "issuer" : "",
+      "issuerPlace" : "",
+      "issuerCountry" : "",
+      "otherIdDescription" : ""
+    } ],
+    "postalAddress" : {
+      "addressLine1" : "",
+      "addressLine2" : "",
+      "addressLine3" : "",
+      "city" : "",
+      "stateProvince" : "",
+      "postalCode" : "",
+      "country" : ""
+    },
+    "subjectName" : {
+      "title" : "",
+      "firstName" : "",
+      "middleName" : "",
+      "lastName" : "",
+      "fullName" : "",
+      "nativeName" : ""
+    },
+    "emailAddress" : "",
+    "birthCountry" : ""
+  },
+  "originalTransactionReference" : "",
+  "servicingIdentity" : "",
+  "requestingLei" : "",
+  "receivingLei" : "",
+  "metadata" : [ {
+    "key" : "",
+    "value" : ""
+  } ],
   "transactionStatus" : "Remit Success",
-  "descriptionText" : "",
-  "requestDate" : "2016-12-15 09:27:16",
   "creationDate" : "",
   "modificationDate" : "",
-  "transactionReference" : "TPGS000000055794",
+  "transactionReference" : "TPGS000000055601",
   "transactionReceipt" : "",
-  "debitParty" : [ {
-    "key" : "msisdn",
-    "value" : "+4491509874561"
-  } ],
-  "creditParty" : [ {
-    "key" : "msisdn",
-    "value" : "+25691508523697"
-  } ]
+  "internationalTransferInformation" : {
+    "originCountry" : "",
+    "quotationReference" : "QR8436833",
+    "quoteId" : "QT037f8mIomN4YJb1",
+    "receivingCountry" : "",
+    "remittancePurpose" : "1",
+    "relationshipSender" : "",
+    "deliveryMethod" : "directtoaccount",
+    "senderBlockingReason" : "",
+    "recipientBlockingReason" : ""
+  }
 } ]
     Error response: [404, 400, account in inactive state,
                     DATE header not supplied]
@@ -568,8 +608,10 @@ class AccountTransactionsByMsisdn(APIView):
 
     def get(self, request, msisdn):
         date = request.META.get("HTTP_DATE")
-        # limit = request.POST.get("LIMIT")
-        # offset = request.POST.get("OFFSET")
+        limit = request.POST.get("limit", 2)
+        offset = request.POST.get("offset", 0)
+        from_date = request.POST.get("fromdatetime", None)
+        to_date = request.POST.get("todatetime", None)
         if not date:
             logger.info("get_accounttransactionsbymsisdn_400",
                         message="DATE Header not supplied",
@@ -587,39 +629,159 @@ class AccountTransactionsByMsisdn(APIView):
         # try to get the wallet id this msisdn maps to
         try:
             account = CustomerWallet.objects.get(msisdn=msisdn)
-            transactions = account.transaction_source.all() | account.\
-                transaction_destination.all()
+            transactions = (account.transaction_source.all() | account.\
+                            transaction_destination.all())[offset:limit]
 
             account_status = account.status
             payload = []
             if account_status == CustomerWallet.active:
 
                 for transaction in transactions:
-
                     debit_party = CustomerWallet.objects.get(
                         wallet_id=transaction.destination.wallet_id)
                     credit_party = CustomerWallet.objects.get(
                         wallet_id=transaction.source.wallet_id)
 
+                    # payload.append({
+                    #     "amount": transaction.amount,
+                    #     "currency": "KES",
+                    #     "displayType": transaction.transaction_type,
+                    #     "transactionStatus": transaction.state,
+                    #     "descriptionText": "",
+                    #     "requestDate": datetime.now().isoformat(),
+                    #     "creationDate": transaction.created_at,
+                    #     "modificationDate": transaction.modified_at,
+                    #     "transactionReference": transaction.trid,
+                    #     "transactionReceipt": "",
+                    #     "debitParty": [{
+                    #         "key": "msisdn",
+                    #         "value": debit_party.msisdn
+                    #     }],
+                    #     "creditParty": [{
+                    #         "key": "msisdn",
+                    #         "value": credit_party.msisdn
+                    #     }]
+                    # })
+
                     payload.append({
                         "amount": transaction.amount,
-                        "currency": "KES",
-                        "displayType": transaction.transaction_type,
-                        "transactionStatus": transaction.state,
+                        "currency": transaction.currency,
+                        "type": transaction.transaction_type,
+                        "subType": "",
                         "descriptionText": "",
-                        "requestDate": datetime.now().isoformat(),
-                        "creationDate": transaction.created_at,
-                        "modificationDate": transaction.modified_at,
-                        "transactionReference": transaction.trid,
-                        "transactionReceipt": "",
+                        "requestDate": "",
+                        "requestingOrganisationTransactionReference": "",
+                        "oneTimeCode": "",
+                        "geoCode": "",
                         "debitParty": [{
                             "key": "msisdn",
-                            "value": debit_party.msisdn
+                            "value": credit_party.msisdn
+                        }, {
+                            "key": "bankaccountno",
+                            "value": ""
                         }],
                         "creditParty": [{
                             "key": "msisdn",
-                            "value": credit_party.msisdn
-                        }]
+                            "value": debit_party.msisdn
+                        }],
+                        "senderKyc": {
+                            "nationality": "",
+                            "dateOfBirth": "",
+                            "occupation": "",
+                            "employerName": "",
+                            "contactPhone": credit_party.msisdn,
+                            "gender": "",
+                            "idDocument": [{
+                                "idType": "",
+                                "idNumber": "",
+                                "issueDate": "",
+                                "expiryDate": "",
+                                "issuer": "",
+                                "issuerPlace": "",
+                                "issuerCountry": "",
+                                "otherIdDescription": ""
+                            }],
+                            "postalAddress": {
+                                "addressLine1": "",
+                                "addressLine2": "",
+                                "addressLine3": "",
+                                "city": "",
+                                "stateProvince": "",
+                                "postalCode": "",
+                                "country": ""
+                            },
+                            "subjectName": {
+                                "title": "",
+                                "firstName": credit_party.name,
+                                "middleName": "",
+                                "lastName": "",
+                                "fullName": "",
+                                "nativeName": ""
+                            },
+                            "emailAddress": "",
+                            "birthCountry": ""
+                        },
+                        "recipientKyc": {
+                            "nationality": "",
+                            "dateOfBirth": "",
+                            "occupation": "",
+                            "employerName": "",
+                            "contactPhone": "",
+                            "gender": "",
+                            "idDocument": [{
+                                "idType": "",
+                                "idNumber": "",
+                                "issueDate": "",
+                                "expiryDate": "",
+                                "issuer": "",
+                                "issuerPlace": "",
+                                "issuerCountry": "",
+                                "otherIdDescription": ""
+                            }],
+                            "postalAddress": {
+                                "addressLine1": "",
+                                "addressLine2": "",
+                                "addressLine3": "",
+                                "city": "",
+                                "stateProvince": "",
+                                "postalCode": "",
+                                "country": ""
+                            },
+                            "subjectName": {
+                                "title": "",
+                                "firstName": debit_party.name,
+                                "middleName": "",
+                                "lastName": "",
+                                "fullName": "",
+                                "nativeName": ""
+                            },
+                            "emailAddress": "",
+                            "birthCountry": ""
+                        },
+                        "originalTransactionReference": "",
+                        "servicingIdentity": "",
+                        "requestingLei": "",
+                        "receivingLei": "",
+                        "metadata": [{
+                            "key": "",
+                            "value": ""
+                        }],
+                        "transactionStatus": transaction.state,
+                        "creationDate": transaction.created_at,
+                        "modificationDate": transaction.modified_at,
+                        "transactionReference": "",
+                        "transactionReceipt": "",
+                        "internationalTransferInformation": {
+                            "originCountry": "",
+                            "quotationReference": "",
+                            "quoteId": "",
+                            "receivingCountry": "",
+                            "remittancePurpose": "1",
+                            "relationshipSender": "",
+                            "deliveryMethod": "",
+                            "senderBlockingReason": "",
+                            "recipientBlockingReason": ""
+                        }
                     })
 
                 # payload.append({
