@@ -7,7 +7,7 @@ from django.core.urlresolvers import reverse
 from rest_framework import status
 
 from app_dir.customer_wallet_management.models import CustomerWallet
-from app_dir.wallet_transactions.models import BatchTransaction, \
+from .models import BatchTransaction, \
     BatchTransactionLookup, Transaction
 
 
