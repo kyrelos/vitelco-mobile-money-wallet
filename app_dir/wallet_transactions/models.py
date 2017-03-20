@@ -74,8 +74,9 @@ class BatchTransaction(models.Model):
             CustomerWallet
     )
     processing = models.BooleanField(default=False)
-    batch_title = models.TextField(null=False)
-    batch_status = models.CharField(choices=BATCH_STATUS)
+    batch_title = models.TextField(null=False, default="BATCHTRX")
+    batch_status = models.CharField(choices=BATCH_STATUS, max_length=20,
+                                    default="created")
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
 
