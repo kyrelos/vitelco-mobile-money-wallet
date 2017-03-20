@@ -1,7 +1,8 @@
 from rest_framework import serializers
 
 from app_dir.customer_wallet_management.models import CustomerWallet
-from app_dir.wallet_transactions.models import Transaction
+from app_dir.wallet_transactions.models import Transaction, \
+    BatchTransaction, BatchTransactionLookup
 
 
 class TransactionSerializer(serializers.ModelSerializer):
@@ -25,7 +26,8 @@ class TransactionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Transaction
-        fields = ["trid", "source", "destination", "amount", "type"]
+        fields = ["trid", "source", "destination", "amount",
+                  "transaction_type"]
 
 
 class BatchTransactionSerializer(serializers.ModelSerializer):
@@ -41,7 +43,14 @@ class BatchTransactionSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        model = Transaction
+        model = BatchTransaction
         fields = ["batch_trid", "merchant", "processing", "batch_title",
                   "batch_status"]
+
+
+class BatchTransactionLookUpSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = BatchTransactionLookup
+        fields = ["batch_transaction_id", "transaction_id"]
 

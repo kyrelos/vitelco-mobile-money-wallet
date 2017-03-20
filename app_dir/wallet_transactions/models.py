@@ -26,7 +26,7 @@ class Transaction(models.Model):
         ("statement", "statement"),
         ("p2p", "p2p")
     )
-    trid = models.UUIDField(unique=True)
+    trid = models.UUIDField(unique=True, default=uuid.uuid4, editable=False)
     currency = models.CharField(max_length=10, default="KES")
     source = models.ForeignKey(
             CustomerWallet,
@@ -84,9 +84,10 @@ class BatchTransaction(models.Model):
     modified_at = models.DateTimeField(auto_now=True)
 
     def __unicode__(self):
-        return "{name}: {msisdn}".format(
+        return "{name}: {msisdn} {batch_trid}".format(
                 name=self.merchant.name,
-                msisdn=self.merchant.msisdn
+                msisdn=self.merchant.msisdn,
+                batch_trid=self.batch_trid
         )
 
     class Meta:
