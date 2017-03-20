@@ -1,6 +1,8 @@
 import uuid
 from datetime import datetime
-
+from time import gmtime, strftime
+import requests
+from django.conf import settings
 from django.db import IntegrityError
 from django.http import Http404
 from rest_framework import status
@@ -10,8 +12,10 @@ from rest_framework.views import APIView
 from structlog import get_logger
 
 from app_dir.customer_wallet_management.models import CustomerWallet
-from app_dir.wallet_transactions.models import BatchTransaction, Transaction
-from app_dir.wallet_transactions.serializers import BatchTransactionSerializer
+from app_dir.wallet_transactions.models import BatchTransaction, \
+    Transaction, BatchTransactionLookup
+from app_dir.wallet_transactions.serializers import \
+    BatchTransactionSerializer, BatchTransactionLookUpSerializer
 
 logger = get_logger('transactions')
 
@@ -21,13 +25,13 @@ class APIRootView(APIView):
         api_registry = {
             "Transactions": {
                 "Get transaction by transaction_reference": reverse(
-                        "get_transaction_by_transaction_reference",
-                        request=request,
-                        current_app="wallet_transactions",
-                        kwargs={
-                            "transaction_reference":
-                                "753bcd19-7230-40ba-a975-09ac94ace0d2"
-                        }
+                    "get_transaction_by_transaction_reference",
+                    request=request,
+                    current_app="wallet_transactions",
+                    kwargs={
+                        "transaction_reference":
+                            "753bcd19-7230-40ba-a975-09ac94ace0d2"
+                    }
 
                 ),
                 "Create transactions": reverse(
@@ -46,57 +50,57 @@ class APIRootView(APIView):
             },
             "BatchTransactions": {
                 "Create batch transactions": reverse(
-                        "batchtransactions", request=request
+                    "batchtransactions", request=request
                 )
             },
             "Account": {
                 "Get Account status by msisdn": reverse(
-                        "account:msisdn",
-                        request=request,
-                        current_app="customer_wallet_management",
-                        kwargs={"msisdn": "+254711111111"}
+                    "account:msisdn",
+                    request=request,
+                    current_app="customer_wallet_management",
+                    kwargs={"msisdn": "+254711111111"}
                 ),
                 "Get Account status by accountId": reverse(
-                        "account:get_account_status_by_account_id",
-                        request=request,
-                        current_app="customer_wallet_management",
-                        kwargs={
-                            "wallet_id": "753bcd19-7230-40ba-a975-09ac94ace0d2"
-                        }
+                    "account:get_account_status_by_account_id",
+                    request=request,
+                    current_app="customer_wallet_management",
+                    kwargs={
+                        "wallet_id": "753bcd19-7230-40ba-a975-09ac94ace0d2"
+                    }
                 ),
                 "Get Account name by msisdn": reverse(
-                        "account:get_account_name_by_msisdn",
-                        request=request,
-                        current_app="customer_wallet_management",
-                        kwargs={"msisdn": "254711111111"}
+                    "account:get_account_name_by_msisdn",
+                    request=request,
+                    current_app="customer_wallet_management",
+                    kwargs={"msisdn": "254711111111"}
                 ),
                 "Get Account name by accountId": reverse(
-                        "account:get_account_name_by_account_id",
-                        request=request,
-                        current_app="customer_wallet_management",
-                        kwargs={"account_id":
-                                    "753bcd19-7230-40ba-a975-09ac94ace0d2"}
+                    "account:get_account_name_by_account_id",
+                    request=request,
+                    current_app="customer_wallet_management",
+                    kwargs={"account_id":
+                                "753bcd19-7230-40ba-a975-09ac94ace0d2"}
                 ),
                 "Get Account balance by msisdn": reverse(
-                        "account:get_account_balance_by_msisdn",
-                        request=request,
-                        current_app="customer_wallet_management",
-                        kwargs={"msisdn": "254711111111"}
+                    "account:get_account_balance_by_msisdn",
+                    request=request,
+                    current_app="customer_wallet_management",
+                    kwargs={"msisdn": "254711111111"}
                 ),
                 "Get Account balance by accountId": reverse(
-                        "account:get_account_balance_by_account_id",
-                        request=request,
-                        current_app="customer_wallet_management",
-                        kwargs={"account_id":
-                                    "753bcd19-7230-40ba-a975-09ac94ace0d2"}
+                    "account:get_account_balance_by_account_id",
+                    request=request,
+                    current_app="customer_wallet_management",
+                    kwargs={"account_id":
+                                "753bcd19-7230-40ba-a975-09ac94ace0d2"}
                 ),
 
             },
             "Notification": {
                 "ListCreate Notifications": reverse(
-                        "notify:notifications",
-                        request=request,
-                        current_app="notification_management"
+                    "notify:notifications",
+                    request=request,
+                    current_app="notification_management"
                 )
             }
         }
@@ -140,8 +144,6 @@ def send_error_response(message="404",
     return response
 
 
-
-
 class BatchTransactions(APIView):
     def get_object(self, pk):
         try:
@@ -155,11 +157,53 @@ class BatchTransactions(APIView):
         return Response(serializer.data)
 
     def post(self, request, format=None):
-        serializer = BatchTransactionSerializer(data=request.data)
+
+        batch_transaction = {
+            "merchant": request.data["merchant"],
+            "batch_title": request.data["batchTitle"],
+            "batch_description": request.data["batchDescription"],
+            "status": request.data["batchStatus"],
+            "processing": request.data["processingFlag"]
+        }
+
+        serializer = BatchTransactionSerializer(data=batch_transaction)
+
         if serializer.is_valid():
-            serializer.save()
+            batch_trx = serializer.save()
+            for data in request.data["transactions"]:
+                server_correlation_id = uuid.uuid4()
+                source_msisdn = data["debitParty"][0]["value"]
+                source = CustomerWallet.objects.get(msisdn=source_msisdn)
+                destination_msisdn = data["creditParty"][0]["value"]
+
+                destination = CustomerWallet.objects.get(
+                    msisdn=destination_msisdn)
+                amount = data["amount"]
+                transaction_type = data["type"]
+                create_transaction_data = dict(
+                    source=source,
+                    server_correlation_id=server_correlation_id,
+                    destination=destination,
+                    amount=amount,
+                    transaction_type=transaction_type
+                )
+
+                trx = Transaction.objects.create(
+                    **create_transaction_data)
+
+                batch_lookup = BatchTransactionLookup.objects.create(
+                    batch_transaction=batch_trx,
+                    transaction=trx)
+
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return_errors = dict(
+                batch_transaction_errors=serializer.error_messages,)
+            return Response(return_errors,
+                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
 
 
 class CreateTransactions(APIView):
@@ -202,6 +246,8 @@ class CreateTransactions(APIView):
     """
 
     def post(self, request):
+        logger.info(request.META)
+
         error_message = None
         error_key = None
         try:
@@ -214,9 +260,9 @@ class CreateTransactions(APIView):
                         key=e.message
                         )
             return send_error_response(
-                    message="Required Headers not supplied",
-                    key=e.message,
-                    status=status.HTTP_400_BAD_REQUEST
+                message="Required Headers not supplied",
+                key=e.message,
+                status=status.HTTP_400_BAD_REQUEST
             )
         try:
             data = request.data
@@ -242,10 +288,10 @@ class CreateTransactions(APIView):
             status_code = status.HTTP_400_BAD_REQUEST
 
             error_response = send_error_response(
-                    message=error_message,
-                    key=key,
-                    value=value,
-                    status=status_code
+                message=error_message,
+                key=key,
+                value=value,
+                status=status_code
             )
             logger.info("create_transaction_400",
                         status=status.HTTP_400_BAD_REQUEST,
@@ -257,7 +303,7 @@ class CreateTransactions(APIView):
             count = 0
             while count < 10:
                 transaction, exception = self.create_transaction(
-                        create_transaction_data)
+                    create_transaction_data)
                 if transaction:
                     response_payload = {
                         "objectReference": trid,
