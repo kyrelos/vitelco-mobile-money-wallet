@@ -629,8 +629,27 @@ class AccountTransactionsByMsisdn(APIView):
         # try to get the wallet id this msisdn maps to
         try:
             account = CustomerWallet.objects.get(msisdn=msisdn)
-            transactions = (account.transaction_source.all() | account.\
-                            transaction_destination.all())[offset:limit]
+            if from_date and to_date:
+                transactions = (account.transaction_source.all().
+                                filter(created_at__gte=from_date).
+                                filter(created_at__lte=to_date) | account.
+                                transaction_destination.all().
+                                filter(created_at__gte=from_date).
+                                filter(created_at__lte=to_date))[offset:limit]
+            elif from_date:
+                transactions = (account.transaction_source.all().
+                                filter(created_at__gte=from_date) | account.
+                                transaction_destination.all().
+                                filter(created_at__gte=from_date)
+                                )[offset:limit]
+            elif to_date:
+                transactions = (account.transaction_source.all().
+                                filter(created_at__lte=to_date) | account.
+                                transaction_destination.all().
+                                filter(created_at__lte=to_date))[offset:limit]
+            else:
+                transactions = (account.transaction_source.all() | account.
+                                transaction_destination.all())[offset:limit]
 
             account_status = account.status
             payload = []
