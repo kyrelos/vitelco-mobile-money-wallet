@@ -769,27 +769,6 @@ class AccountTransactionsByMsisdn(APIView):
                     credit_party = CustomerWallet.objects.get(
                         wallet_id=transaction.source.wallet_id)
 
-                    # payload.append({
-                    #     "amount": transaction.amount,
-                    #     "currency": "KES",
-                    #     "displayType": transaction.transaction_type,
-                    #     "transactionStatus": transaction.state,
-                    #     "descriptionText": "",
-                    #     "requestDate": datetime.now().isoformat(),
-                    #     "creationDate": transaction.created_at,
-                    #     "modificationDate": transaction.modified_at,
-                    #     "transactionReference": transaction.trid,
-                    #     "transactionReceipt": "",
-                    #     "debitParty": [{
-                    #         "key": "msisdn",
-                    #         "value": debit_party.msisdn
-                    #     }],
-                    #     "creditParty": [{
-                    #         "key": "msisdn",
-                    #         "value": credit_party.msisdn
-                    #     }]
-                    # })
-
                     payload.append({
                         "amount": transaction.amount,
                         "currency": transaction.currency,
