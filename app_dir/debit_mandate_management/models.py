@@ -58,8 +58,8 @@ class DebitMandate(models.Model):
 
     def __unicode__(self):
         return "{payer}: {payee}".format(
-                biller=self.payer,
-                billee=self.payee
+                payer=self.payer,
+                payee=self.payee
         )
 
     class Meta:
