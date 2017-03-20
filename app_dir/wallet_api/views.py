@@ -331,6 +331,8 @@ class CreateTransactions(APIView):
                 if source_balance < amount:
                     insufficient_funds_response = send_error_response(
                         message="You have insufficient funds",
+                        key="Balance",
+                        value=source_balance,
                         status=status.HTTP_402_PAYMENT_REQUIRED
                     )
                     return insufficient_funds_response
