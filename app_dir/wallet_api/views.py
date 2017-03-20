@@ -390,8 +390,6 @@ class CreateTransactions(APIView):
     """
 
     def post(self, request):
-        logger.info(request.META)
-
         error_message = None
         error_key = None
         try:
@@ -430,8 +428,8 @@ class CreateTransactions(APIView):
                 logger.info("create_transaction_balance",
                             balance=source_balance,
                             amount=amount,
-                            source=source.wallet_id,
-                            destination=destination.wallet_id
+                            source=str(source.wallet_id),
+                            destination=str(destination.wallet_id)
                             )
                 if source_balance < amount:
                     insufficient_funds_response = send_error_response(
