@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from structlog import get_logger
 
+from app_dir.wallet_transactions.models import Transaction
 from .models import CustomerWallet
 from .serializers import CustomerWalletSerializer
 
@@ -445,6 +446,205 @@ class AccountBalanceByMsisdn(APIView):
 
         except ObjectDoesNotExist:
             logger.info("get_accountbalancebymsisdn_404",
+                        status=status.HTTP_404_NOT_FOUND,
+                        msisdn=msisdn,
+                        key="msisdn"
+                        )
+
+            return send_error_response(
+                    message="Requested resource not available",
+                    key="msisdn",
+                    value=msisdn,
+                    status=status.HTTP_404_NOT_FOUND
+            )
+
+
+class AccountTransactionsByMsisdn(APIView):
+    """
+    This API fetches the customers transactions given an msisdn
+    HTTP Method: GET
+    URI: /api/v1/accounts/msisdn/{msisdn}/transactions/
+    Required HTTP Headers:
+    DATE: todays date
+    AUTHORIZATION: api-key
+    CONTENT-TYPE: application/json
+    Success response:
+    HTTP status code: 200
+    [ {
+  "amount" : "451238",
+  "currency" : "UGX",
+  "displayType" : "transfer",
+  "transactionStatus" : "checkSum value should be between 64 to 64",
+  "descriptionText" : "",
+  "requestDate" : "2016-12-15 09:27:16",
+  "creationDate" : "",
+  "modificationDate" : "",
+  "transactionReference" : "TPXX000000055604",
+  "transactionReceipt" : "",
+  "debitParty" : [ {
+    "key" : "msisdn",
+    "value" : "+4491509874561"
+  } ],
+  "creditParty" : [ {
+    "key" : "msisdn",
+    "value" : "+25691508523697"
+  } ]
+}, {
+  "amount" : "456522",
+  "currency" : "UGX",
+  "displayType" : "transfer",
+  "transactionStatus" : "Quote expired",
+  "descriptionText" : "",
+  "requestDate" : "2017-02-28 16:00:00",
+  "creationDate" : "",
+  "modificationDate" : "",
+  "transactionReference" : "TPGS000000055797",
+  "transactionReceipt" : "",
+  "debitParty" : [ {
+    "key" : "msisdn",
+    "value" : "+4491509874561"
+  } ],
+  "creditParty" : [ {
+    "key" : "msisdn",
+    "value" : "+25691508523697"
+  } ]
+}, {
+  "amount" : "451238",
+  "currency" : "UGX",
+  "displayType" : "transfer",
+  "transactionStatus" : "Quote and Remit parameters do not match",
+  "descriptionText" : "",
+  "requestDate" : "2016-12-15 09:27:16",
+  "creationDate" : "",
+  "modificationDate" : "",
+  "transactionReference" : "TPGS000000055795",
+  "transactionReceipt" : "",
+  "debitParty" : [ {
+    "key" : "msisdn",
+    "value" : "+4491509874561"
+  }, {
+    "key" : "bankaccountno",
+    "value" : "2097123912831"
+  } ],
+  "creditParty" : [ {
+    "key" : "msisdn",
+    "value" : "+25691508523697"
+  } ]
+}, {
+  "amount" : "456522",
+  "currency" : "UGX",
+  "displayType" : "transfer",
+  "transactionStatus" : "Remit Success",
+  "descriptionText" : "",
+  "requestDate" : "2016-12-15 09:27:16",
+  "creationDate" : "",
+  "modificationDate" : "",
+  "transactionReference" : "TPGS000000055794",
+  "transactionReceipt" : "",
+  "debitParty" : [ {
+    "key" : "msisdn",
+    "value" : "+4491509874561"
+  } ],
+  "creditParty" : [ {
+    "key" : "msisdn",
+    "value" : "+25691508523697"
+  } ]
+} ]
+    Error response: [404, 400, account in inactive state,
+                    DATE header not supplied]
+    {
+        "errorCategory": "businessRule",
+        "errorCode": "genericError",
+        "errorDescription": "string",
+        "errorDateTime": "string",
+        "errorParameters": [
+            {
+                "key": key,
+                "value": value
+            }
+        ]
+    }
+    """
+
+    def get(self, request, msisdn):
+        date = request.META.get("HTTP_DATE")
+        limit = request.POST.get("LIMIT")
+        if not date:
+            logger.info("get_accounttransactionsbymsisdn_400",
+                        message="DATE Header not supplied",
+                        status=status.HTTP_400_BAD_REQUEST,
+                        msisdn=msisdn,
+                        key="DATE"
+                        )
+            return send_error_response(
+                    message="DATE Header not supplied",
+                    key="DATE",
+                    value=msisdn,
+                    status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # try to get the wallet id this msisdn maps to
+        try:
+            account= CustomerWallet.objects.get(msisdn=msisdn)
+            transactions = Transaction.objects.get(source=account.wallet_id)
+            account_status = account.status
+            bill = []
+            if account_status == CustomerWallet.active:
+
+                for transaction in transactions:
+                    debit_party = CustomerWallet.objects.get(
+                        wallet_id=transaction.destination)
+                    credit_party = CustomerWallet.objects.get(
+                        wallet_id=transaction.source)
+
+                    bill.append({
+                        "amount": transaction.amount,
+                        "currency": "KES",
+                        "displayType": transaction.transaction_type,
+                        "transactionStatus": transaction.state,
+                        "descriptionText": "",
+                        "requestDate": datetime.now().isoformat(),
+                        "creationDate": transaction.created_at,
+                        "modificationDate": transaction.modified_at,
+                        "transactionReference": transaction.trid,
+                        "transactionReceipt": "",
+                        "debitParty": [{
+                            "key": "msisdn",
+                            "value": debit_party.msisdn
+                        }],
+                        "creditParty": [{
+                            "key": "msisdn",
+                            "value": credit_party.msisdn
+                        }]
+                    })
+                payload = {
+                    'balance': account.get_available_balance()
+                }
+
+                response = Response(data=payload,
+                                    status=status.HTTP_200_OK
+                                    )
+                logger.info("get_accounttransactionsbymsisdn_200",
+                            status=status.HTTP_200_OK,
+                            key="msisdn",
+                            msisdn=msisdn
+                            )
+                return response
+            else:
+                logger.info("get_accounttransactionsbymsisdn_404",
+                            status=status.HTTP_404_NOT_FOUND,
+                            msisdn=msisdn,
+                            key="account_inactive"
+                            )
+                return send_error_response(
+                        message="Requested resource not active",
+                        key="msisdn",
+                        value=msisdn,
+                        status=status.HTTP_404_NOT_FOUND
+                )
+
+        except ObjectDoesNotExist:
+            logger.info("get_accounttransactionsbymsisdn_404",
                         status=status.HTTP_404_NOT_FOUND,
                         msisdn=msisdn,
                         key="msisdn"
