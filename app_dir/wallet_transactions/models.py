@@ -115,4 +115,31 @@ class BatchTransactionLookup(models.Model):
         verbose_name_plural = 'Batch Transactions Lookup'
 
 
+class WalletTopupTransaction(models.Model):
+    """
+    This model solves the question as to how wallets are topped up and the
+    source of the money being circulated in the mobile money wallets. It
+    means that all wallet top-ups will be done at the bank.
+    """
+    bank_name = models.CharField(max_length=64)
+    amount = models.IntegerField()
+    currency = models.CharField(default="KES", max_length=10)
+    bank_reference = models.CharField(max_length=64)
+    deposit_timestamp = models.DateTimeField()
+    wallet = models.ForeignKey(CustomerWallet)
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now=True)
+
+    def __unicode__(self):
+        return "{from_}: {to}".format(
+                from_=self.bank_name,
+                to=self.wallet
+        )
+
+    class Meta:
+        verbose_name = 'Wallet Top-up Transaction'
+        verbose_name_plural = 'Wallet Top-up Transactions'
+
+
+
 
