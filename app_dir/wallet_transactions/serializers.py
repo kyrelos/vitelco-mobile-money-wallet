@@ -42,4 +42,6 @@ class BatchTransactionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Transaction
-        fields = ["batch_trid", "merchant"]
+        fields = ["batch_trid", "merchant", "processing", "batch_title",
+                  "batch_status"]
+

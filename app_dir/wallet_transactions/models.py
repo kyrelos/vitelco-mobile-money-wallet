@@ -62,10 +62,15 @@ class BatchTransaction(models.Model):
     wallet to multiple wallets
     to another
     """
+    BATCH_STATUS =(("created","created"), ("finished", "finished"))
+
     batch_trid = models.UUIDField(unique=True, default=uuid.uuid4)
     merchant = models.ForeignKey(
             CustomerWallet
     )
+    processing = models.BooleanField(default=False)
+    batch_title = models.TextField(null=False)
+    batch_status = models.CharField(choices=BATCH_STATUS)
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
 
