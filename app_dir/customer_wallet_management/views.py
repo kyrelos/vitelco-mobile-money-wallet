@@ -608,10 +608,10 @@ class AccountTransactionsByMsisdn(APIView):
 
     def get(self, request, msisdn):
         date = request.META.get("HTTP_DATE")
-        limit = request.POST.get("limit", 2)
-        offset = request.POST.get("offset", 0)
-        from_date = request.POST.get("fromdatetime", None)
-        to_date = request.POST.get("todatetime", None)
+        limit = request.POST.get("LIMIT", 2)
+        offset = request.POST.get("OFFSET", 0)
+        from_date = request.POST.get("FROMDATETIME", None)
+        to_date = request.POST.get("TODATETIME", None)
         if not date:
             logger.info("get_accounttransactionsbymsisdn_400",
                         message="DATE Header not supplied",
