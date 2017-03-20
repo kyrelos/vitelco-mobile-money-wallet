@@ -5,6 +5,7 @@ from django.db import IntegrityError
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.forms.models import model_to_dict
+from django.http import Http404
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
@@ -145,25 +146,23 @@ def send_error_response(message="404",
     return response
 
 
-class BatchTransactions(APIView):
+class GetBatchTransaction(APIView):
     """
-    This API allows two functions:
-    1. Creating transactions in bulk given a payload via POST
-    2. Retrieve transaction given a bulk transaction ID
+    This API allows retrieving a bulk transaction given an ID
     """
     def get(self, request, batch_trid=None):
         if not batch_trid:
             logger.info(
-                "get_transaction_missing_uuid",
-                status=status.HTTP_404_NOT_FOUND,
+                "get_transaction_invalid_uuid",
+                status=status.HTTP_400_BAD_REQUEST,
                 batch_trid=batch_trid,
                 key="batch_trid"
             )
 
             return send_error_response(
-                message="Missing UUID",
+                message="Invalid UUID",
                 key="batch_transaction_reference",
-                status=status.HTTP_404_NOT_FOUND
+                status=status.HTTP_400_BAD_REQUEST
             )
 
         date = request.META.get("HTTP_DATE")
@@ -232,6 +231,19 @@ class BatchTransactions(APIView):
                 value=batch_trid,
                 status=status.HTTP_404_NOT_FOUND
             )
+
+
+class BatchTransactions(APIView):
+    def get_object(self, pk):
+        try:
+            return BatchTransaction.objects.get(pk=pk)
+        except BatchTransaction.DoesNotExist:
+            raise Http404
+
+    def get(self, request, format=None):
+        bulk_transactions = BatchTransaction.objects.all()
+        serializer = BatchTransactionSerializer(bulk_transactions, many=True)
+        return Response(serializer.data)
 
     def post(self, request, format=None):
         serializer = BatchTransactionSerializer(data=request.data)
