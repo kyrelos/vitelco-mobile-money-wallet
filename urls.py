@@ -4,7 +4,8 @@ from app_dir.notification_management import urls as notification_urls
 from app_dir.customer_wallet_management import urls as customer_wallet_urls
 from app_dir.wallet_transactions import urls as transaction_urls
 from app_dir.wallet_api import views
-from app_dir.wallet_transactions.views import GetTransactionState
+from app_dir.wallet_transactions.views import GetTransactionState, \
+    GetStatementByTransactionID
 
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
@@ -24,5 +25,8 @@ urlpatterns = [
         name="batchtransactions"),
     url(r'^api/v1/requeststates/(?P<server_correlation_id>[\w\-]+)',
         GetTransactionState.as_view(),
-        name="get_transaction_state")
+        name="get_transaction_state"),
+    url(r'^api/v1/statemententries/(?P<trid>[0-9a-zA-z\-]+)',
+        GetStatementByTransactionID.as_view(),
+        name="get_statement_by_trid"),
 ]

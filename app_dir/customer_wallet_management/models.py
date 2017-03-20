@@ -2,6 +2,8 @@ import uuid
 
 from django.db import models
 from django.db.models import Sum
+from django.db.models import Q
+from app_dir.wallet_transactions.models import Transaction
 
 
 class CustomerWallet(models.Model):
@@ -29,7 +31,7 @@ class CustomerWallet(models.Model):
 
     wallet_id = models.UUIDField(unique=True, default=uuid.uuid4)
     msisdn = models.CharField(max_length=20, unique=True)
-    token = models.CharField(max_length=256, unique=True, null=True)
+    token = models.CharField(max_length=256, null=True, blank=True)
     name = models.CharField(max_length=120)
     status = models.CharField(max_length=20,
                               choices=CUSTOMER_STATUS_TYPES,
@@ -50,24 +52,38 @@ class CustomerWallet(models.Model):
         )
 
     def get_available_balance(self):
-        from app_dir.wallet_transactions.models import Transaction
-        debit_query = Transaction.objects.filter(destination=self.wallet_id, state='completed')
-        debit_amounts = debit_query.aggregate(Sum('amount')).get('amount__sum', 0.00) if debit_query else 0.0
+        debit_query = Transaction.objects.filter(
+            destination=self.wallet_id, state='completed')
+        debit_amounts = debit_query.aggregate(Sum('amount')).get(
+            'amount__sum', 0.00) if debit_query else 0.0
 
-        credit_query = Transaction.objects.filter(source=self.wallet_id, state='completed')
-        credit_amounts = credit_query.aggregate(Sum('amount')).get('amount__sum', 0.00) if credit_query else 0.0
+        credit_query = Transaction.objects.filter(source=self.wallet_id,
+                                                  state='completed')
+        credit_amounts = credit_query.aggregate(Sum('amount')).get(
+            'amount__sum', 0.00) if credit_query else 0.0
         balance = debit_amounts - credit_amounts
         return balance
 
     def get_actual_balance(self):
-        from app_dir.wallet_transactions.models import Transaction
-        debit_query = Transaction.objects.filter(destination=self.wallet_id, state__in=['completed', 'in_progress'])
-        debit_amounts = debit_query.aggregate(Sum('amount')).get('amount__sum', 0.00) if debit_query else 0.0
+        debit_query = Transaction.objects.filter(
+            destination=self.wallet_id, state__in=['completed', 'in_progress'])
+        debit_amounts = debit_query.aggregate(Sum('amount')).get(
+            'amount__sum', 0.00) if debit_query else 0.0
 
-        credit_query = Transaction.objects.filter(source=self.wallet_id, state__in=['completed', 'in_progress'])
-        credit_amounts = credit_query.aggregate(Sum('amount')).get('amount__sum', 0.00) if credit_query else 0.0
+        credit_query = Transaction.objects.filter(source=self.wallet_id,
+                                                  state__in=['completed',
+                                                             'in_progress'])
+        credit_amounts = credit_query.aggregate(Sum('amount')).get(
+            'amount__sum', 0.00) if credit_query else 0.0
         balance = debit_amounts - credit_amounts
         return balance
+
+    def get_account_transactions(self):
+        transactions = Transaction.objects.filter(Q(
+            destination=self) | Q(source=self)).order_by(
+            Transaction.created_at)[:10]
+
+        return transactions
 
     class Meta:
         verbose_name = 'Account'

@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from structlog import get_logger
 
+from app_dir.customer_wallet_management.models import CustomerWallet
 from .models import Transaction
 from .serializers import TransactionSerializer
 
@@ -273,3 +274,130 @@ class GetTransactionState(APIView):
                     value=server_correlation_id,
                     status=status.HTTP_400_BAD_REQUEST
             )
+
+
+class GetStatementByTransactionID(APIView):
+    """
+    This API fetches the customers last five transactions given the accountID
+    HTTP Method: GET
+    URI: /api/v1/statemententries/{transactionReference}
+    Required HTTP Headers:
+    DATE: todays date
+    AUTHORIZATION: api-key
+    CONTENT-TYPE: application/json
+    Success response:
+    HTTP status code: 200
+    {
+      "amount" : "451238",
+      "currency" : "UGX",
+      "displayType" : "transfer",
+      "transactionStatus" : "checkSum value should be between 64 to 64",
+      "descriptionText" : "",
+      "requestDate" : "2016-12-15 09:27:16",
+      "creationDate" : "",
+      "modificationDate" : "",
+      "transactionReference" : "TPXX000000055604",
+      "transactionReceipt" : "",
+      "debitParty" : [ {
+        "key" : "msisdn",
+        "value" : "+4491509874561"
+      } ],
+      "creditParty" : [ {
+        "key" : "msisdn",
+        "value" : "+25691508523697"
+      } ]
+    }
+    Error response: [404, 400, account in inactive state,
+                    DATE header not supplied]
+    {
+        "errorCategory": "businessRule",
+        "errorCode": "genericError",
+        "errorDescription": "string",
+        "errorDateTime": "string",
+        "errorParameters": [
+            {
+                "key": key,
+                "value": value
+            }
+        ]
+    }
+    """
+
+    def get(self, request, trid):
+        date = request.META.get("HTTP_DATE")
+        if not date:
+            logger.info("get_statemententries_404",
+                        message="DATE Header not supplied",
+                        status=status.HTTP_400_BAD_REQUEST,
+                        trid=trid,
+                        key="DATE"
+                        )
+            return send_error_response(
+                    message="DATE Header not supplied",
+                    key="DATE",
+                    value=trid,
+                    status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            transaction = Transaction.objects.get(trid=trid)
+            debit_party_msisdn = CustomerWallet.objects.get(
+                        wallet_id=transaction.destination.wallet_id).msisdn
+            credit_party_msisdn = CustomerWallet.objects.get(
+                        wallet_id=transaction.source.wallet_id).msisdn
+            payload = ({
+                        "amount": transaction.amount,
+                        "currency": transaction.currency,
+                        "displayType": transaction.transaction_type,
+                        "transactionStatus": transaction.state,
+                        "descriptionText": transaction.description_text,
+                        "requestDate": transaction.request_date,
+                        "creationDate": transaction.created_at,
+                        "modificationDate": transaction.modified_at,
+                        "transactionReference": transaction.trid,
+                        "transactionReceipt": "",
+                        "debitParty": [{
+                            "key": "msisdn",
+                            "value": debit_party_msisdn
+                            }],
+                        "creditParty": [{
+                            "key": "msisdn",
+                            "value": credit_party_msisdn
+                            }]
+                        })
+
+            response = Response(data=payload,
+                                status=status.HTTP_200_OK
+                                )
+            logger.info("get_statemententries_200",
+                        status=status.HTTP_200_OK,
+                        key="trid",
+                        trid=trid
+                        )
+            return response
+
+        except ObjectDoesNotExist:
+            logger.info("get_stamententries_404",
+                        status=status.HTTP_404_NOT_FOUND,
+                        trid=trid,
+                        key="trid"
+                        )
+
+            return send_error_response(
+                    message="Requested resource not available",
+                    key="trid",
+                    value=trid,
+                    status=status.HTTP_404_NOT_FOUND
+            )
+
+        except ValueError:
+            logger.info("get_stamententries_404",
+                        status=status.HTTP_404_NOT_FOUND,
+                        trid=trid,
+                        key="trid"
+                        )
+            return send_error_response(
+                    message="Malformed UUID",
+                    key="trid",
+                    value=trid,
+                    status=status.HTTP_404_NOT_FOUND)
