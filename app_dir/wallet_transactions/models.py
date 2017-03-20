@@ -11,7 +11,7 @@ class Transaction(models.Model):
     """
 
     TRANSACTION_STATES = (
-        ("received", "received"),
+        ("pending", "pending"),
         ("in_progress", "in_progress"),
         ("completed", "completed"),
         ("failed", "failed")
@@ -21,11 +21,13 @@ class Transaction(models.Model):
         ("reversal", "reversal"),
         ("payment", "payment"),
         ("deposit", "deposit"),
+        ("transfer", "transfer"),
         ("withdrawal", "withdrawal"),
         ("statement", "statement"),
         ("p2p", "p2p")
     )
     trid = models.UUIDField(unique=True)
+    currency = models.CharField(max_length=10, default="KES")
     source = models.ForeignKey(
             CustomerWallet,
             related_name="transaction_source"
@@ -35,21 +37,23 @@ class Transaction(models.Model):
             related_name="transaction_destination"
     )
     amount = models.IntegerField()
-    type = models.CharField(max_length=20,
-                            choices=TRANSACTION_TYPES,
-                            )
+    server_correlation_id = models.UUIDField(unique=True)
+    transaction_type = models.CharField(max_length=20,
+                                        choices=TRANSACTION_TYPES,
+                                        )
+    callback_url = models.URLField(null=True)
 
     state = models.CharField(max_length=20,
                              choices=TRANSACTION_STATES,
-                             default="received"
+                             default="pending"
                              )
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
 
     def __unicode__(self):
-        return "{name}: {msisdn}".format(
-                name=self.customer.name,
-                msisdn=self.customer.msisdn
+        return "{source}: {destination}".format(
+                source=self.source,
+                destination=self.destination
         )
 
     class Meta:
@@ -63,10 +67,16 @@ class BatchTransaction(models.Model):
     wallet to multiple wallets
     to another
     """
+    BATCH_STATUS =(("created","created"), ("finished", "finished"))
+
     batch_trid = models.UUIDField(unique=True, default=uuid.uuid4)
     merchant = models.ForeignKey(
             CustomerWallet
     )
+    processing = models.BooleanField(default=False)
+    batch_title = models.TextField(null=False, default="BATCHTRX")
+    batch_status = models.CharField(choices=BATCH_STATUS, max_length=20,
+                                    default="created")
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
 

@@ -4,11 +4,25 @@ from app_dir.notification_management import urls as notification_urls
 from app_dir.customer_wallet_management import urls as customer_wallet_urls
 from app_dir.wallet_transactions import urls as transaction_urls
 from app_dir.wallet_api import views
+from app_dir.wallet_transactions.views import GetTransactionState
 
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
-    url(r'^api/v1/notification/', include(notification_urls)),
-    url(r'^api/v1/accounts/', include(customer_wallet_urls)),
+    url(r'^api/$', views.APIRootView.as_view(),
+        name="api"),
+    url(r'^api/v1/notification/',
+        include(notification_urls,
+                namespace='notify',
+                app_name="notification_management")),
+    url(r'^api/v1/accounts/',
+        include(customer_wallet_urls,
+                namespace='account',
+                app_name="customer_wallet_management"
+                )),
     url(r'^api/v1/transactions/', include(transaction_urls)),
-    url(r'^api/v1/batchtransactions', views.BatchTransactions.as_view(), name="batchtransactions"),
+    url(r'^api/v1/batchtransactions', views.BatchTransactions.as_view(),
+        name="batchtransactions"),
+    url(r'^api/v1/requeststates/(?P<server_correlation_id>[\w\-]+)',
+        GetTransactionState.as_view(),
+        name="get_transaction_state")
 ]
