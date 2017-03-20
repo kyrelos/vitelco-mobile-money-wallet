@@ -317,7 +317,7 @@ class CreateTransactions(APIView):
             source = CustomerWallet.objects.get(msisdn=source_msisdn)
             destination_msisdn = data["creditParty"][0]["value"]
             destination = CustomerWallet.objects.get(msisdn=destination_msisdn)
-            amount = data["amount"]
+            amount = float(data["amount"])
             transaction_type = data["type"]
             create_transaction_data = dict(
                 trid=trid,
@@ -329,6 +329,7 @@ class CreateTransactions(APIView):
             )
             source_balance = source.get_available_balance()
             if transaction_type == 'transfer':
+                logger.info("obat", balance=source_balance, amount=amount)
                 if source_balance < amount:
                     insufficient_funds_response = send_error_response(
                         message="You have insufficient funds",
