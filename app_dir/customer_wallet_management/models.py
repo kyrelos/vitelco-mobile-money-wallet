@@ -54,7 +54,7 @@ class CustomerWallet(models.Model):
         debit_query = Transaction.objects.filter(destination=self.wallet_id, state='completed')
         debit_amounts = debit_query.aggregate(Sum('amount')).get('amount__sum', 0.00) if debit_query else 0.0
 
-        credit_query = Transaction.objects.filter(source=self.wallet_id, state='completed')
+        credit_query = Transaction.objects.filter(source=self.wallet_id, state__in=['completed', 'in_progress'])
         credit_amounts = credit_query.aggregate(Sum('amount')).get('amount__sum', 0.00) if credit_query else 0.0
         balance = debit_amounts - credit_amounts
         return balance
