@@ -67,3 +67,13 @@ class BatchTransactionsApiTest(TestCase):
             ),
         )
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_batch_transaction_retrieval_invalid_uuid(self):
+        response = self.client.get(
+            reverse(
+                "get_batch_transaction", kwargs={
+                    "batch_trid": str(uuid.uuid4())[2:]
+                }
+            ),
+        )
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)

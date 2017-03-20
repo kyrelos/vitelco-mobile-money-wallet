@@ -163,7 +163,6 @@ class BatchTransactions(APIView):
             return send_error_response(
                 message="Missing UUID",
                 key="batch_transaction_reference",
-                value=batch_trid,
                 status=status.HTTP_404_NOT_FOUND
             )
 
