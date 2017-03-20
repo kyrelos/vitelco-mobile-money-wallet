@@ -14,7 +14,8 @@ class Transaction(models.Model):
         ("pending", "pending"),
         ("in_progress", "in_progress"),
         ("completed", "completed"),
-        ("failed", "failed")
+        ("failed", "failed"),
+        ("reversed", "reversed")
     )
 
     TRANSACTION_TYPES = (
@@ -23,8 +24,6 @@ class Transaction(models.Model):
         ("deposit", "deposit"),
         ("transfer", "transfer"),
         ("withdrawal", "withdrawal"),
-        ("statement", "statement"),
-        ("p2p", "p2p")
     )
     trid = models.UUIDField(unique=True, default=uuid.uuid4, editable=False)
     currency = models.CharField(max_length=10, default="KES")
