@@ -329,7 +329,12 @@ class CreateTransactions(APIView):
             )
             source_balance = source.get_available_balance()
             if transaction_type == 'transfer':
-                logger.info("obat", balance=source_balance, amount=amount)
+                logger.info("create_transaction_balance",
+                            balance=source_balance,
+                            amount=amount,
+                            source=source.wallet_id,
+                            destination=destination.wallet_id
+                            )
                 if source_balance < amount:
                     insufficient_funds_response = send_error_response(
                         message="You have insufficient funds",
