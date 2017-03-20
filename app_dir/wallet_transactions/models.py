@@ -11,44 +11,49 @@ class Transaction(models.Model):
     """
 
     TRANSACTION_STATES = (
-        ("received", "received"),
+        ("pending", "pending"),
         ("in_progress", "in_progress"),
-        ("completed", "completed")
+        ("completed", "completed"),
+        ("failed", "failed")
     )
 
     TRANSACTION_TYPES = (
         ("reversal", "reversal"),
         ("payment", "payment"),
         ("deposit", "deposit"),
+        ("transfer", "transfer"),
         ("withdrawal", "withdrawal"),
         ("statement", "statement"),
         ("p2p", "p2p")
     )
     trid = models.UUIDField(unique=True)
+    currency = models.CharField(max_length=10, default="KES")
     source = models.ForeignKey(
             CustomerWallet,
-            related_name="tansaction_source"
+            related_name="transaction_source"
     )
     destination = models.ForeignKey(
             CustomerWallet,
-            related_name="tansaction_destination"
+            related_name="transaction_destination"
     )
     amount = models.IntegerField()
-    type = models.CharField(max_length=20,
-                            choices=TRANSACTION_TYPES,
-                            )
+    server_correlation_id = models.UUIDField(unique=True)
+    transaction_type = models.CharField(max_length=20,
+                                        choices=TRANSACTION_TYPES,
+                                        )
+    callback_url = models.URLField(null=True)
 
     state = models.CharField(max_length=20,
                              choices=TRANSACTION_STATES,
-                             default="received"
+                             default="pending"
                              )
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
 
     def __unicode__(self):
-        return "{name}: {msisdn}".format(
-                name=self.customer.name,
-                msisdn=self.customer.msisdn
+        return "{source}: {destination}".format(
+                source=self.source,
+                destination=self.destination
         )
 
     class Meta:
