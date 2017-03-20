@@ -13,7 +13,7 @@ from rest_framework.views import APIView
 from structlog import get_logger
 
 from app_dir.customer_wallet_management.models import CustomerWallet
-from app_dir.wallet_transactions.models import BatchTransaction, Transaction
+from app_dir.wallet_transactions.models import BatchTransaction, Transaction, BatchTransactionLookup
 from app_dir.wallet_transactions.serializers import BatchTransactionSerializer
 
 logger = get_logger('transactions')
@@ -181,17 +181,34 @@ class GetBatchTransaction(APIView):
             )
 
         try:
-            batch_transaction = BatchTransaction.objects.get(
-                batch_trid=batch_trid
+            batch_transactions = BatchTransactionLookup.objects.filter(
+                batch_transaction__batch_trid=batch_trid
             )
 
+            if not batch_transactions:
+                logger.info(
+                    "get_batch_transaction_404",
+                    status=status.HTTP_404_NOT_FOUND,
+                    batch_trid=batch_trid,
+                    key="batch_trid"
+                )
+
+                return send_error_response(
+                    message="Requested resource not available",
+                    key="batch_transaction_reference",
+                    value=batch_trid,
+                    status=status.HTTP_404_NOT_FOUND
+                )
+
             payload = {
-                "transaction": {
-                    "reference": batch_trid,
-                    "merchant": model_to_dict(batch_transaction.merchant),
-                    "created_at": batch_transaction.created_at,
-                }
+                "reference": batch_trid,
+                "transactions": []
             }
+
+            for transaction in batch_transactions:
+                payload['transactions'].append(
+                    model_to_dict(transaction.transaction))
+
             response = Response(
                 data=payload, status=status.HTTP_200_OK
             )
@@ -201,22 +218,6 @@ class GetBatchTransaction(APIView):
                 batch_trid=batch_trid
             )
             return response
-
-        except ObjectDoesNotExist:
-            logger.info(
-                "get_batch_transaction_404",
-                status=status.HTTP_404_NOT_FOUND,
-                batch_trid=batch_trid,
-                key="batch_trid"
-            )
-
-            return send_error_response(
-                message="Requested resource not available",
-                key="batch_transaction_reference",
-                value=batch_trid,
-                status=status.HTTP_404_NOT_FOUND
-            )
-
         except ValueError:
             logger.info(
                 "get_transaction_malformed_uuid",
