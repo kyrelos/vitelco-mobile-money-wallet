@@ -51,10 +51,10 @@ class CustomerWallet(models.Model):
 
     def get_available_balance(self):
         from app_dir.wallet_transactions.models import Transaction
-        debit_query = Transaction.objects.filter(destination=self.wallet_id, state__in=['completed', 'reversed'])
+        debit_query = Transaction.objects.filter(destination=self, state__in=['completed', 'reversed'])
         debit_amounts = debit_query.aggregate(Sum('amount')).get('amount__sum', 0.00) if debit_query else 0.0
 
-        credit_query = Transaction.objects.filter(source=self.wallet_id,
+        credit_query = Transaction.objects.filter(source=self,
                                                   state__in=['completed', 'in_progress', 'reversed'])
         credit_amounts = credit_query.aggregate(Sum('amount')).get('amount__sum', 0.00) if credit_query else 0.0
         balance = debit_amounts - credit_amounts
@@ -62,11 +62,11 @@ class CustomerWallet(models.Model):
 
     def get_actual_balance(self):
         from app_dir.wallet_transactions.models import Transaction
-        debit_query = Transaction.objects.filter(destination=self.wallet_id,
+        debit_query = Transaction.objects.filter(destination=self,
                                                  state__in=['completed', 'in_progress', 'reversed'])
         debit_amounts = debit_query.aggregate(Sum('amount')).get('amount__sum', 0.00) if debit_query else 0.0
 
-        credit_query = Transaction.objects.filter(source=self.wallet_id,
+        credit_query = Transaction.objects.filter(source=self,
                                                   state__in=['completed', 'in_progress', 'reversed'])
         credit_amounts = credit_query.aggregate(Sum('amount')).get('amount__sum', 0.00) if credit_query else 0.0
         balance = debit_amounts - credit_amounts
