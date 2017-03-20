@@ -4,6 +4,7 @@ from datetime import datetime
 from django.db import IntegrityError
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
+from django.forms.models import model_to_dict
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
@@ -150,7 +151,22 @@ class BatchTransactions(APIView):
     1. Creating transactions in bulk given a payload via POST
     2. Retrieve transaction given a bulk transaction ID
     """
-    def get(self, request, batch_trid):
+    def get(self, request, batch_trid=None):
+        if not batch_trid:
+            logger.info(
+                "get_transaction_missing_uuid",
+                status=status.HTTP_404_NOT_FOUND,
+                batch_trid=batch_trid,
+                key="batch_trid"
+            )
+
+            return send_error_response(
+                message="Missing UUID",
+                key="batch_transaction_reference",
+                value=batch_trid,
+                status=status.HTTP_404_NOT_FOUND
+            )
+
         date = request.META.get("HTTP_DATE")
         if not date and not settings.DEBUG:
             logger.info(
@@ -174,7 +190,7 @@ class BatchTransactions(APIView):
             payload = {
                 "transaction": {
                     "reference": batch_trid,
-                    "merchant": batch_transaction.merchant,
+                    "merchant": model_to_dict(batch_transaction.merchant),
                     "created_at": batch_transaction.created_at,
                 }
             }
