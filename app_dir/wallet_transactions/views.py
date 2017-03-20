@@ -8,7 +8,6 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from structlog import get_logger
 
-from app_dir.customer_wallet_management.models import CustomerWallet
 from .models import Transaction
 from .serializers import TransactionSerializer
 
@@ -341,6 +340,8 @@ class GetStatementByTransactionID(APIView):
 
         try:
             transaction = Transaction.objects.get(trid=trid)
+            from app_dir.customer_wallet_management.models import \
+                CustomerWallet
             debit_party_msisdn = CustomerWallet.objects.get(
                         wallet_id=transaction.destination.wallet_id).msisdn
             credit_party_msisdn = CustomerWallet.objects.get(

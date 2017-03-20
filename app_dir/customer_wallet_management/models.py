@@ -3,7 +3,6 @@ import uuid
 from django.db import models
 from django.db.models import Sum
 from django.db.models import Q
-from app_dir.wallet_transactions.models import Transaction
 
 
 class CustomerWallet(models.Model):
@@ -52,6 +51,7 @@ class CustomerWallet(models.Model):
         )
 
     def get_available_balance(self):
+        from app_dir.wallet_transactions.models import Transaction
         debit_query = Transaction.objects.filter(
             destination=self.wallet_id, state='completed')
         debit_amounts = debit_query.aggregate(Sum('amount')).get(
@@ -65,6 +65,7 @@ class CustomerWallet(models.Model):
         return balance
 
     def get_actual_balance(self):
+        from app_dir.wallet_transactions.models import Transaction
         debit_query = Transaction.objects.filter(
             destination=self.wallet_id, state__in=['completed', 'in_progress'])
         debit_amounts = debit_query.aggregate(Sum('amount')).get(
@@ -79,9 +80,9 @@ class CustomerWallet(models.Model):
         return balance
 
     def get_account_transactions(self):
+        from app_dir.wallet_transactions.models import Transaction
         transactions = Transaction.objects.filter(Q(
-            destination=self) | Q(source=self)).order_by(
-            Transaction.created_at)[:10]
+            destination=self) | Q(source=self))
 
         return transactions
 
