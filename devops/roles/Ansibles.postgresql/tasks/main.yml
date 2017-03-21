@@ -1,9 +1,15 @@
 # file: postgresql/tasks/main.yml
 
 - include: install.yml
+  when: APP_ENVIRONMENT == "development"
+
 - include: extensions.yml
+  when: APP_ENVIRONMENT == "development"
 - include: configure.yml
+  when: APP_ENVIRONMENT != "development"
 - include: databases.yml
+  when: APP_ENVIRONMENT != "development"
 - include: users.yml
+  when: APP_ENVIRONMENT != "development"
 - include: monit.yml
-  when: monit_protection is defined and monit_protection == true
+  when: monit_protection is defined and monit_protection == true and APP_ENVIRONMENT != "development"
