@@ -370,7 +370,7 @@ class GetBatchTransaction(APIView):
         try:
             batch_transactions = BatchTransactionLookup.objects.filter(
                 q_objects, **kwargs
-            ).filter()
+            )
 
             if not batch_transactions:
                 logger.info(
