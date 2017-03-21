@@ -15,7 +15,8 @@ class Transaction(models.Model):
         ("pending", "pending"),
         ("in_progress", "in_progress"),
         ("completed", "completed"),
-        ("failed", "failed")
+        ("failed", "failed"),
+        ("reversed", "reversed")
     )
 
     TRANSACTION_TYPES = (
@@ -24,10 +25,8 @@ class Transaction(models.Model):
         ("deposit", "deposit"),
         ("transfer", "transfer"),
         ("withdrawal", "withdrawal"),
-        ("statement", "statement"),
-        ("p2p", "p2p")
     )
-    trid = models.UUIDField(unique=True)
+    trid = models.UUIDField(unique=True, default=uuid.uuid4, editable=False)
     currency = models.CharField(max_length=10, default="KES")
     description_text = models.CharField(max_length=100, null=True, blank=True)
     source = models.ForeignKey(
@@ -70,7 +69,10 @@ class BatchTransaction(models.Model):
     wallet to multiple wallets
     to another
     """
-    BATCH_STATUS =(("created","created"), ("finished", "finished"))
+    BATCH_STATUS = (
+        ("created", "created"),
+        ("finished", "finished"),
+    )
 
     batch_trid = models.UUIDField(unique=True, default=uuid.uuid4)
     merchant = models.ForeignKey(CustomerWallet)
@@ -82,9 +84,10 @@ class BatchTransaction(models.Model):
     modified_at = models.DateTimeField(auto_now=True)
 
     def __unicode__(self):
-        return "{name}: {msisdn}".format(
+        return "{name}: {msisdn} {batch_trid}".format(
                 name=self.merchant.name,
-                msisdn=self.merchant.msisdn
+                msisdn=self.merchant.msisdn,
+                batch_trid=self.batch_trid
         )
 
     class Meta:
@@ -111,6 +114,33 @@ class BatchTransactionLookup(models.Model):
     class Meta:
         verbose_name = 'Batch Transaction Lookup'
         verbose_name_plural = 'Batch Transactions Lookup'
+
+
+class WalletTopupTransaction(models.Model):
+    """
+    This model solves the question as to how wallets are topped up and the
+    source of the money being circulated in the mobile money wallets. It
+    means that all wallet top-ups will be done at the bank.
+    """
+    bank_name = models.CharField(max_length=64)
+    amount = models.IntegerField()
+    currency = models.CharField(default="KES", max_length=10)
+    bank_reference = models.CharField(max_length=64)
+    deposit_timestamp = models.DateTimeField()
+    wallet = models.ForeignKey(CustomerWallet)
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now=True)
+
+    def __unicode__(self):
+        return "{from_}: {to}".format(
+                from_=self.bank_name,
+                to=self.wallet
+        )
+
+    class Meta:
+        verbose_name = 'Wallet Top-up Transaction'
+        verbose_name_plural = 'Wallet Top-up Transactions'
+
 
 
 
