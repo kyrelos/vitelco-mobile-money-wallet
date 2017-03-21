@@ -4,6 +4,6 @@ APP_DIR: /vagrant
 APP_VERSION: develop
 GUNICORN_WORKERS: 3
 local_env:
-    DJANGO_SETTINGS_MODULE:settings.{{ APP_ENVIRONMENT }}
+    DJANGO_SETTINGS_MODULE: settings.{{ APP_ENVIRONMENT }}
 
 
