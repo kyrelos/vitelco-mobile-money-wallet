@@ -1,6 +1,7 @@
 import uuid
-
 from django.db import models
+from datetime import date
+
 from django_fsm import FSMField, transition
 
 from app_dir.customer_wallet_management.models import CustomerWallet
@@ -42,6 +43,7 @@ class Transaction(models.Model):
     )
     trid = models.UUIDField(unique=True, default=uuid.uuid4, editable=False)
     currency = models.CharField(max_length=10, default="KES")
+    description_text = models.CharField(max_length=100, null=True, blank=True)
     source = models.ForeignKey(
             CustomerWallet,
             related_name="transaction_source"
@@ -55,7 +57,7 @@ class Transaction(models.Model):
     transaction_type = models.CharField(max_length=20,
                                         choices=TRANSACTION_TYPES,
                                         )
-    callback_url = models.URLField(null=True)
+    callback_url = models.URLField(null=True, blank=True)
 
     state = FSMField(max_length=20,
                      choices=TRANSACTION_STATES,
@@ -105,9 +107,7 @@ class BatchTransaction(models.Model):
     )
 
     batch_trid = models.UUIDField(unique=True, default=uuid.uuid4)
-    merchant = models.ForeignKey(
-            CustomerWallet
-    )
+    merchant = models.ForeignKey(CustomerWallet)
     processing = models.BooleanField(default=False)
     batch_title = models.TextField(null=False, default="BATCHTRX")
     batch_status = models.CharField(choices=BATCH_STATUS, max_length=20,

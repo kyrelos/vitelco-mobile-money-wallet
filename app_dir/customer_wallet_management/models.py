@@ -2,6 +2,7 @@ import uuid
 
 from django.db import models
 from django.db.models import Sum
+from django.db.models import Q
 
 
 class CustomerWallet(models.Model):
@@ -29,7 +30,7 @@ class CustomerWallet(models.Model):
 
     wallet_id = models.UUIDField(unique=True, default=uuid.uuid4)
     msisdn = models.CharField(max_length=20, unique=True)
-    token = models.CharField(max_length=256, unique=True, null=True)
+    token = models.CharField(max_length=256, null=True, blank=True)
     name = models.CharField(max_length=120)
     status = models.CharField(max_length=20,
                               choices=CUSTOMER_STATUS_TYPES,
@@ -121,6 +122,15 @@ class CustomerWallet(models.Model):
         balance = (debit_amounts + total_topups) - credit_amounts
         return balance
 
+    def get_account_transactions(self):
+        from app_dir.wallet_transactions.models import Transaction
+        transactions = Transaction.objects.filter(Q(
+            destination=self) | Q(source=self)).order_by(
+            '-created_at')[:5]
+
+        return transactions
+
     class Meta:
         verbose_name = 'Account'
         verbose_name_plural = 'Accounts'
+

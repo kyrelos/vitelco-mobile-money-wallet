@@ -6,6 +6,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError
 from django.forms import model_to_dict
 from django.http import Http404
+from django.db.models import Q
 from rest_framework import generics, status
 from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
@@ -299,7 +300,7 @@ class GetBatchTransaction(APIView):
     This API allows retrieving a bulk transaction given an ID
     """
 
-    def get(self, request, batch_trid=None):
+    def get(self, request, batch_trid=None, state=None):
         if not batch_trid:
             logger.info(
                     "get_transaction_invalid_uuid",
@@ -313,6 +314,43 @@ class GetBatchTransaction(APIView):
                     key="batch_transaction_reference",
                     status=status.HTTP_400_BAD_REQUEST
             )
+
+        kwargs = {}
+        q_objects = Q()
+        if batch_trid:
+            kwargs['batch_transaction__batch_trid'] = batch_trid
+
+        # todo-steve: feels a bit inelegant - look into refining this Q query
+        if state:
+            if state in ["completions", "rejections"]:
+                if state == "rejections":
+                    kwargs['transaction__state'] = \
+                        Transaction.TRANSACTION_STATES[3][0]
+
+                if state == "completions":
+                    q_objects.add(
+                        Q(transaction__state__exact=
+                          Transaction.TRANSACTION_STATES[2][0]),
+                        Q.OR
+                    )
+                    q_objects.add(
+                        Q(transaction__state__exact=
+                          Transaction.TRANSACTION_STATES[4][0]),
+                        Q.OR
+                    )
+            else:
+                logger.info(
+                    "get_transaction_invalid_state",
+                    status=status.HTTP_400_BAD_REQUEST,
+                    state=state,
+                    key="state"
+                )
+
+                return send_error_response(
+                    message="Invalid State",
+                    key="batch_transaction_reference",
+                    status=status.HTTP_400_BAD_REQUEST
+                )
 
         date = request.META.get("HTTP_DATE")
         if not date and not settings.DEBUG:
@@ -331,7 +369,7 @@ class GetBatchTransaction(APIView):
 
         try:
             batch_transactions = BatchTransactionLookup.objects.filter(
-                    batch_transaction__batch_trid=batch_trid
+                q_objects, **kwargs
             )
 
             if not batch_transactions:
@@ -665,3 +703,131 @@ class BatchTransactions(APIView):
                     batch_transaction_errors=serializer.error_messages, )
             return Response(return_errors,
                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class GetStatementByTransactionID(APIView):
+    """
+    This API fetches the customers last five transactions given the accountID
+    HTTP Method: GET
+    URI: /api/v1/statemententries/{transactionReference}
+    Required HTTP Headers:
+    DATE: todays date
+    AUTHORIZATION: api-key
+    CONTENT-TYPE: application/json
+    Success response:
+    HTTP status code: 200
+    {
+      "amount" : "451238",
+      "currency" : "UGX",
+      "displayType" : "transfer",
+      "transactionStatus" : "checkSum value should be between 64 to 64",
+      "descriptionText" : "",
+      "requestDate" : "2016-12-15 09:27:16",
+      "creationDate" : "",
+      "modificationDate" : "",
+      "transactionReference" : "TPXX000000055604",
+      "transactionReceipt" : "",
+      "debitParty" : [ {
+        "key" : "msisdn",
+        "value" : "+4491509874561"
+      } ],
+      "creditParty" : [ {
+        "key" : "msisdn",
+        "value" : "+25691508523697"
+      } ]
+    }
+    Error response: [404, 400, account in inactive state,
+                    DATE header not supplied]
+    {
+        "errorCategory": "businessRule",
+        "errorCode": "genericError",
+        "errorDescription": "string",
+        "errorDateTime": "string",
+        "errorParameters": [
+            {
+                "key": key,
+                "value": value
+            }
+        ]
+    }
+    """
+
+    def get(self, request, trid):
+        date = request.META.get("HTTP_DATE")
+        if not date:
+            logger.info("get_statemententries_404",
+                        message="DATE Header not supplied",
+                        status=status.HTTP_400_BAD_REQUEST,
+                        trid=trid,
+                        key="DATE"
+                        )
+            return send_error_response(
+                    message="DATE Header not supplied",
+                    key="DATE",
+                    value=trid,
+                    status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            transaction = Transaction.objects.get(trid=trid)
+            from app_dir.customer_wallet_management.models import \
+                CustomerWallet
+            debit_party_msisdn = CustomerWallet.objects.get(
+                        wallet_id=transaction.destination.wallet_id).msisdn
+            credit_party_msisdn = CustomerWallet.objects.get(
+                        wallet_id=transaction.source.wallet_id).msisdn
+            payload = ({
+                        "amount": transaction.amount,
+                        "currency": transaction.currency,
+                        "displayType": transaction.transaction_type,
+                        "transactionStatus": transaction.state,
+                        "descriptionText": transaction.description_text,
+                        "requestDate": transaction.request_date,
+                        "creationDate": transaction.created_at,
+                        "modificationDate": transaction.modified_at,
+                        "transactionReference": transaction.trid,
+                        "transactionReceipt": "",
+                        "debitParty": [{
+                            "key": "msisdn",
+                            "value": debit_party_msisdn
+                            }],
+                        "creditParty": [{
+                            "key": "msisdn",
+                            "value": credit_party_msisdn
+                            }]
+                        })
+
+            response = Response(data=payload,
+                                status=status.HTTP_200_OK
+                                )
+            logger.info("get_statemententries_200",
+                        status=status.HTTP_200_OK,
+                        key="trid",
+                        trid=trid
+                        )
+            return response
+
+        except ObjectDoesNotExist:
+            logger.info("get_stamententries_404",
+                        status=status.HTTP_404_NOT_FOUND,
+                        trid=trid,
+                        key="trid"
+                        )
+
+            return send_error_response(
+                    message="Requested resource not available",
+                    key="trid",
+                    value=trid,
+                    status=status.HTTP_404_NOT_FOUND
+            )
+
+        except ValueError:
+            logger.info("get_stamententries_404",
+                        status=status.HTTP_404_NOT_FOUND,
+                        trid=trid,
+                        key="trid"
+                        )
+            return send_error_response(
+                    message="Malformed UUID",
+                    key="trid",
+                    value=trid,
+                    status=status.HTTP_404_NOT_FOUND)
