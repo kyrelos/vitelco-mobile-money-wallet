@@ -11,8 +11,8 @@ DATABASES = {
         'USER': 'vitelco',
         'ADMINUSER': 'postgres',
         'PASSWORD': 'tobeexracted from environment',
-        'HOST': '127.0.0.1',
-        'PORT': '',
+        'HOST': 'vitelco.ckxlwpn9coel.eu-west-1.rds.amazonaws.com',
+        'PORT': '5432',
     }
 }
 
