@@ -6,6 +6,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError
 from django.forms import model_to_dict
 from django.http import Http404
+from django.db.models import Q
 from rest_framework import generics, status
 from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
@@ -299,7 +300,7 @@ class GetBatchTransaction(APIView):
     This API allows retrieving a bulk transaction given an ID
     """
 
-    def get(self, request, batch_trid=None):
+    def get(self, request, batch_trid=None, state=None):
         if not batch_trid:
             logger.info(
                     "get_transaction_invalid_uuid",
@@ -313,6 +314,43 @@ class GetBatchTransaction(APIView):
                     key="batch_transaction_reference",
                     status=status.HTTP_400_BAD_REQUEST
             )
+
+        kwargs = {}
+        q_objects = Q()
+        if batch_trid:
+            kwargs['batch_transaction__batch_trid'] = batch_trid
+
+        # todo-steve: feels a bit inelegant - look into refining this Q query
+        if state:
+            if state in ["completions", "rejections"]:
+                if state == "rejections":
+                    kwargs['transaction__state'] = \
+                        Transaction.TRANSACTION_STATES[3][0]
+
+                if state == "completions":
+                    q_objects.add(
+                        Q(transaction__state__exact=
+                          Transaction.TRANSACTION_STATES[2][0]),
+                        Q.OR
+                    )
+                    q_objects.add(
+                        Q(transaction__state__exact=
+                          Transaction.TRANSACTION_STATES[4][0]),
+                        Q.OR
+                    )
+            else:
+                logger.info(
+                    "get_transaction_invalid_state",
+                    status=status.HTTP_400_BAD_REQUEST,
+                    state=state,
+                    key="state"
+                )
+
+                return send_error_response(
+                    message="Invalid State",
+                    key="batch_transaction_reference",
+                    status=status.HTTP_400_BAD_REQUEST
+                )
 
         date = request.META.get("HTTP_DATE")
         if not date and not settings.DEBUG:
@@ -331,7 +369,7 @@ class GetBatchTransaction(APIView):
 
         try:
             batch_transactions = BatchTransactionLookup.objects.filter(
-                    batch_transaction__batch_trid=batch_trid
+                q_objects, **kwargs
             )
 
             if not batch_transactions:

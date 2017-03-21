@@ -52,12 +52,30 @@ class BatchTransactionsApiTest(TestCase):
             server_correlation_id=uuid.uuid4(), transaction_type="deposit",
             state="in_progress"
         )
+        trn3 = Transaction.objects.create(
+            trid=uuid.uuid4(), source=source_wallet,
+            destination=destination_wallet, amount=1000,
+            server_correlation_id=uuid.uuid4(), transaction_type="deposit",
+            state="reversed"
+        )
+        trn4 = Transaction.objects.create(
+            trid=uuid.uuid4(), source=source_wallet,
+            destination=destination_wallet, amount=1000,
+            server_correlation_id=uuid.uuid4(), transaction_type="deposit",
+            state="completed"
+        )
 
         BatchTransactionLookup.objects.create(
             transaction=trn1, batch_transaction=self.batch_transaction
         )
         BatchTransactionLookup.objects.create(
             transaction=trn2, batch_transaction=self.batch_transaction
+        )
+        BatchTransactionLookup.objects.create(
+            transaction=trn3, batch_transaction=self.batch_transaction
+        )
+        BatchTransactionLookup.objects.create(
+            transaction=trn4, batch_transaction=self.batch_transaction
         )
 
         self.headers = {
@@ -90,3 +108,46 @@ class BatchTransactionsApiTest(TestCase):
             ),
         )
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_batch_transaction_by_state(self):
+        response = self.client.get(
+            reverse(
+                "get_batch_transaction_by_state", kwargs={
+                    "batch_trid": self.batch_transaction.batch_trid,
+                    "state": "rejections"
+                }
+            ),
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response_dict = json.loads(response.content)
+        self.assertEqual(
+            response_dict['reference'],
+            str(self.batch_transaction.batch_trid)
+        )
+
+    def test_batch_transaction_completed_transactions(self):
+        response = self.client.get(
+            reverse(
+                "get_batch_transaction_by_state", kwargs={
+                    "batch_trid": self.batch_transaction.batch_trid,
+                    "state": "completions"
+                }
+            ),
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response_dict = json.loads(response.content)
+        self.assertEqual(
+            response_dict['reference'],
+            str(self.batch_transaction.batch_trid)
+        )
+
+    def test_batch_transaction_invalid_state(self):
+        response = self.client.get(
+            reverse(
+                "get_batch_transaction_by_state", kwargs={
+                    "batch_trid": self.batch_transaction.batch_trid,
+                    "state": "completion"
+                }
+            ),
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
