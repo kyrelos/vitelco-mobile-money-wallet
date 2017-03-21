@@ -716,7 +716,7 @@ class AccountTransactionsByMsisdn(APIView):
 
     def get(self, request, msisdn):
         date = request.META.get("HTTP_DATE")
-        limit = request.POST.get("LIMIT", 2)
+        limit = request.POST.get("LIMIT", 50)
         offset = request.POST.get("OFFSET", 0)
         from_date = request.POST.get("FROMDATETIME", None)
         to_date = request.POST.get("TODATETIME", None)
@@ -1079,7 +1079,7 @@ class AccountTransactionsByAccountId(APIView):
 
     def get(self, request, account_id):
         date = request.META.get("HTTP_DATE")
-        limit = request.POST.get("LIMIT", 2)
+        limit = request.POST.get("LIMIT", 50)
         offset = request.POST.get("OFFSET", 0)
         from_date = request.POST.get("FROMDATETIME", None)
         to_date = request.POST.get("TODATETIME", None)
