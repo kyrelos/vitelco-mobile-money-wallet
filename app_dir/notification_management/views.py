@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from app_dir.notification_management.tasks import send_normal_notification
-from .models import Notification
+from .models import Notification, NotificationDeviceMap
 from .serializers import NotificationSerializer
 from rest_framework.permissions import IsAdminUser
 
@@ -44,6 +44,10 @@ class UpdateNotification(APIView):
         if request_type == "token_refresh":
             msisdn = request_data["msisdn"]
             token = request_data["token"]
+            device, created = NotificationDeviceMap.objects.get_or_create(
+                    msisdn=msisdn)
+            device.token = token
+            device.save()
             response = Response(status=status.HTTP_200_OK)
             return response
 
