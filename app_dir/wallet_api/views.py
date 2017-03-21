@@ -96,6 +96,12 @@ class APIRootView(APIView):
                     "notify:notifications",
                     request=request,
                     current_app="notification_management"
+                ),
+                "Update Notifications": reverse(
+                    "notify:update_notifications",
+                    request=request,
+                    current_app="notification_management",
+
                 )
             }
         }
