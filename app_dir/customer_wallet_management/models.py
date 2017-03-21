@@ -131,6 +131,12 @@ class CustomerWallet(models.Model):
 
         return transactions
 
+    def get_account_bills(self):
+        from app_dir.bill_management.models import Bill
+        bills = Bill.objects.filter(billee=self)
+
+        return bills
+
     class Meta:
         verbose_name = 'Account'
         verbose_name_plural = 'Accounts'

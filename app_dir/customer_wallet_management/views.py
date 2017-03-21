@@ -125,7 +125,7 @@ class GetAccountStatusByMsisdn(APIView):
     def get(self, request, msisdn):
         date = request.META.get("HTTP_DATE")
         if not date:
-            logger.info("get_accountname_400",
+            logger.info("get_accountstatus_400",
                         message="DATE Header not supplied",
                         status=status.HTTP_400_BAD_REQUEST,
                         msisdn=msisdn,
@@ -148,14 +148,14 @@ class GetAccountStatusByMsisdn(APIView):
             response = Response(data=payload,
                                 status=status.HTTP_200_OK
                                 )
-            logger.info("get_accountname_200",
+            logger.info("get_accountstatus_200",
                         status=status.HTTP_200_OK,
                         msisdn=msisdn
                         )
             return response
 
         except ObjectDoesNotExist:
-            logger.info("get_accountname_404",
+            logger.info("get_accountstatus_404",
                         status=status.HTTP_404_NOT_FOUND,
                         msisdn=msisdn,
                         key="msisdn"
@@ -249,8 +249,8 @@ class GetAccountStatusByAccountId(APIView):
                 status=status.HTTP_404_NOT_FOUND)
 
         except ValueError:
-            logger.info("get_accountstatus_404",
-                        status=status.HTTP_404_NOT_FOUND,
+            logger.info("get_accountstatus_400",
+                        status=status.HTTP_400_BAD_REQUEST,
                         wallet_id=wallet_id,
                         key="wallet_id"
                         )
@@ -258,7 +258,7 @@ class GetAccountStatusByAccountId(APIView):
                 message="Malformed UUID",
                 key="wallet_id",
                 value=wallet_id,
-                status=status.HTTP_404_NOT_FOUND)
+                status=status.HTTP_400_BAD_REQUEST)
 
 
 class GetAccountNameByMsisdn(APIView):
@@ -1581,7 +1581,7 @@ class GetStatementEntriesByAccountID(APIView):
     def get(self, request, wallet_id):
         date = request.META.get("HTTP_DATE")
         if not date:
-            logger.info("get_statemententries_404",
+            logger.info("get_statemententries_400",
                         message="DATE Header not supplied",
                         status=status.HTTP_400_BAD_REQUEST,
                         wallet_id=wallet_id,
@@ -1665,7 +1665,222 @@ class GetStatementEntriesByAccountID(APIView):
             )
 
         except ValueError:
-            logger.info("get_stamententries_404",
+            logger.info("get_stamententries_400",
+                        status=status.HTTP_400_BAD_REQUEST,
+                        wallet_id=wallet_id,
+                        key="wallet_id"
+                        )
+            return send_error_response(
+                    message="Malformed UUID",
+                    key="wallet_id",
+                    value=wallet_id,
+                    status=status.HTTP_400_BAD_REQUEST)
+
+
+class GetBillsByMsisdn(APIView):
+    """
+    This API fetches bills tied to a particular MSISDN
+    HTTP Method: GET
+    URI: /api/v1/accounts/{accountid}/bills/
+    Required HTTP Headers:
+    DATE: todays date
+    AUTHORIZATION: api-key
+    CONTENT-TYPE: application/json
+    Success response:
+    HTTP status code: 200
+    {
+        "currency" : "",
+        "amountDue" : "",
+        "dueDate" : "",
+        "billReference" : "",
+        "minimumAmountDue" : "",
+        "billDescription" : "",
+        "metaData" : [ {
+        "key" : "",
+        "value" : ""
+        } ]
+    }
+    Error response: [404, 400, account in inactive state,
+                    DATE header not supplied]
+    {
+        "errorCategory": "businessRule",
+        "errorCode": "genericError",
+        "errorDescription": "string",
+        "errorDateTime": "string",
+        "errorParameters": [
+            {
+                "key": key,
+                "value": value
+            }
+        ]
+    }
+    """
+
+    def get(self, request, msisdn):
+        date = request.META.get("HTTP_DATE")
+        if not date:
+            logger.info("get_bills_400",
+                        message="DATE Header not supplied",
+                        status=status.HTTP_400_BAD_REQUEST,
+                        msisdn=msisdn,
+                        key="DATE"
+                        )
+            return send_error_response(
+                    message="DATE Header not supplied",
+                    key="DATE",
+                    value=msisdn,
+                    status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            account = CustomerWallet.objects.get(msisdn=msisdn)
+            bills = account.get_account_bills()
+            payload = []
+            for bill in bills:
+                biller_msisdn = CustomerWallet.objects.get(
+                    wallet_id=bill.biller.wallet_id).msisdn
+                payload.append({
+                    "currency": bill.currency,
+                    "amountDue": bill.amount_due,
+                    "dueDate": bill.due_date,
+                    "billReference": bill.bill_reference,
+                    "minimumAmountDue": bill.bill_reference,
+                    "billDescription": bill.bill_description,
+                    "metaData":
+                        [{
+                            "key": "billerMsisdn",
+                            "value": biller_msisdn
+                        }]
+                })
+
+            response = Response(data=payload,
+                                status=status.HTTP_200_OK
+                                )
+            logger.info("get_billss_200",
+                        status=status.HTTP_200_OK,
+                        key="msisdn",
+                        msisdn=msisdn
+                        )
+            return response
+
+        except ObjectDoesNotExist:
+            logger.info("get_bills_404",
+                        status=status.HTTP_404_NOT_FOUND,
+                        msisdn=msisdn,
+                        key="msisdn"
+                        )
+
+            return send_error_response(
+                    message="Requested resource not available",
+                    key="msisdn",
+                    value=msisdn,
+                    status=status.HTTP_404_NOT_FOUND
+            )
+
+
+class GetBillsByAccountID(APIView):
+    """
+    This API fetches bills tied to a particular AccountID
+    HTTP Method: GET
+    URI: /api/v1/accounts/msisdn/{msisdn}/bills/
+    Required HTTP Headers:
+    DATE: todays date
+    AUTHORIZATION: api-key
+    CONTENT-TYPE: application/json
+    Success response:
+    HTTP status code: 200
+    {
+        "currency" : "",
+        "amountDue" : "",
+        "dueDate" : "",
+        "billReference" : "",
+        "minimumAmountDue" : "",
+        "billDescription" : "",
+        "metaData" : [ {
+        "key" : "",
+        "value" : ""
+        } ]
+    }
+    Error response: [404, 400, account in inactive state,
+                    DATE header not supplied]
+    {
+        "errorCategory": "businessRule",
+        "errorCode": "genericError",
+        "errorDescription": "string",
+        "errorDateTime": "string",
+        "errorParameters": [
+            {
+                "key": key,
+                "value": value
+            }
+        ]
+    }
+    """
+
+    def get(self, request, wallet_id):
+        date = request.META.get("HTTP_DATE")
+        if not date:
+            logger.info("get_bills_404",
+                        message="DATE Header not supplied",
+                        status=status.HTTP_400_BAD_REQUEST,
+                        wallet_id=wallet_id,
+                        key="DATE"
+                        )
+            return send_error_response(
+                    message="DATE Header not supplied",
+                    key="DATE",
+                    value=wallet_id,
+                    status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # try to get the wallet id this msisdn maps to
+        try:
+            account = CustomerWallet.objects.get(wallet_id=wallet_id)
+            bills = account.get_account_bills()
+            payload = []
+            for bill in bills:
+                biller_msisdn = CustomerWallet.objects.get(
+                    wallet_id=bill.biller.wallet_id).msisdn
+                payload.append({
+                    "currency": bill.currency,
+                    "amountDue": bill.amount_due,
+                    "dueDate": bill.due_date,
+                    "billReference": bill.bill_reference,
+                    "minimumAmountDue": bill.bill_reference,
+                    "billDescription": bill.bill_description,
+                    "metaData":
+                        [{
+                            "key": "billerMsisdn",
+                            "value": biller_msisdn
+                        }]
+                    })
+
+            response = Response(data=payload,
+                                status=status.HTTP_200_OK
+                                )
+            logger.info("get_bills_200",
+                        status=status.HTTP_200_OK,
+                        key="wallet_id",
+                        wallet_id=wallet_id
+                        )
+            return response
+
+        except ObjectDoesNotExist:
+            logger.info("get_bills_404",
+                        status=status.HTTP_404_NOT_FOUND,
+                        wallet_id=wallet_id,
+                        key="wallet_id"
+                        )
+
+            return send_error_response(
+                    message="Requested resource not available",
+                    key="wallet_id",
+                    value=wallet_id,
+                    status=status.HTTP_404_NOT_FOUND
+            )
+
+        except ValueError:
+            logger.info("get_bills_404",
                         status=status.HTTP_404_NOT_FOUND,
                         wallet_id=wallet_id,
                         key="wallet_id"

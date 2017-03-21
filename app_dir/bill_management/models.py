@@ -23,6 +23,7 @@ class Bill(models.Model):
     min_amount_due = models.IntegerField(default=1)
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
+    bill_description = models.CharField(max_length=100, null=True, blank=True)
 
     def __unicode__(self):
         return "{biller}: {billee}".format(
