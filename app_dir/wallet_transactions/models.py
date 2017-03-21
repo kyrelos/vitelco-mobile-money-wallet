@@ -1,6 +1,8 @@
 import uuid
 
 from django.db import models
+from django_fsm import FSMField, transition
+
 from app_dir.customer_wallet_management.models import CustomerWallet
 
 
@@ -10,20 +12,33 @@ class Transaction(models.Model):
     to another
     """
 
+    pending, in_progress, completed, failed, reversed_ = "pending", \
+                                                         "in_progress", \
+                                                         "completed", \
+                                                         "failed", \
+                                                         "reversed"
+
+    reversal, billpay, deposit, transfer, = "reversal", "billpay", \
+                                            "deposit", "transfer"
+    withdrawal, disbursement, merchantpay = "withdrawal", "disbursement", \
+                                            "merchantpay"
+
     TRANSACTION_STATES = (
-        ("pending", "pending"),
-        ("in_progress", "in_progress"),
-        ("completed", "completed"),
-        ("failed", "failed"),
-        ("reversed", "reversed")
+        (pending, pending),
+        (in_progress, in_progress),
+        (completed, completed),
+        (failed, failed),
+        (reversed_, reversed_)
     )
 
     TRANSACTION_TYPES = (
-        ("reversal", "reversal"),
-        ("payment", "payment"),
-        ("deposit", "deposit"),
-        ("transfer", "transfer"),
-        ("withdrawal", "withdrawal"),
+        (reversal, reversal),
+        (billpay, billpay),
+        (deposit, deposit),
+        (transfer, transfer),
+        (withdrawal, withdrawal),
+        (disbursement, disbursement),
+        (merchantpay, merchantpay),
     )
     trid = models.UUIDField(unique=True, default=uuid.uuid4, editable=False)
     currency = models.CharField(max_length=10, default="KES")
@@ -42,10 +57,10 @@ class Transaction(models.Model):
                                         )
     callback_url = models.URLField(null=True)
 
-    state = models.CharField(max_length=20,
-                             choices=TRANSACTION_STATES,
-                             default="pending"
-                             )
+    state = FSMField(max_length=20,
+                     choices=TRANSACTION_STATES,
+                     default="pending"
+                     )
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
 
@@ -58,6 +73,24 @@ class Transaction(models.Model):
     class Meta:
         verbose_name = 'Transaction'
         verbose_name_plural = 'Transactions'
+
+    @transition(field=state, source='pending', target='in_progress')
+    def start_transaction(self):
+        pass
+
+    @transition(field=state,
+                source='in_progress', target='failed')
+    def fail_transaction(self):
+        pass
+
+    @transition(field=state,
+                source='in_progress', target='completed')
+    def complete_transaction(self):
+        pass
+
+    @transition(field=state, source='pending', target='reversed')
+    def reverse_transaction(self):
+        pass
 
 
 class BatchTransaction(models.Model):
@@ -139,7 +172,3 @@ class WalletTopupTransaction(models.Model):
     class Meta:
         verbose_name = 'Wallet Top-up Transaction'
         verbose_name_plural = 'Wallet Top-up Transactions'
-
-
-
-
