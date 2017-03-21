@@ -82,7 +82,8 @@ class CustomerWallet(models.Model):
     def get_account_transactions(self):
         from app_dir.wallet_transactions.models import Transaction
         transactions = Transaction.objects.filter(Q(
-            destination=self) | Q(source=self))[:5]
+            destination=self) | Q(source=self)).order_by(
+            '-created_at')[:5]
 
         return transactions
 
