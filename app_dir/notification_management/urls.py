@@ -4,7 +4,7 @@ from .views import NotificationList, UpdateNotification
 
 urlpatterns = [
     url(r'^list_create', NotificationList.as_view(), name='notifications'),
-    url(r'^updatenotification', UpdateNotification.as_view(),
+    url(r'^update', UpdateNotification.as_view(),
         name='update_notifications'),
 
 
