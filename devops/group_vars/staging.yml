@@ -1,6 +1,6 @@
 ---
 APP_ENVIRONMENT: staging
-APP_VERSION: develop
+APP_VERSION: master
 APP_PORT: 80
 local_env:
-    DJANGO_SETTINGS_MODULE:
+    DJANGO_SETTINGS_MODULE: settings.{{ APP_ENVIRONMENT }}
