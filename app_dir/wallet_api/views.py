@@ -50,10 +50,10 @@ class APIRootView(APIView):
             },
             "Account": {
                 "Get Account status by msisdn": reverse(
-                    "account:msisdn",
+                    "account:get_account_status_by_msisdn",
                     request=request,
                     current_app="customer_wallet_management",
-                    kwargs={"msisdn": "+254711111111"}
+                    kwargs={"msisdn": "254711111111"}
                 ),
                 "Get Account status by accountId": reverse(
                     "account:get_account_status_by_account_id",
