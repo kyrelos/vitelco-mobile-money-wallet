@@ -716,7 +716,7 @@ class AccountTransactionsByMsisdn(APIView):
 
     def get(self, request, msisdn):
         date = request.META.get("HTTP_DATE")
-        limit = request.POST.get("LIMIT", 2)
+        limit = request.POST.get("LIMIT", 50)
         offset = request.POST.get("OFFSET", 0)
         from_date = request.POST.get("FROMDATETIME", None)
         to_date = request.POST.get("TODATETIME", None)
@@ -768,27 +768,6 @@ class AccountTransactionsByMsisdn(APIView):
                         wallet_id=transaction.destination.wallet_id)
                     credit_party = CustomerWallet.objects.get(
                         wallet_id=transaction.source.wallet_id)
-
-                    # payload.append({
-                    #     "amount": transaction.amount,
-                    #     "currency": "KES",
-                    #     "displayType": transaction.transaction_type,
-                    #     "transactionStatus": transaction.state,
-                    #     "descriptionText": "",
-                    #     "requestDate": datetime.now().isoformat(),
-                    #     "creationDate": transaction.created_at,
-                    #     "modificationDate": transaction.modified_at,
-                    #     "transactionReference": transaction.trid,
-                    #     "transactionReceipt": "",
-                    #     "debitParty": [{
-                    #         "key": "msisdn",
-                    #         "value": debit_party.msisdn
-                    #     }],
-                    #     "creditParty": [{
-                    #         "key": "msisdn",
-                    #         "value": credit_party.msisdn
-                    #     }]
-                    # })
 
                     payload.append({
                         "amount": transaction.amount,
@@ -947,6 +926,369 @@ class AccountTransactionsByMsisdn(APIView):
                 message="Requested resource not available",
                 key="msisdn",
                 value=msisdn,
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+
+class AccountTransactionsByAccountId(APIView):
+    """
+    This API fetches the customers transactions given an msisdn
+    HTTP Method: GET
+    URI: /api/v1/accounts/{accountId}/transactions/
+    Required HTTP Headers:
+    DATE: todays date
+    AUTHORIZATION: api-key
+    CONTENT-TYPE: application/json
+    Success response:
+    HTTP status code: 200
+    [ {
+  "amount" : "451238",
+  "currency" : "UGX",
+  "type" : "transfer",
+  "subType" : "",
+  "descriptionText" : "",
+  "requestDate" : "2016-12-15 09:27:16",
+  "requestingOrganisationTransactionReference" : "",
+  "oneTimeCode" : "",
+  "geoCode" : "",
+  "debitParty" : [ {
+    "key" : "msisdn",
+    "value" : "+4491509874561"
+  }, {
+    "key" : "bankaccountno",
+    "value" : "2097123912831"
+  } ],
+  "creditParty" : [ {
+    "key" : "msisdn",
+    "value" : "+25691508523697"
+  } ],
+  "senderKyc" : {
+    "nationality" : "UK",
+    "dateOfBirth" : "",
+    "occupation" : "",
+    "employerName" : "",
+    "contactPhone" : "+4491509874561",
+    "gender" : "",
+    "idDocument" : [ {
+      "idType" : "VOTER_CARD",
+      "idNumber" : "13321115521",
+      "issueDate" : "",
+      "expiryDate" : "",
+      "issuer" : "",
+      "issuerPlace" : "",
+      "issuerCountry" : "",
+      "otherIdDescription" : ""
+    } ],
+    "postalAddress" : {
+      "addressLine1" : "49 , park street",
+      "addressLine2" : "",
+      "addressLine3" : "",
+      "city" : "",
+      "stateProvince" : "",
+      "postalCode" : "",
+      "country" : ""
+    },
+    "subjectName" : {
+      "title" : "",
+      "firstName" : "Einstein ",
+      "middleName" : "",
+      "lastName" : "BELA",
+      "fullName" : "",
+      "nativeName" : ""
+    },
+    "emailAddress" : "",
+    "birthCountry" : ""
+  },
+  "recipientKyc" : {
+    "nationality" : "",
+    "dateOfBirth" : "",
+    "occupation" : "",
+    "employerName" : "",
+    "contactPhone" : "",
+    "gender" : "",
+    "idDocument" : [ {
+      "idType" : "",
+      "idNumber" : "",
+      "issueDate" : "",
+      "expiryDate" : "",
+      "issuer" : "",
+      "issuerPlace" : "",
+      "issuerCountry" : "",
+      "otherIdDescription" : ""
+    } ],
+    "postalAddress" : {
+      "addressLine1" : "",
+      "addressLine2" : "",
+      "addressLine3" : "",
+      "city" : "",
+      "stateProvince" : "",
+      "postalCode" : "",
+      "country" : ""
+    },
+    "subjectName" : {
+      "title" : "",
+      "firstName" : "",
+      "middleName" : "",
+      "lastName" : "",
+      "fullName" : "",
+      "nativeName" : ""
+    },
+    "emailAddress" : "",
+    "birthCountry" : ""
+  },
+  "originalTransactionReference" : "",
+  "servicingIdentity" : "",
+  "requestingLei" : "",
+  "receivingLei" : "",
+  "metadata" : [ {
+    "key" : "",
+    "value" : ""
+  } ],
+  "transactionStatus" : "Remit Success",
+  "creationDate" : "",
+  "modificationDate" : "",
+  "transactionReference" : "TPGS000000055601",
+  "transactionReceipt" : "",
+  "internationalTransferInformation" : {
+    "originCountry" : "",
+    "quotationReference" : "QR8436833",
+    "quoteId" : "QT037f8mIomN4YJb1",
+    "receivingCountry" : "",
+    "remittancePurpose" : "1",
+    "relationshipSender" : "",
+    "deliveryMethod" : "directtoaccount",
+    "senderBlockingReason" : "",
+    "recipientBlockingReason" : ""
+  }
+} ]
+    Error response: [404, 400, account in inactive state,
+                    DATE header not supplied]
+    {
+        "errorCategory": "businessRule",
+        "errorCode": "genericError",
+        "errorDescription": "string",
+        "errorDateTime": "string",
+        "errorParameters": [
+            {
+                "key": key,
+                "value": value
+            }
+        ]
+    }
+    """
+
+    def get(self, request, account_id):
+        date = request.META.get("HTTP_DATE")
+        limit = request.POST.get("LIMIT", 50)
+        offset = request.POST.get("OFFSET", 0)
+        from_date = request.POST.get("FROMDATETIME", None)
+        to_date = request.POST.get("TODATETIME", None)
+        if not date:
+            logger.info("get_accounttransactionsbyaccount_id_400",
+                        message="DATE Header not supplied",
+                        status=status.HTTP_400_BAD_REQUEST,
+                        wallet_id=account_id,
+                        key="DATE"
+                        )
+            return send_error_response(
+                message="DATE Header not supplied",
+                key="DATE",
+                value=account_id,
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # try to get the wallet id this msisdn maps to
+        try:
+            account = CustomerWallet.objects.get(wallet_id=account_id)
+            if from_date and to_date:
+                transactions = (account.transaction_source.all().
+                                filter(created_at__gte=from_date).
+                                filter(created_at__lte=to_date) | account.
+                                transaction_destination.all().
+                                filter(created_at__gte=from_date).
+                                filter(created_at__lte=to_date))[offset:limit]
+            elif from_date:
+                transactions = (account.transaction_source.all().
+                                filter(created_at__gte=from_date) | account.
+                                transaction_destination.all().
+                                filter(created_at__gte=from_date)
+                                )[offset:limit]
+            elif to_date:
+                transactions = (account.transaction_source.all().
+                                filter(created_at__lte=to_date) | account.
+                                transaction_destination.all().
+                                filter(created_at__lte=to_date))[offset:limit]
+            else:
+                transactions = (account.transaction_source.all() | account.
+                                transaction_destination.all())[offset:limit]
+
+            account_status = account.status
+            payload = []
+            if account_status == CustomerWallet.active:
+
+                for transaction in transactions:
+                    debit_party = CustomerWallet.objects.get(
+                        wallet_id=transaction.destination.wallet_id)
+                    credit_party = CustomerWallet.objects.get(
+                        wallet_id=transaction.source.wallet_id)
+
+                    payload.append({
+                        "amount": transaction.amount,
+                        "currency": transaction.currency,
+                        "type": transaction.transaction_type,
+                        "subType": "",
+                        "descriptionText": "",
+                        "requestDate": "",
+                        "requestingOrganisationTransactionReference": "",
+                        "oneTimeCode": "",
+                        "geoCode": "",
+                        "debitParty": [{
+                            "key": "msisdn",
+                            "value": credit_party.msisdn
+                        }, {
+                            "key": "bankaccountno",
+                            "value": ""
+                        }],
+                        "creditParty": [{
+                            "key": "msisdn",
+                            "value": debit_party.msisdn
+                        }],
+                        "senderKyc": {
+                            "nationality": "",
+                            "dateOfBirth": "",
+                            "occupation": "",
+                            "employerName": "",
+                            "contactPhone": credit_party.msisdn,
+                            "gender": "",
+                            "idDocument": [{
+                                "idType": "",
+                                "idNumber": "",
+                                "issueDate": "",
+                                "expiryDate": "",
+                                "issuer": "",
+                                "issuerPlace": "",
+                                "issuerCountry": "",
+                                "otherIdDescription": ""
+                            }],
+                            "postalAddress": {
+                                "addressLine1": "",
+                                "addressLine2": "",
+                                "addressLine3": "",
+                                "city": "",
+                                "stateProvince": "",
+                                "postalCode": "",
+                                "country": ""
+                            },
+                            "subjectName": {
+                                "title": "",
+                                "firstName": credit_party.name,
+                                "middleName": "",
+                                "lastName": "",
+                                "fullName": "",
+                                "nativeName": ""
+                            },
+                            "emailAddress": "",
+                            "birthCountry": ""
+                        },
+                        "recipientKyc": {
+                            "nationality": "",
+                            "dateOfBirth": "",
+                            "occupation": "",
+                            "employerName": "",
+                            "contactPhone": "",
+                            "gender": "",
+                            "idDocument": [{
+                                "idType": "",
+                                "idNumber": "",
+                                "issueDate": "",
+                                "expiryDate": "",
+                                "issuer": "",
+                                "issuerPlace": "",
+                                "issuerCountry": "",
+                                "otherIdDescription": ""
+                            }],
+                            "postalAddress": {
+                                "addressLine1": "",
+                                "addressLine2": "",
+                                "addressLine3": "",
+                                "city": "",
+                                "stateProvince": "",
+                                "postalCode": "",
+                                "country": ""
+                            },
+                            "subjectName": {
+                                "title": "",
+                                "firstName": debit_party.name,
+                                "middleName": "",
+                                "lastName": "",
+                                "fullName": "",
+                                "nativeName": ""
+                            },
+                            "emailAddress": "",
+                            "birthCountry": ""
+                        },
+                        "originalTransactionReference": "",
+                        "servicingIdentity": "",
+                        "requestingLei": "",
+                        "receivingLei": "",
+                        "metadata": [{
+                            "key": "",
+                            "value": ""
+                        }],
+                        "transactionStatus": transaction.state,
+                        "creationDate": transaction.created_at,
+                        "modificationDate": transaction.modified_at,
+                        "transactionReference": "",
+                        "transactionReceipt": "",
+                        "internationalTransferInformation": {
+                            "originCountry": "",
+                            "quotationReference": "",
+                            "quoteId": "",
+                            "receivingCountry": "",
+                            "remittancePurpose": "1",
+                            "relationshipSender": "",
+                            "deliveryMethod": "",
+                            "senderBlockingReason": "",
+                            "recipientBlockingReason": ""
+                        }
+                    })
+
+                # payload.append({
+                #     'test': test
+                # })
+                response = Response(data=payload,
+                                    status=status.HTTP_200_OK
+                                    )
+                logger.info("get_accounttransactionsbyaccount_id_200",
+                            status=status.HTTP_200_OK,
+                            key="wallet_id",
+                            wallet_id=account_id
+                            )
+                return response
+            else:
+                logger.info("get_accounttransactionsbyaccount_id_404",
+                            status=status.HTTP_404_NOT_FOUND,
+                            wallet_id=account_id,
+                            key="account_inactive"
+                            )
+                return send_error_response(
+                    message="Requested resource not active",
+                    key="wallet_id",
+                    wallet_id=account_id,
+                    status=status.HTTP_404_NOT_FOUND
+                )
+
+        except ObjectDoesNotExist:
+            logger.info("get_accounttransactionsbymsisdn_404",
+                        status=status.HTTP_404_NOT_FOUND,
+                        wallet_id=account_id,
+                        key="wallet_id"
+                        )
+
+            return send_error_response(
+                message="Requested resource not available",
+                key="wallet_id",
+                value=account_id,
                 status=status.HTTP_404_NOT_FOUND
             )
 
