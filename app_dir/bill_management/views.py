@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from structlog import get_logger
 from app_dir.bill_management.models import Bill
+from app_dir.customer_wallet_management.models import CustomerWallet
 
 logger = get_logger("bills")
 
@@ -50,6 +51,10 @@ def send_error_response(message="404",
 class CreateBillPayment(APIView):
     """
     This API posts a bill payment given a billReference
+
+    URL: /api/v1/bills/{afc71b32-9a8d-4260-8cdc-c6f452b9b09f}/payments
+
+    billReference must be a UUID value
 
     Headers:
     `Content-Type: application/json,
@@ -96,8 +101,10 @@ class CreateBillPayment(APIView):
             )
         try:
             data = request.data
-            biller = data["creditParty"][0]["value"]
-            billee = data["debitParty"][0]["value"]
+            biller_msisdn = data["creditParty"][0]["value"]
+            biller = CustomerWallet.objects.get(msisdn=biller_msisdn)
+            billee_msisdn = data["debitParty"][0]["value"]
+            billee = CustomerWallet.objects.get(msisdn=billee_msisdn)
             amount_due = data["amount"]
             currency = data["currency"]
             bill_reference = bill_reference
