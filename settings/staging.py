@@ -10,7 +10,7 @@ DATABASES = {
         'NAME': 'vitelco',
         'USER': 'vitelco',
         'ADMINUSER': 'postgres',
-        'PASSWORD': 'tobeexracted from environment',
+        'PASSWORD': 'vMJ56U1pDfcM7Rp$b$Hu*PMW5PF6VHX#',
         'HOST': 'vitelco.ckxlwpn9coel.eu-west-1.rds.amazonaws.com',
         'PORT': '5432',
     }
