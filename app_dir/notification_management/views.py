@@ -38,30 +38,61 @@ class NotificationList(generics.ListCreateAPIView):
 
 
 class UpdateNotification(APIView):
+    """
+    This API updates notification objects and Device attributes
+    HTTP method: POST
+    URI: /notification/update
+
+    Example payload:
+    {
+        "request_type": ["token_refresh", "push_response"]
+        "notification_id": "24f6654c-9e76-419d-a55a-cb6ab520af4c",
+        "transaction_id": "24f6654c-9e76-419d-a55a-cb6ab520af4b",
+        "token": "24f6654c-9e76-419d-a55a-cb6ab520af4b24f6654c-9e76-419d-a55a-cb6ab520af4b"
+        "pin": "push",
+        "status": ["accepted", "rejected"]
+        "name": "name",
+        "team_name": "team_name"
+    }
+
+
+    """
+
     def post(self, request):
         request_data = request.data
         request_type = request_data.get("request_type")
-        if request_type == "token_refresh":
-            msisdn = request_data["msisdn"]
-            token = request_data["token"]
-            device, created = NotificationDeviceMap.objects.get_or_create(
-                    msisdn=msisdn)
-            device.token = token
-            device.save()
-            response = Response(status=status.HTTP_200_OK)
+
+        try:
+            if request_type == "token_refresh":
+                msisdn = request_data["msisdn"]
+                token = request_data["token"]
+                name = request_data.get("name")
+                team_name = request_data.get("team_name")
+                device, created = NotificationDeviceMap.objects.get_or_create(
+                        msisdn=msisdn)
+                device.token = token
+                device.name = name
+                device.team_name = team_name
+                device.save()
+                response = Response(status=status.HTTP_200_OK)
+                return response
+
+            else:
+                notification_id = request_data['notification_id']
+
+                transaction_id = request_data['transaction_id']
+                pin = request_data['pin']
+                push_status = request_data['status']
+                if str(pin) == "1234":
+                    send_normal_notification.delay(notification_id, transaction_id)
+
+                response = Response(status=status.HTTP_200_OK)
+                return response
+        except KeyError as e:
+            response = Response(
+                    data={"exception": str(e)},
+                    status=status.HTTP_400_BAD_REQUEST
+            )
             return response
-
-        else:
-            notification_id = request_data['notification_id']
-
-            transaction_id = request_data['transaction_id']
-            pin = request_data['pin']
-            push_status = request_data['status']
-            if str(pin) == "1234":
-                send_normal_notification.delay(notification_id, transaction_id)
-
-            response = Response(status=status.HTTP_200_OK)
-            return response
-
 
 
