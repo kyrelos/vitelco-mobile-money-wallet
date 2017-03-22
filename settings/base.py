@@ -200,4 +200,4 @@ SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 
 FCM_URL = "https://fcm.googleapis.com/fcm/send"
-FCM_API_KEY = "AIzaSyASN9siTvRoUvB0VDLP6LjhJv3RjjSPYCg"
+FCM_API_KEY = "AAAAZ91b8YY:APA91bGvgUyYVSNBkYoq4rwjfKRqq2kjQk7f44tVvBgurc-hozGlcVpca6fVCn9Miv9YG1KpkL9JYA-oEcIMtS0jo6x1eMdi_awd4WwipjR7YJDzZpVgbwQ9wPUgPw-tkLsUHq-Ih_RH"
