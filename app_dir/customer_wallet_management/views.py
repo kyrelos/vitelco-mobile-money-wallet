@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from structlog import get_logger
 
-from app_dir.wallet_transactions.models import Transaction
+from app_dir.wallet_transactions.models import Transaction, DebitMandate
 from .models import CustomerWallet
 from .serializers import CustomerWalletSerializer
 
@@ -1890,6 +1890,265 @@ class GetBillsByAccountID(APIView):
                     key="wallet_id",
                     value=wallet_id,
                     status=status.HTTP_404_NOT_FOUND)
+
+
+class GetDebitMandateByAccountId(APIView):
+    """
+    This API fetches the customers transactions given an msisdn
+    HTTP Method: GET
+    URI: /api/v1/accounts/{accountId}/debitmandates/{debitMandateReference}
+    Required HTTP Headers:
+    DATE: todays date
+    AUTHORIZATION: api-key
+    CONTENT-TYPE: application/json
+    Success response:
+    HTTP status code: 200
+    {
+        "currency" : "",
+        "amountLimit" : "",
+        "startDate" : "",
+        "endDate" : "",
+        "numberOfPayments" : "",
+         "frequencyType" : "",
+         "mandateStatus" : "",
+         "requestDate" : "",
+         "mandateReference" : "",
+         "creationDate" : "",
+         "modificationDate" : ""
+    }
+
+    Error response: [404, 400, account in inactive state,
+                    DATE header not supplied]
+    {
+        "errorCategory": "businessRule",
+        "errorCode": "genericError",
+        "errorDescription": "string",
+        "errorDateTime": "string",
+        "errorParameters": [
+            {
+                "key": key,
+                "value": value
+            }
+        ]
+    }
+    """
+
+    def get(self, request, account_id, debit_mandate_reference):
+        date = request.META.get("HTTP_DATE")
+
+        if not date:
+            logger.info("get_debitmandatebyaccount_id_400",
+                        message="DATE Header not supplied",
+                        status=status.HTTP_400_BAD_REQUEST,
+                        wallet_id=account_id,
+                        key="DATE"
+                        )
+            return send_error_response(
+                message="DATE Header not supplied",
+                key="DATE",
+                value=account_id,
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # try to get the wallet id this msisdn maps to
+        try:
+            account = CustomerWallet.objects.get(wallet_id=account_id)
+
+            # debit_mandate = DebitMandate.objects.all().\
+            #     filter(mandate_reference=debit_mandate_reference).\
+            #     filter(payee=account.wallet_id)
+            debit_mandate = DebitMandate.objects \
+                .all().filter(account=account).\
+                get(mandate_reference=debit_mandate_reference)
+            account_status = account.status
+
+            if account_status == CustomerWallet.active:
+                test = 0
+                if debit_mandate:
+                    test = 1
+                # payload = {
+                #         "amount_limit": debit_mandate.amount_limit,
+                #         "minimum_amount_due": debit_mandate.amount_limit,
+                #         "currency": debit_mandate.currency,
+                #         "frequency_type": debit_mandate.frequency_type,
+                #         "mandate_reference": debit_mandate.mandate_reference,
+                #         "descriptionText": "",
+                #         "requestDate": debit_mandate.request_date,
+                #         "start_date": debit_mandate.start_date,
+                #         "end_date": debit_mandate.end_date,
+                #         "mandate_status": debit_mandate.mandate_status,
+                #         "creationDate": debit_mandate.created_at,
+                #         "modificationDate": debit_mandate.modified_at
+                #     }
+
+                payload = {
+                        "test": test,
+                        "modificationDate": debit_mandate.mandate_reference
+                     }
+
+                response = Response(data=payload,
+                                    status=status.HTTP_200_OK
+                                    )
+                logger.info("get_debitmandatebyaccount_id_200",
+                            status=status.HTTP_200_OK,
+                            key="wallet_id",
+                            wallet_id=account_id
+                            )
+                return response
+            else:
+                logger.info("get_debitmandatebyaccount_id_404",
+                            status=status.HTTP_404_NOT_FOUND,
+                            wallet_id=account_id,
+                            key="account_inactive"
+                            )
+                return send_error_response(
+                    message="Requested resource not active",
+                    key="wallet_id",
+                    wallet_id=account_id,
+                    status=status.HTTP_404_NOT_FOUND
+                )
+
+        except ObjectDoesNotExist:
+            logger.info("get_debitmandatebyaccount_id_404",
+                        status=status.HTTP_404_NOT_FOUND,
+                        wallet_id=account_id,
+                        key="wallet_id"
+                        )
+
+            return send_error_response(
+                message="Requested resource not available",
+                key="wallet_id",
+                value=account_id,
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+
+class GetDebitMandateByMsisdn(APIView):
+    """
+    This API fetches the customers transactions given an msisdn
+    HTTP Method: GET
+    URI: /api/v1/accounts/{msisdn}/debitmandates/{debitMandateReference}
+    Required HTTP Headers:
+    DATE: todays date
+    AUTHORIZATION: api-key
+    CONTENT-TYPE: application/json
+    Success response:
+    HTTP status code: 200
+    {
+        "currency" : "",
+        "amountLimit" : "",
+        "startDate" : "",
+        "endDate" : "",
+        "numberOfPayments" : "",
+         "frequencyType" : "",
+         "mandateStatus" : "",
+         "requestDate" : "",
+         "mandateReference" : "",
+         "creationDate" : "",
+         "modificationDate" : ""
+    }
+
+    Error response: [404, 400, account in inactive state,
+                    DATE header not supplied]
+    {
+        "errorCategory": "businessRule",
+        "errorCode": "genericError",
+        "errorDescription": "string",
+        "errorDateTime": "string",
+        "errorParameters": [
+            {
+                "key": key,
+                "value": value
+            }
+        ]
+    }
+    """
+
+    def get(self, request, msisdn, debit_mandate_reference):
+        date = request.META.get("HTTP_DATE")
+
+        if not date:
+            logger.info("get_debitmandatebyaccount_id_400",
+                        message="DATE Header not supplied",
+                        status=status.HTTP_400_BAD_REQUEST,
+                        msisdn=msisdn,
+                        key="DATE"
+                        )
+            return send_error_response(
+                message="DATE Header not supplied",
+                key="DATE",
+                value=msisdn,
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # try to get the wallet id this msisdn maps to
+        try:
+            account = CustomerWallet.objects.get(msisdn=msisdn)
+
+            debit_mandate = DebitMandate.objects\
+                .get(mandate_reference=debit_mandate_reference)\
+                .filter(account=account)
+            # debit_mandate = DebitMandate.objects.all()
+            account_status = account.status
+
+            if account_status == CustomerWallet.active:
+                test = 0
+                if debit_mandate:
+                    test = 1
+                # payload = {
+                #         "amount_limit": debit_mandate.amount_limit,
+                #         "minimum_amount_due": debit_mandate.amount_limit,
+                #         "currency": debit_mandate.currency,
+                #         "frequency_type": debit_mandate.frequency_type,
+                #         "mandate_reference": debit_mandate.mandate_reference,
+                #         "descriptionText": "",
+                #         "requestDate": debit_mandate.request_date,
+                #         "start_date": debit_mandate.start_date,
+                #         "end_date": debit_mandate.end_date,
+                #         "mandate_status": debit_mandate.mandate_status,
+                #         "creationDate": debit_mandate.created_at,
+                #         "modificationDate": debit_mandate.modified_at
+                #     }
+
+                payload = {
+                        "test": test
+                     }
+
+                response = Response(data=payload,
+                                    status=status.HTTP_200_OK
+                                    )
+                logger.info("get_debitmandatebymsisdn_200",
+                            status=status.HTTP_200_OK,
+                            key="msisdn",
+                            msisdn=msisdn
+                            )
+                return response
+            else:
+                logger.info("get_debitmandatebymsisdn_404",
+                            status=status.HTTP_404_NOT_FOUND,
+                            msisdn=msisdn,
+                            key="account_inactive"
+                            )
+                return send_error_response(
+                    message="Requested resource not active",
+                    key="msisdn",
+                    msisdn=msisdn,
+                    status=status.HTTP_404_NOT_FOUND
+                )
+
+        except ObjectDoesNotExist:
+            logger.info("get_debitmandatebymsisdn_404",
+                        status=status.HTTP_404_NOT_FOUND,
+                        msisdn=msisdn,
+                        key="msisdn"
+                        )
+
+            return send_error_response(
+                message="Requested resource not available",
+                key="msisdn",
+                value=msisdn,
+                status=status.HTTP_404_NOT_FOUND
+            )
 
 
 def is_valid_uuid(uuid_to_test, version=4):

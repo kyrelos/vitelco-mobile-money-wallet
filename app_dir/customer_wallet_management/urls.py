@@ -52,4 +52,12 @@ urlpatterns = [
     url(r'^(?P<wallet_id>[0-9a-zA-z\-]+)/bills/$',
         views.GetBillsByAccountID.as_view(),
         name="get_bills_by_account_id"),
+    url(r'^(?P<account_id>[\w\-]+)/debitmandates/'
+        r'(?P<debit_mandate_reference>[0-9a-zA-z\-]+)/$',
+        views.GetDebitMandateByAccountId.as_view(),
+        name="get_debit_mandate_by_account_id"),
+    url(r'^(?P<msisdn>[\w\-]+)/debitmandates/'
+        r'(?P<debit_mandate_reference>[0-9a-zA-z\-]+)/$',
+        views.GetDebitMandateByMsisdn.as_view(),
+        name="get_debit_mandate_by_msisdn"),
 ]
