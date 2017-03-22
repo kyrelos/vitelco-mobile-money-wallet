@@ -32,6 +32,7 @@ def send_normal_notification(notification_id, transaction_id):
     message = notification.message
     notification_type = notification.notification_type
     transaction_id = str(transaction_id)
+    notification_id = str(notification_id)
 
     notification_payload = {
         "to": notification.customer.token,
@@ -43,7 +44,7 @@ def send_normal_notification(notification_id, transaction_id):
             "message": message,
             "title": title,
             "message_type": notification_type,
-            "notification_id": notification.notid,
+            "notification_id": notification_id,
             "transaction_id": transaction_id
         },
     }
@@ -96,6 +97,8 @@ def send_push_notification(notification_id, transaction_id):
     :param transaction_id:
     :return:
     """
+    transaction_id = str(transaction_id)
+    notification_id = str(notification_id)
 
     title = "Vitelco Transaction Message"
     notification = Notification.objects.get(notid=notification_id)
@@ -112,7 +115,7 @@ def send_push_notification(notification_id, transaction_id):
             "message": message,
             "title": title,
             "message_type": notification_type,
-            "notification_id": notification.notid,
+            "notification_id": notification_id,
             "transaction_id": transaction_id
         },
     }
