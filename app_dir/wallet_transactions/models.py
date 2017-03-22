@@ -44,7 +44,7 @@ class Transaction(models.Model):
     trid = models.UUIDField(unique=True, default=uuid.uuid4, editable=False)
     currency = models.CharField(max_length=10, default="KES")
     description_text = models.CharField(max_length=100, null=True, blank=True)
-    request_date = models.DateTimeField(default=datetime.now())
+    request_date = models.DateTimeField(default=datetime(2017, 3, 22, 11, 2, 19, 767092))
     source = models.ForeignKey(
         CustomerWallet,
         related_name="transaction_source"
