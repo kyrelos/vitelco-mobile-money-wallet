@@ -141,7 +141,7 @@ class CustomerWallet(models.Model):
     def get_token(self):
         from app_dir.notification_management.models import \
             NotificationDeviceMap
-        device = NotificationDeviceMap.objects.get(msidn=self.msisdn)
+        device = NotificationDeviceMap.objects.get(msisdn=self.msisdn)
         token = device.token
         return token
 
