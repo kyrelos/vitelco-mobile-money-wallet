@@ -59,17 +59,17 @@ def send_normal_notification(notification_id, transaction_id):
     )
 
     source_notification_payload = {
-        "notification": {
-            "body": source_message,
-            "title": title
+        "data": {
+            "v_message": source_message,
+            "v_message_type": "normal"
         },
         "to": source.get_token
     }
 
     destination_notification_payload = {
-        "notification": {
-            "body": destination_message,
-            "title": title
+        "data": {
+            "v_message": destination_message,
+            "v_message_type": "normal"
         },
         "to": destination.get_token
     }
