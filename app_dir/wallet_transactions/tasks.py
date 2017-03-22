@@ -1,19 +1,21 @@
 from __future__ import absolute_import
+
 from celery import shared_task
 from django.conf import settings
-from .models import Transaction
+
 from app_dir.notification_management.models import Notification
-import requests
-import json
 from app_dir.notification_management.tasks import send_normal_notification, \
     send_push_notification
+from .models import Transaction
+from structlog import get_logger
+
+logger = get_logger('celery')
 
 API_HEADERS = {
-        "Authorization": settings.API_KEY,
-        "Content-Type": "application/json",
-        "Accept": 'application/json'
-    }
-
+    "Authorization": settings.API_KEY,
+    "Content-Type": "application/json",
+    "Accept": 'application/json'
+}
 
 
 @shared_task
@@ -23,6 +25,7 @@ def process_transaction(transaction_id):
     :param notification_id:
     :return:
     """
+    logger.info('process_transaction_start', trid=transaction_id)
     transaction = Transaction.objects.get(trid=transaction_id)
     current_state = transaction.state
     if current_state == "pending":
@@ -36,6 +39,10 @@ def process_transaction(transaction_id):
 
             )
             send_push_notification.delay(notification.notid, transaction_id)
+            logger.info('process_transaction_notify_push',
+                        trid=transaction_id,
+                        notid=notification.notid
+                        )
 
         else:
             transaction.complete_transaction()
@@ -47,10 +54,13 @@ def process_transaction(transaction_id):
 
             )
             send_normal_notification.delay(notification.notid, transaction_id)
+            send_push_notification.delay(notification.notid, transaction_id)
+            logger.info('process_transaction_notify_normal',
+                        trid=transaction_id,
+                        notid=notification.notid
+                        )
 
 
 @shared_task
 def complete_push_transactions(transaction_id):
     transaction = Transaction.objects.get(transaction_id=transaction_id)
-
-
