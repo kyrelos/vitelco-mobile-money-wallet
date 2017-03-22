@@ -549,7 +549,7 @@ class CreateTransactions(APIView):
                     process_transaction.delay(trid)
                     logger.info("create_transaction_202",
                                 status=status.HTTP_202_ACCEPTED,
-                                trid=trid,
+                                trid=str(trid),
                                 response_payload=response_payload
                                 )
                     return Response(response_payload,

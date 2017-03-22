@@ -52,7 +52,7 @@ def send_normal_notification(notification_id, transaction_id):
                                  headers=FCM_API_HEADERS
                                  )
         transaction = Transaction.objects.get(
-                transaction_id=transaction_id
+                trid=transaction_id
         )
         if response.status_code in (200, 202):
             notification.state = "success"
@@ -134,7 +134,7 @@ def send_push_notification(notification_id, transaction_id):
             notification.state = "failed"
             notification.save()
             transaction = Transaction.objects.get(
-                    transaction_id=transaction_id
+                    trid=transaction_id
             )
             transaction.fail_transaction()
             transaction.save()
@@ -148,7 +148,7 @@ def send_push_notification(notification_id, transaction_id):
         notification.state = "failed"
         notification.save()
         transaction = Transaction.objects.get(
-                transaction_id=transaction_id
+                trid=transaction_id
         )
         transaction.fail_transaction()
         transaction.save()

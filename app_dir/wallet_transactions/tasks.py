@@ -1,8 +1,6 @@
 from __future__ import absolute_import
 
 from celery import shared_task
-from django.conf import settings
-
 from app_dir.notification_management.models import Notification
 from app_dir.notification_management.tasks import send_normal_notification, \
     send_push_notification
@@ -53,7 +51,6 @@ def process_transaction(transaction_id):
 
             )
             send_normal_notification.delay(notification.notid, transaction_id)
-            send_push_notification.delay(notification.notid, transaction_id)
             logger.info('process_transaction_notify_normal',
                         trid=transaction_id,
                         notid=notification.notid
