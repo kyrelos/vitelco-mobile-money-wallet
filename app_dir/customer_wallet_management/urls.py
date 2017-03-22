@@ -38,4 +38,10 @@ urlpatterns = [
     url(r'^(?P<wallet_id>[0-9a-zA-z\-]+)/statemententries/$',
         views.GetStatementEntriesByAccountID.as_view(),
         name="get_statement_by_account_id"),
+    url(r'^msisdn/(?P<msisdn>[0-9]+)/bills/$',
+        views.GetBillsByMsisdn.as_view(),
+        name="get_bills_by_msisdn"),
+    url(r'^(?P<wallet_id>[0-9a-zA-z\-]+)/bills/$',
+        views.GetBillsByAccountID.as_view(),
+        name="get_bills_by_account_id"),
 ]
