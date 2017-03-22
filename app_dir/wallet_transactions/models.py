@@ -1,6 +1,6 @@
 import uuid
 from django.db import models
-from datetime import date
+from datetime import datetime
 
 from django_fsm import FSMField, transition
 
@@ -44,6 +44,7 @@ class Transaction(models.Model):
     trid = models.UUIDField(unique=True, default=uuid.uuid4, editable=False)
     currency = models.CharField(max_length=10, default="KES")
     description_text = models.CharField(max_length=100, null=True, blank=True)
+    request_date = models.DateTimeField(default=datetime.now())
     source = models.ForeignKey(
             CustomerWallet,
             related_name="transaction_source"
