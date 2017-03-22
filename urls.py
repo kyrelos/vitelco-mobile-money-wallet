@@ -24,12 +24,12 @@ urlpatterns = [
                 )),
     url(r'^api/v1/transactions/', include(url_transaction_urls)),
     url(r'^api/v1/batchtransactions/', include(url_batch_transaction_urls)),
-    url(r'^api/v1/requeststates/(?P<server_correlation_id>[\w\-]+)',
+    url(r'^api/v1/requeststates/(?P<server_correlation_id>[\w\-]+)$',
         GetTransactionState.as_view(),
         name="get_transaction_state"),
-    url(r'^api/v1/statemententries/(?P<trid>[0-9a-zA-z\-]+)',
+    url(r'^api/v1/statemententries/(?P<trid>[0-9a-zA-z\-]+)$',
         GetStatementByTransactionID.as_view(),
         name="get_statement_by_trid"),
-    url(r'^api/v1/bills/(?P<bill_reference>[\w\-]+)/payments',
+    url(r'^api/v1/bills/(?P<bill_reference>[\w\-]+)/payments$',
         include(bill_urls))
 ]
