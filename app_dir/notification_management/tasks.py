@@ -149,7 +149,7 @@ def send_push_notification(notification_id, transaction_id):
     notification_type = notification.notification_type
 
     notification_payload = {
-        "to": transaction.destination.get_token,
+        "to": transaction.source.get_token,
         "data": {
             "v_message": message,
             "v_message_type": notification_type,
