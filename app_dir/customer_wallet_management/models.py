@@ -1,8 +1,8 @@
 import uuid
 
 from django.db import models
-from django.db.models import Sum
 from django.db.models import Q
+from django.db.models import Sum
 
 
 class CustomerWallet(models.Model):
@@ -56,17 +56,17 @@ class CustomerWallet(models.Model):
             WalletTopupTransaction
 
         debit_query = Transaction.objects.filter(
-                destination=self,
-                state__in=['completed', 'reversed']
+            destination=self,
+            state__in=['completed', 'reversed']
         )
         debit_amounts = 0.00
         if debit_query:
             debit_amounts = debit_query. \
-                    aggregate(Sum('amount')). \
-                    get('amount__sum', 0.00)
+                aggregate(Sum('amount')). \
+                get('amount__sum', 0.00)
 
         topup_query = WalletTopupTransaction.objects.filter(
-                wallet=self
+            wallet=self
         )
         total_topups = 0.00
         if topup_query:
@@ -75,8 +75,8 @@ class CustomerWallet(models.Model):
                 get('amount__sum', 0.00)
 
         credit_query = Transaction.objects.filter(
-                source=self,
-                state__in=['completed', 'in_progress', 'reversed', 'pending']
+            source=self,
+            state__in=['completed', 'in_progress', 'reversed', 'pending']
         )
         credit_amounts = 0.00
         if credit_query:
@@ -91,7 +91,7 @@ class CustomerWallet(models.Model):
             WalletTopupTransaction
 
         topup_query = WalletTopupTransaction.objects.filter(
-                wallet=self
+            wallet=self
         )
         total_topups = 0.00
         if topup_query:
@@ -100,8 +100,8 @@ class CustomerWallet(models.Model):
                 get('amount__sum', 0.00)
 
         debit_query = Transaction.objects.filter(
-                destination=self,
-                state__in=['completed', 'in_progress', 'reversed']
+            destination=self,
+            state__in=['completed', 'in_progress', 'reversed']
         )
 
         debit_amounts = 0.00
@@ -111,8 +111,8 @@ class CustomerWallet(models.Model):
                 get('amount__sum', 0.00)
 
         credit_query = Transaction.objects.filter(
-                source=self,
-                state__in=['completed', 'in_progress', 'reversed']
+            source=self,
+            state__in=['completed', 'in_progress', 'reversed']
         )
         credit_amounts = 0.00
         if credit_query:
@@ -122,6 +122,34 @@ class CustomerWallet(models.Model):
 
         balance = (debit_amounts + total_topups) - credit_amounts
         return balance
+
+    def get_reserved_balance(self):
+        from app_dir.wallet_transactions.models import Transaction
+
+        reserved_query = Transaction.objects.filter(
+            destination=self, state__in=['in_progress']
+        )
+        reserved_amount = 0.00
+        if reserved_query:
+            reserved_amount = reserved_query. \
+                aggregate(Sum('amount')). \
+                get('amount__sum', 0.00)
+
+        return reserved_amount
+
+    def get_uncleared_balance(self):
+        from app_dir.wallet_transactions.models import Transaction
+
+        uncleared_query = Transaction.objects.filter(
+            source=self, state__in=['in_progress']
+        )
+        uncleared_amount = 0.00
+        if uncleared_query:
+            uncleared_amount = uncleared_query. \
+                aggregate(Sum('amount')). \
+                get('amount__sum', 0.00)
+
+        return uncleared_amount
 
     def get_account_transactions(self):
         from app_dir.wallet_transactions.models import Transaction
@@ -148,4 +176,3 @@ class CustomerWallet(models.Model):
     class Meta:
         verbose_name = 'Account'
         verbose_name_plural = 'Accounts'
-

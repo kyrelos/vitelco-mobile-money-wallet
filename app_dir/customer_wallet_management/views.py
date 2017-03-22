@@ -418,9 +418,9 @@ class GetAccountNameByAccountId(APIView):
                         key="DATE"
                         )
             return send_error_response(
-                    message="DATE Header not supplied",
-                    key="DATE",
-                    status=status.HTTP_400_BAD_REQUEST
+                message="DATE Header not supplied",
+                key="DATE",
+                status=status.HTTP_400_BAD_REQUEST
             )
 
         try:
@@ -455,10 +455,10 @@ class GetAccountNameByAccountId(APIView):
                             key="msisdn_inactive"
                             )
                 return send_error_response(
-                        message="Requested resource not active",
-                        key="account_id",
-                        value=account_id,
-                        status=status.HTTP_404_NOT_FOUND
+                    message="Requested resource not active",
+                    key="account_id",
+                    value=account_id,
+                    status=status.HTTP_404_NOT_FOUND
                 )
 
         except ObjectDoesNotExist:
@@ -469,10 +469,10 @@ class GetAccountNameByAccountId(APIView):
                         )
 
             return send_error_response(
-                    message="Requested resource not available",
-                    key="account_id",
-                    value=account_id,
-                    status=status.HTTP_404_NOT_FOUND
+                message="Requested resource not available",
+                key="account_id",
+                value=account_id,
+                status=status.HTTP_404_NOT_FOUND
             )
 
 
@@ -488,7 +488,12 @@ class AccountBalanceByMsisdn(APIView):
     Success response:
     HTTP status code: 200
     {
-        "balance": ""
+        "currentBalance": "5000",
+        "availableBalance": "5000",
+        "reservedBalance": "200",
+        "unclearedBalance": "100",
+        "currency": "KES",
+        "status": "active/inactive"
     }
     Error response: [404, 400, account in inactive state,
                     DATE header not supplied]
@@ -528,7 +533,12 @@ class AccountBalanceByMsisdn(APIView):
             account_status = account.status
             if account_status == CustomerWallet.active:
                 payload = {
-                    'balance': account.get_available_balance()
+                    'currentBalance': account.get_actual_balance(),
+                    'availableBalance': account.get_available_balance(),
+                    'reservedBalance': account.get_reserved_balance(),
+                    'unclearedBalance': account.get_uncleared_balance(),
+                    'currency': 'KES',
+                    'status': 'active'
                 }
                 response = Response(data=payload,
                                     status=status.HTTP_200_OK
@@ -563,6 +573,120 @@ class AccountBalanceByMsisdn(APIView):
                 message="Requested resource not available",
                 key="msisdn",
                 value=msisdn,
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+
+class AccountBalanceByAccountId(APIView):
+    """
+    This API fetches the customers balance details given an account_id
+    HTTP Method: GET
+    URI: /api/v1/accounts/{account_id}/balance/
+    Required HTTP Headers:
+    DATE: todays date
+    AUTHORIZATION: api-key
+    CONTENT-TYPE: application/json
+    Success response:
+    HTTP status code: 200
+    {
+        "currentBalance": "5000",
+        "availableBalance": "5000",
+        "reservedBalance": "200",
+        "unclearedBalance": "100",
+        "currency": "KES",
+        "status": "active/inactive"
+    }
+    Error response: [404, 400, account in inactive state,
+                    DATE header not supplied]
+    {
+        "errorCategory": "businessRule",
+        "errorCode": "genericError",
+        "errorDescription": "string",
+        "errorDateTime": "string",
+        "errorParameters": [
+            {
+                "key": key,
+                "value": value
+            }
+        ]
+    }
+    """
+
+    def get(self, request, account_id):
+        date = request.META.get("HTTP_DATE")
+        if not date:
+            logger.info("get_accountbalancebyaccountid_400",
+                        message="DATE Header not supplied",
+                        status=status.HTTP_400_BAD_REQUEST,
+                        account_id=account_id,
+                        key="DATE"
+                        )
+            return send_error_response(
+                message="DATE Header not supplied",
+                key="DATE",
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if not is_valid_uuid(account_id):
+            logger.info("get_accountbalancebyaccountid_400",
+                        message="account_id invalid",
+                        status=status.HTTP_400_BAD_REQUEST,
+                        account_id=account_id,
+                        key="account_id"
+                        )
+            return send_error_response(
+                message="account_id invalid",
+                key="account_id",
+                value=account_id,
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # try to get the account for this account id
+        try:
+            account = CustomerWallet.objects.get(wallet_id=account_id)
+            account_status = account.status
+            if account_status == CustomerWallet.active:
+                payload = {
+                    'currentBalance': account.get_actual_balance(),
+                    'availableBalance': account.get_available_balance(),
+                    'reservedBalance': account.get_reserved_balance(),
+                    'unclearedBalance': account.get_uncleared_balance(),
+                    'currency': 'KES',
+                    'status': 'active'
+                }
+                response = Response(data=payload,
+                                    status=status.HTTP_200_OK
+                                    )
+                logger.info("get_accountbalancebyaccountid_200",
+                            status=status.HTTP_200_OK,
+                            key="account_id",
+                            account_id=account_id
+                            )
+                return response
+            else:
+                logger.info("get_accountbalancebyaccountid_404",
+                            status=status.HTTP_404_NOT_FOUND,
+                            account_id=account_id,
+                            key="account_inactive"
+                            )
+                return send_error_response(
+                    message="Requested resource not active",
+                    key="account_id",
+                    value=account_id,
+                    status=status.HTTP_404_NOT_FOUND
+                )
+
+        except ObjectDoesNotExist:
+            logger.info("get_accountbalancebyaccountid_404",
+                        status=status.HTTP_404_NOT_FOUND,
+                        account_id=account_id,
+                        key="account_id"
+                        )
+
+            return send_error_response(
+                message="Requested resource not available",
+                key="account_id",
+                value=account_id,
                 status=status.HTTP_404_NOT_FOUND
             )
 
@@ -1293,110 +1417,6 @@ class AccountTransactionsByAccountId(APIView):
             )
 
 
-class AccountBalanceByAccountId(APIView):
-    """
-    This API fetches the customers balance details given an account_id
-    HTTP Method: GET
-    URI: /api/v1/accounts/{account_id}/balance/
-    Required HTTP Headers:
-    DATE: todays date
-    AUTHORIZATION: api-key
-    CONTENT-TYPE: application/json
-    Success response:
-    HTTP status code: 200
-    {
-        "balance": ""
-    }
-    Error response: [404, 400, account in inactive state,
-                    DATE header not supplied]
-    {
-        "errorCategory": "businessRule",
-        "errorCode": "genericError",
-        "errorDescription": "string",
-        "errorDateTime": "string",
-        "errorParameters": [
-            {
-                "key": key,
-                "value": value
-            }
-        ]
-    }
-    """
-
-    def get(self, request, account_id):
-        date = request.META.get("HTTP_DATE")
-        if not date:
-            logger.info("get_accountbalancebyaccountid_400",
-                        message="DATE Header not supplied",
-                        status=status.HTTP_400_BAD_REQUEST,
-                        account_id=account_id,
-                        key="DATE"
-                        )
-            return send_error_response(
-                message="DATE Header not supplied",
-                key="DATE",
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        if not is_valid_uuid(account_id):
-            logger.info("get_accountbalancebyaccountid_400",
-                        message="account_id invalid",
-                        status=status.HTTP_400_BAD_REQUEST,
-                        account_id=account_id,
-                        key="account_id"
-                        )
-            return send_error_response(
-                message="account_id invalid",
-                key="account_id",
-                value=account_id,
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        # try to get the account for this account id
-        try:
-            account = CustomerWallet.objects.get(wallet_id=account_id)
-            account_status = account.status
-            if account_status == CustomerWallet.active:
-                payload = {
-                    'balance': account.get_available_balance()
-                }
-                response = Response(data=payload,
-                                    status=status.HTTP_200_OK
-                                    )
-                logger.info("get_accountbalancebyaccountid_200",
-                            status=status.HTTP_200_OK,
-                            key="account_id",
-                            account_id=account_id
-                            )
-                return response
-            else:
-                logger.info("get_accountbalancebyaccountid_404",
-                            status=status.HTTP_404_NOT_FOUND,
-                            account_id=account_id,
-                            key="account_inactive"
-                            )
-                return send_error_response(
-                    message="Requested resource not active",
-                    key="account_id",
-                    value=account_id,
-                    status=status.HTTP_404_NOT_FOUND
-                )
-
-        except ObjectDoesNotExist:
-            logger.info("get_accountbalancebyaccountid_404",
-                        status=status.HTTP_404_NOT_FOUND,
-                        account_id=account_id,
-                        key="account_id"
-                        )
-
-            return send_error_response(
-                message="Requested resource not available",
-                key="account_id",
-                value=account_id,
-                status=status.HTTP_404_NOT_FOUND
-            )
-
-
 class GetStatementEntriesByMsisdn(APIView):
     """
     This API fetches the customers last five transactions given the msisdn
@@ -1454,10 +1474,10 @@ class GetStatementEntriesByMsisdn(APIView):
                         key="DATE"
                         )
             return send_error_response(
-                    message="DATE Header not supplied",
-                    key="DATE",
-                    value=msisdn,
-                    status=status.HTTP_400_BAD_REQUEST
+                message="DATE Header not supplied",
+                key="DATE",
+                value=msisdn,
+                status=status.HTTP_400_BAD_REQUEST
             )
 
         # try to get the wallet id this msisdn maps to
@@ -1487,12 +1507,12 @@ class GetStatementEntriesByMsisdn(APIView):
                         "debitParty": [{
                             "key": "msisdn",
                             "value": debit_party_msisdn
-                            }],
+                        }],
                         "creditParty": [{
                             "key": "msisdn",
                             "value": credit_party_msisdn
-                            }]
-                        })
+                        }]
+                    })
 
                 response = Response(data=payload,
                                     status=status.HTTP_200_OK
@@ -1510,10 +1530,10 @@ class GetStatementEntriesByMsisdn(APIView):
                             key="account_inactive"
                             )
                 return send_error_response(
-                        message="Requested resource not active",
-                        key="msisdn",
-                        value=msisdn,
-                        status=status.HTTP_404_NOT_FOUND
+                    message="Requested resource not active",
+                    key="msisdn",
+                    value=msisdn,
+                    status=status.HTTP_404_NOT_FOUND
                 )
 
         except ObjectDoesNotExist:
@@ -1524,10 +1544,10 @@ class GetStatementEntriesByMsisdn(APIView):
                         )
 
             return send_error_response(
-                    message="Requested resource not available",
-                    key="msisdn",
-                    value=msisdn,
-                    status=status.HTTP_404_NOT_FOUND
+                message="Requested resource not available",
+                key="msisdn",
+                value=msisdn,
+                status=status.HTTP_404_NOT_FOUND
             )
 
 
@@ -1588,10 +1608,10 @@ class GetStatementEntriesByAccountID(APIView):
                         key="DATE"
                         )
             return send_error_response(
-                    message="DATE Header not supplied",
-                    key="DATE",
-                    value=wallet_id,
-                    status=status.HTTP_400_BAD_REQUEST
+                message="DATE Header not supplied",
+                key="DATE",
+                value=wallet_id,
+                status=status.HTTP_400_BAD_REQUEST
             )
 
         # try to get the wallet id this msisdn maps to
@@ -1621,12 +1641,12 @@ class GetStatementEntriesByAccountID(APIView):
                         "debitParty": [{
                             "key": "msisdn",
                             "value": debit_party_msisdn
-                            }],
+                        }],
                         "creditParty": [{
                             "key": "msisdn",
                             "value": credit_party_msisdn
-                            }]
-                        })
+                        }]
+                    })
 
                 response = Response(data=payload,
                                     status=status.HTTP_200_OK
@@ -1644,10 +1664,10 @@ class GetStatementEntriesByAccountID(APIView):
                             key="account_inactive"
                             )
                 return send_error_response(
-                        message="Requested resource not active",
-                        key="wallet_id",
-                        value=wallet_id,
-                        status=status.HTTP_404_NOT_FOUND
+                    message="Requested resource not active",
+                    key="wallet_id",
+                    value=wallet_id,
+                    status=status.HTTP_404_NOT_FOUND
                 )
 
         except ObjectDoesNotExist:
@@ -1658,10 +1678,10 @@ class GetStatementEntriesByAccountID(APIView):
                         )
 
             return send_error_response(
-                    message="Requested resource not available",
-                    key="wallet_id",
-                    value=wallet_id,
-                    status=status.HTTP_404_NOT_FOUND
+                message="Requested resource not available",
+                key="wallet_id",
+                value=wallet_id,
+                status=status.HTTP_404_NOT_FOUND
             )
 
         except ValueError:
@@ -1671,10 +1691,10 @@ class GetStatementEntriesByAccountID(APIView):
                         key="wallet_id"
                         )
             return send_error_response(
-                    message="Malformed UUID",
-                    key="wallet_id",
-                    value=wallet_id,
-                    status=status.HTTP_400_BAD_REQUEST)
+                message="Malformed UUID",
+                key="wallet_id",
+                value=wallet_id,
+                status=status.HTTP_400_BAD_REQUEST)
 
 
 class GetBillsByMsisdn(APIView):
@@ -1726,10 +1746,10 @@ class GetBillsByMsisdn(APIView):
                         key="DATE"
                         )
             return send_error_response(
-                    message="DATE Header not supplied",
-                    key="DATE",
-                    value=msisdn,
-                    status=status.HTTP_400_BAD_REQUEST
+                message="DATE Header not supplied",
+                key="DATE",
+                value=msisdn,
+                status=status.HTTP_400_BAD_REQUEST
             )
 
         try:
@@ -1771,10 +1791,10 @@ class GetBillsByMsisdn(APIView):
                         )
 
             return send_error_response(
-                    message="Requested resource not available",
-                    key="msisdn",
-                    value=msisdn,
-                    status=status.HTTP_404_NOT_FOUND
+                message="Requested resource not available",
+                key="msisdn",
+                value=msisdn,
+                status=status.HTTP_404_NOT_FOUND
             )
 
 
@@ -1827,10 +1847,10 @@ class GetBillsByAccountID(APIView):
                         key="DATE"
                         )
             return send_error_response(
-                    message="DATE Header not supplied",
-                    key="DATE",
-                    value=wallet_id,
-                    status=status.HTTP_400_BAD_REQUEST
+                message="DATE Header not supplied",
+                key="DATE",
+                value=wallet_id,
+                status=status.HTTP_400_BAD_REQUEST
             )
 
         # try to get the wallet id this msisdn maps to
@@ -1853,7 +1873,7 @@ class GetBillsByAccountID(APIView):
                             "key": "billerMsisdn",
                             "value": biller_msisdn
                         }]
-                    })
+                })
 
             response = Response(data=payload,
                                 status=status.HTTP_200_OK
@@ -1873,10 +1893,10 @@ class GetBillsByAccountID(APIView):
                         )
 
             return send_error_response(
-                    message="Requested resource not available",
-                    key="wallet_id",
-                    value=wallet_id,
-                    status=status.HTTP_404_NOT_FOUND
+                message="Requested resource not available",
+                key="wallet_id",
+                value=wallet_id,
+                status=status.HTTP_404_NOT_FOUND
             )
 
         except ValueError:
@@ -1886,10 +1906,10 @@ class GetBillsByAccountID(APIView):
                         key="wallet_id"
                         )
             return send_error_response(
-                    message="Malformed UUID",
-                    key="wallet_id",
-                    value=wallet_id,
-                    status=status.HTTP_404_NOT_FOUND)
+                message="Malformed UUID",
+                key="wallet_id",
+                value=wallet_id,
+                status=status.HTTP_404_NOT_FOUND)
 
 
 class GetDebitMandateByAccountId(APIView):
@@ -1955,7 +1975,7 @@ class GetDebitMandateByAccountId(APIView):
             account = CustomerWallet.objects.get(wallet_id=account_id)
 
             debit_mandate = DebitMandate.objects \
-                .all().filter(account=account).\
+                .all().filter(account=account). \
                 get(mandate_reference=debit_mandate_reference)
             account_status = account.status
 
