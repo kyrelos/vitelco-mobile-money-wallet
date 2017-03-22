@@ -50,6 +50,7 @@ class UpdateNotification(APIView):
         "transaction_id": "24f6654c-9e76-419d-a55a-cb6ab520af4b",
         "token": "24f6654c-9e76-419d-a55a-cb6ab520af4b24f6654c-9e76-419d-a55a-cb6ab520af4b"
         "pin": "push",
+        "msisdn": "msisdn",
         "status": ["accepted", "rejected"]
         "name": "name",
         "team_name": "team_name"
