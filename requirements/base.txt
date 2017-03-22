@@ -8,3 +8,4 @@ requests==2.13
 djangorestframework==3.6.2
 structlog
 django-fsm==2.5
+newrelic==2.8
