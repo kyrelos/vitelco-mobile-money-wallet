@@ -863,13 +863,6 @@ class DebitMandates(APIView):
 
 
     """
-
-    def get_object(self, msisdn):
-        try:
-            return DebitMandate.objects.get(msisdn=msisdn)
-        except DebitMandate.DoesNotExist:
-            raise Http404
-
     def get(self, request, msisdn, format=None):
         account = CustomerWallet.objects.filter(msisdn=msisdn)
         debit_mandates = DebitMandate.objects.filter(account=account)
@@ -878,6 +871,71 @@ class DebitMandates(APIView):
 
     def post(self, request, msisdn, format=None):
         account = CustomerWallet.objects.get(msisdn=msisdn)
+        req = request.data["requestdebitmandate"]
+
+        payee_msisdn = req["debitParty"][0]["value"]
+        payee = CustomerWallet.objects.get(msisdn=payee_msisdn)
+
+        debit_mandate_data = {
+            "account_id": account,
+            "currency": req["currency"],
+            "amount_limit": req["amount_limit"],
+            "start_date": req["start_date"],
+            "end_date": req["end_date"],
+            "frequency_type": req["frequency_type"],
+            "mandate_status": req["mandate_status"],
+            "request_date": req["request_date"],
+            "number_of_payments": req["number_of_payments"],
+            "payer": account,
+            "payee": payee
+        }
+
+        debit_mandate = DebitMandate.objects.create(
+            **debit_mandate_data)
+
+        if debit_mandate.id:
+            return Response({},
+                            status=status.HTTP_201_CREATED)
+        return Response("Error creating debit mandate",
+                        status=status.HTTP_400_BAD_REQUEST)
+
+class CreateDebitMandates(APIView):
+    """
+    This API posts debit mandates the calling msisdn is treated as the payer
+      HTTP Method: POST
+      URI: /api/v1/accounts/{accountId}/debitmandates/
+
+    ===== SAMPLE PAY LOAD ======
+    {
+	"requestdebitmandate":{
+        "currency":"KES",
+        "amount_limit":5000,
+        "start_date":"2017-04-01 18:00:00",
+        "end_date": "2018-03-31 18:00:00",
+        "frequency_type": "monthspecificdate",
+        "mandate_status": "active",
+        "request_date": "2017-03-22 00:00:00",
+        "number_of_payments":12,
+        "debitParty": [
+		{
+		  "key": "msisdn",
+		  "value": "254701814779"
+		}
+	  ]
+	}
+}
+
+
+    """
+
+    def get(self, request, account_id, format=None):
+        account = CustomerWallet.objects.filter(wallet_id=account_id)
+        debit_mandates = DebitMandate.objects.filter(account=account)
+        serializer = DebitMandateSerializer(debit_mandates, many=True)
+        return Response(serializer.data)
+
+    def post(self, request, account_id, format=None):
+        account = CustomerWallet.objects.filter(wallet_id=account_id)
         req = request.data["requestdebitmandate"]
 
         payee_msisdn = req["debitParty"][0]["value"]
