@@ -53,7 +53,7 @@ class APIRootView(APIView):
                     "account:get_account_status_by_msisdn",
                     request=request,
                     current_app="customer_wallet_management",
-                    kwargs={"msisdn": "254711111111"}
+                    kwargs={"msisdn": "+254711111111"}
                 ),
                 "Get Account status by accountId": reverse(
                     "account:get_account_status_by_account_id",
@@ -67,7 +67,7 @@ class APIRootView(APIView):
                     "account:get_account_name_by_msisdn",
                     request=request,
                     current_app="customer_wallet_management",
-                    kwargs={"msisdn": "254711111111"}
+                    kwargs={"msisdn": "+254711111111"}
                 ),
                 "Get Account name by accountId": reverse(
                     "account:get_account_name_by_account_id",
@@ -80,7 +80,7 @@ class APIRootView(APIView):
                     "account:get_account_balance_by_msisdn",
                     request=request,
                     current_app="customer_wallet_management",
-                    kwargs={"msisdn": "254711111111"}
+                    kwargs={"msisdn": "+254711111111"}
                 ),
                 "Get Account balance by accountId": reverse(
                     "account:get_account_balance_by_account_id",
@@ -94,7 +94,7 @@ class APIRootView(APIView):
                     request=request,
                     current_app="customer_wallet_management",
                     kwargs={"msisdn":
-                                "7254711111111"}
+                                "+254711111111"}
                 ),
 
                 "Create Debit Mandates with account Id": reverse(

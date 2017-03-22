@@ -1,6 +1,8 @@
+import json
 import uuid
 from datetime import datetime
 
+import requests
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError
@@ -17,7 +19,8 @@ from structlog import get_logger
 
 from app_dir.customer_wallet_management.models import CustomerWallet
 from app_dir.wallet_transactions.serializers import BatchTransactionSerializer
-from app_dir.wallet_transactions.tasks import process_transaction
+from app_dir.wallet_transactions.tasks import process_transaction, \
+    process_debit_mandate
 
 from .models import Transaction, BatchTransaction, BatchTransactionLookup, \
     DebitMandate
@@ -677,20 +680,22 @@ class BatchTransactions(APIView):
         if serializer.is_valid():
             batch_trx = serializer.save()
             for data in request.data["transactions"]:
-
                 try:
-                    transaction_response = self.create_transaction(data)
+                    transaction_response = self.create_transaction(
+                        json.dumps(data), request)
+                    if transaction_response.status_code in (202, 201):
+                        response_data = transaction_response.json()
+                        trx = Transaction.objects.get(
+                            trid=response_data["objectReference"])
+                        batch_lookup = BatchTransactionLookup.objects.create(
+                            batch_transaction=batch_trx,
+                            transaction=trx)
                 except RequestException as e:
                     logger.exception("create_transaction_exception",
                                      exception=e.message)
-
-                if transaction_response.status_code == 202:
-                    response_data = transaction_response.data
-                    trx = Transaction.objects.get(
-                        trid=response_data["objectReference"])
-                    batch_lookup = BatchTransactionLookup.objects.create(
-                        batch_transaction=batch_trx,
-                        transaction=trx)
+                except ValueError as e:
+                    logger.exception("create_transaction_exception",
+                                     exception=e.message)
 
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
@@ -699,14 +704,24 @@ class BatchTransactions(APIView):
             return Response(return_errors,
                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    def create_transaction(self, data):
+    def create_transaction(self, data, request):
         server_correlation_id = str(uuid.uuid4())
         headers = {
-            "X_CORRELATIONID": server_correlation_id,
-            "Authorization": "api-key"
+            "X-CORRELATIONID": server_correlation_id,
+            "Authorization": "api-key",
+            "Content-type": "application/json"
         }
-        response = request.post(reverse('create_transaction'), data=data,
-                                headers=headers)
+        logger.info("create_transaction_fxn", url=str(reverse(
+            'create_transactions', request=request)))
+
+        response = requests.post(reverse('create_transactions',
+                                         request=request),
+                                 data=data,
+                                 headers=headers)
+
+        logger.info("create_transaction_fxn_response",
+                    response=str(response.text),
+                    status_code=str(response.status_code))
 
         return response
 
@@ -847,43 +862,37 @@ class DebitMandates(APIView):
       URI: /api/v1/accounts/msisdn/{msisdn}/debitmandates/
 
     ===== SAMPLE PAY LOAD ======
-    {
-	"requestdebitmandate":{
-        "currency":"KES",
-        "amount_limit":5000,
-        "start_date":"2017-04-01 18:00:00",
-        "end_date": "2018-03-31 18:00:00",
-        "frequency_type": "monthspecificdate",
-        "mandate_status": "active",
-        "request_date": "2017-03-22 00:00:00",
-        "number_of_payments":12,
-        "debitParty": [
-		{
-		  "key": "msisdn",
-		  "value": "254701814779"
-		}
-	  ]
-	}
-}
-
-
+            {
+            "requestdebitmandate":{
+                "currency":"KES",
+                "amount_limit":5000,
+                "start_date":"2017-04-01 18:00:00",
+                "end_date": "2018-03-31 18:00:00",
+                "frequency_type": "monthspecificdate",
+                "mandate_status": "active",
+                "request_date": "2017-03-22 00:00:00",
+                "number_of_payments":12,
+                "debitParty": [
+                {
+                  "key": "msisdn",
+                  "value": "254701814779"
+                }
+              ]
+            }
+        }
     """
 
-    def get(self, request, msisdn, format=None):
-        account = CustomerWallet.objects.filter(msisdn=msisdn)
-        debit_mandates = DebitMandate.objects.filter(account=account)
-        serializer = DebitMandateSerializer(debit_mandates, many=True)
-        return Response(serializer.data)
-
     def post(self, request, msisdn, format=None):
-        account = CustomerWallet.objects.get(msisdn=msisdn)
+
+        logger.info("debit_manage_with_msisdn", msisdn=msisdn)
+
+        payer = CustomerWallet.objects.get(msisdn=msisdn)
         req = request.data["requestdebitmandate"]
 
         payee_msisdn = req["debitParty"][0]["value"]
         payee = CustomerWallet.objects.get(msisdn=payee_msisdn)
 
         debit_mandate_data = {
-            "account_id": account,
             "currency": req["currency"],
             "amount_limit": req["amount_limit"],
             "start_date": req["start_date"],
@@ -892,7 +901,7 @@ class DebitMandates(APIView):
             "mandate_status": req["mandate_status"],
             "request_date": req["request_date"],
             "number_of_payments": req["number_of_payments"],
-            "payer": account,
+            "payer": payer,
             "payee": payee
         }
 
@@ -900,8 +909,26 @@ class DebitMandates(APIView):
             **debit_mandate_data)
 
         if debit_mandate.id:
-            return Response({},
+            reponse_payload = {
+                "mandateReference": str(debit_mandate.mandate_reference),
+                "creationDate": str(debit_mandate.created_at),
+                "modificationDate": str(debit_mandate.modified_at)
+            }
+
+            url = reverse("create_transactions",
+                          request=request
+                          )
+
+            logger.info("debit_mandate_by_msisdn",
+                        data=reponse_payload,
+                        url=url
+                        )
+            process_debit_mandate(str(debit_mandate.mandate_reference), url)
+
+            return Response(reponse_payload,
                             status=status.HTTP_201_CREATED)
+
+        logger.info("debit_mandate_400", msisdn=msisdn)
         return Response("Error creating debit mandate",
                         status=status.HTTP_400_BAD_REQUEST)
 
@@ -913,34 +940,25 @@ class CreateDebitMandates(APIView):
       URI: /api/v1/accounts/{accountId}/debitmandates/
 
     ===== SAMPLE PAY LOAD ======
-    {
-	"requestdebitmandate":{
-        "currency":"KES",
-        "amount_limit":5000,
-        "start_date":"2017-04-01 18:00:00",
-        "end_date": "2018-03-31 18:00:00",
-        "frequency_type": "monthspecificdate",
-        "mandate_status": "active",
-        "request_date": "2017-03-22 00:00:00",
-        "number_of_payments":12,
-        "debitParty": [
-		{
-		  "key": "msisdn",
-		  "value": "254701814779"
-		}
-	  ]
-	}
-}
-
-
+            {
+            "requestdebitmandate":{
+                "currency":"KES",
+                "amount_limit":5000,
+                "start_date":"2017-04-01 18:00:00",
+                "end_date": "2018-03-31 18:00:00",
+                "frequency_type": "monthspecificdate",
+                "mandate_status": "active",
+                "request_date": "2017-03-22 00:00:00",
+                "number_of_payments":12,
+                "debitParty": [
+                {
+                  "key": "msisdn",
+                  "value": "254701814779"
+                }
+              ]
+            }
+        }
     """
-
-    def get(self, request, account_id, format=None):
-        account = CustomerWallet.objects.filter(wallet_id=account_id)
-        debit_mandates = DebitMandate.objects.filter(account=account)
-        serializer = DebitMandateSerializer(debit_mandates, many=True)
-        return Response(serializer.data)
-
     def post(self, request, account_id, format=None):
         account = CustomerWallet.objects.filter(wallet_id=account_id)
         req = request.data["requestdebitmandate"]
@@ -966,7 +984,26 @@ class CreateDebitMandates(APIView):
             **debit_mandate_data)
 
         if debit_mandate.id:
-            return Response({},
+            reponse_payload = {
+                "mandateReference": str(debit_mandate.mandate_reference),
+                "creationDate": str(debit_mandate.created_at),
+                "modificationDate": str(debit_mandate.modified_at)
+            }
+
+            url = reverse("create_transactions",
+                          request=request
+                          )
+
+            logger.info("debit_mandate_by_msisdn",
+                        data=reponse_payload,
+                        url=url
+                        )
+            process_debit_mandate.delay(str(debit_mandate.mandate_reference),
+                                      url)
+
+            return Response(reponse_payload,
                             status=status.HTTP_201_CREATED)
+
+        logger.info("debit_mandate_400", account_id=account_id)
         return Response("Error creating debit mandate",
                         status=status.HTTP_400_BAD_REQUEST)

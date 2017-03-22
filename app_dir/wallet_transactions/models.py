@@ -181,22 +181,24 @@ class DebitMandate(models.Model):
     weekly, fortnight, monthspecificdate, twomonths, threemonths, \
     fourmonths, sixmonths, yearly, lastdaymonth, lastdaymonthworking, \
     lastmonday, lasttuesday, lastwednesday, lastthursday, lastfriday, \
-    lastsaturday, lastsunday, specificdaymonthly = "weekly", "fortnight", \
-                                                   "monthspecificdate", \
-                                                   "twomonths", \
-                                                   "threemonths", \
-                                                   "fourmonths", \
-                                                   "sixmonths", "yearly", \
-                                                   "lastdaymonth", \
-                                                   "lastdaymonthworking", \
-                                                   "lastmonday", \
-                                                   "lasttuesday", \
-                                                   "lastwednesday", \
-                                                   "lastthursday", \
-                                                   "lastfriday", \
-                                                   "lastsaturday", \
-                                                   "lastsunday", \
-                                                   "specificdaymonthly"
+    lastsaturday, lastsunday, specificdaymonthly, minutely = "weekly", \
+                                                             "fortnight", \
+                                                             "monthspecificdate", \
+                                                             "twomonths", \
+                                                             "threemonths", \
+                                                             "fourmonths", \
+                                                             "sixmonths", "yearly", \
+                                                             "lastdaymonth", \
+                                                             "lastdaymonthworking", \
+                                                             "lastmonday", \
+                                                             "lasttuesday", \
+                                                             "lastwednesday", \
+                                                             "lastthursday", \
+                                                             "lastfriday", \
+                                                             "lastsaturday", \
+                                                             "lastsunday", \
+                                                             "specificdaymonthly", \
+                                                             "minutely"
 
     FREQUECY_TYPE = (
         (weekly, weekly),
@@ -216,7 +218,8 @@ class DebitMandate(models.Model):
         (lastfriday, lastfriday),
         (lastsaturday, lastsaturday),
         (lastsunday, lastsunday),
-        (specificdaymonthly, specificdaymonthly)
+        (specificdaymonthly, specificdaymonthly),
+        (minutely, minutely)
     )
 
     MANDATE_STATUS = (
@@ -225,7 +228,6 @@ class DebitMandate(models.Model):
     )
     payer = models.ForeignKey(CustomerWallet, related_name="payer", null=True)
     payee = models.ForeignKey(CustomerWallet, related_name="payee", null=True)
-    account = models.ForeignKey(CustomerWallet)
     currency = models.CharField(default="KES", max_length=10)
     amount_limit = models.IntegerField()
     start_date = models.DateTimeField()
