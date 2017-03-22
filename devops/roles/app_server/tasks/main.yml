@@ -58,21 +58,19 @@
     state=link force=yes
 
 - name: configure nginx ssl cert
-  template: src=files/nginx.crt dest=/etc/nginx/nginx.crt
+  template: src=nginx.crt dest=/etc/nginx/nginx.crt
   tags:
     - ssl
 
 - name: configure nginx ssl key
-  template: src=files/nginx.key dest=/etc/nginx/nginx.key
+  template: src=nginx.key dest=/etc/nginx/nginx.key
   tags:
     - ssl
 
 - name: configure dhparams
-  template: src=files/dhparam.pem dest=/etc/nginx/dhparam.pem
+  template: src=dhparam.pem dest=/etc/nginx/dhparam.pem
   tags:
     - ssl
-
-
 
 - name: Create nginx site configuration
   template: src=nginx.site.j2

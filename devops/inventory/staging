@@ -3,10 +3,11 @@ ansible_user=ubuntu
 
 
 [app_servers]
-ec2-54-154-229-112.eu-west-1.compute.amazonaws.com
+ec2-54-194-242-205.eu-west-1.compute.amazonaws.com
+ec2-54-154-119-50.eu-west-1.compute.amazonaws.com
 
 [db_servers]
-ec2-54-154-229-112.eu-west-1.compute.amazonaws.com
+
 
 [staging:children]
 app_servers
