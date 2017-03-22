@@ -41,11 +41,11 @@ def send_normal_notification(notification_id, transaction_id):
             "title": title
         },
         "data": {
-            "message": message,
-            "title": title,
-            "message_type": notification_type,
-            "notification_id": notification_id,
-            "transaction_id": transaction_id
+            "v_message": message,
+            "vtitle": title,
+            "v_message_type": notification_type,
+            "v_notification_id": notification_id,
+            "v_transaction_id": transaction_id
         },
         "to": notification.customer.token
     }
@@ -113,11 +113,11 @@ def send_push_notification(notification_id, transaction_id):
             "title": title
         },
         "data": {
-            "message": message,
-            "title": title,
-            "message_type": notification_type,
-            "notification_id": notification_id,
-            "transaction_id": transaction_id
+            "v_message": message,
+            "v_title": title,
+            "v_message_type": notification_type,
+            "v_notification_id": notification_id,
+            "v_transaction_id": transaction_id
         },
     }
     try:
