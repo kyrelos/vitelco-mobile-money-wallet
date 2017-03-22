@@ -54,5 +54,15 @@ class NotificationDeviceMap(models.Model):
     team_name = models.CharField(max_length=64, null=True, blank=True)
     user_type = models.CharField(max_length=20, null=True, blank=True)
 
+    def __unicode__(self):
+        return "{name}: {msisdn}".format(
+                name=self.name,
+                msisdn=self.msisdn
+        )
+
+    class Meta:
+        verbose_name = 'Notification DeviceMap'
+        verbose_name_plural = 'Notification DeviceMaps'
+
 
 

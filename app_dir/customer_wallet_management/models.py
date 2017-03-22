@@ -15,11 +15,12 @@ class CustomerWallet(models.Model):
     type: type of the customer
     """
     active, dormant, inactive = "active", "dormant", "inactive"
-    normal, merchant = "normal", "merchant"
+    normal, merchant, agent = "normal", "merchant", "agent"
 
     CUSTOMER_TYPES = (
         (normal, normal),
-        (merchant, merchant)
+        (merchant, merchant),
+        (agent, agent)
     )
 
     CUSTOMER_STATUS_TYPES = (
@@ -129,6 +130,12 @@ class CustomerWallet(models.Model):
             '-created_at')[:5]
 
         return transactions
+
+    def get_account_bills(self):
+        from app_dir.bill_management.models import Bill
+        bills = Bill.objects.filter(billee=self)
+
+        return bills
 
     class Meta:
         verbose_name = 'Account'
