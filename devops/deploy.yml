@@ -56,6 +56,12 @@
                 owner=root group=root
       notify: restart monit
 
+    # state=started is indempotent
+    - name: make sure supervisord is running
+      service: name=supervisor state=started enabled=yes
+      sudo: yes
+      tags:
+        - restart_supervisor
 
   handlers:
 

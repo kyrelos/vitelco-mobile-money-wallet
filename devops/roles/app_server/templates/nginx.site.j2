@@ -20,10 +20,27 @@ server {
     add_header Strict-Transport-Security max-age=15768000;
 
 
+    set $redirect_var 0;
+    # redirect ip requests to https domain
+    {% for host in groups['app_servers'] %}
+    if ($host = '{{host}}') {
+      set $redirect_var 1;
+    }
+    {% endfor %}
+    if ($redirect_var = 1) {
+      return 307 https://vitelco-demo.jumo.world$request_uri;
+    }
+
     location ~ /.well-known {
         allow all;
     }
     
+    # allow letsencrypt access
+    location /.well-known/acme-challenge/ {
+        alias /var/www/challenges/;
+        try_files $uri =404;
+    }
+
     location / {
         proxy_pass http://127.0.0.1:{{ GUNICORN_PORT }}/;
         proxy_set_header Host $http_host;
@@ -62,7 +79,8 @@ server {
     }
 
     {% else %}
-    return 301 https://$host$request_uri;
+    # use redirect status code 307 to preserve http method
+    return 307 https://vitelco-demo.jumo.world$request_uri;
     {% endif %}
 }
 
