@@ -1954,37 +1954,25 @@ class GetDebitMandateByAccountId(APIView):
         try:
             account = CustomerWallet.objects.get(wallet_id=account_id)
 
-            # debit_mandate = DebitMandate.objects.all().\
-            #     filter(mandate_reference=debit_mandate_reference).\
-            #     filter(payee=account.wallet_id)
             debit_mandate = DebitMandate.objects \
                 .all().filter(account=account).\
                 get(mandate_reference=debit_mandate_reference)
             account_status = account.status
 
             if account_status == CustomerWallet.active:
-                test = 0
-                if debit_mandate:
-                    test = 1
-                # payload = {
-                #         "amount_limit": debit_mandate.amount_limit,
-                #         "minimum_amount_due": debit_mandate.amount_limit,
-                #         "currency": debit_mandate.currency,
-                #         "frequency_type": debit_mandate.frequency_type,
-                #         "mandate_reference": debit_mandate.mandate_reference,
-                #         "descriptionText": "",
-                #         "requestDate": debit_mandate.request_date,
-                #         "start_date": debit_mandate.start_date,
-                #         "end_date": debit_mandate.end_date,
-                #         "mandate_status": debit_mandate.mandate_status,
-                #         "creationDate": debit_mandate.created_at,
-                #         "modificationDate": debit_mandate.modified_at
-                #     }
-
                 payload = {
-                        "test": test,
-                        "modificationDate": debit_mandate.mandate_reference
-                     }
+                    "currency": debit_mandate.currency,
+                    "amountLimit": debit_mandate.amount_limit,
+                    "startDate": debit_mandate.start_date,
+                    "endDate": debit_mandate.end_date,
+                    "numberOfPayments": debit_mandate.number_of_payments,
+                    "frequencyType": debit_mandate.frequency_type,
+                    "mandateStatus": debit_mandate.mandate_status,
+                    "requestDate": debit_mandate.request_date,
+                    "mandateReference": debit_mandate.mandate_reference,
+                    "creationDate": debit_mandate.created_at,
+                    "modificationDate": debit_mandate.modified_at
+                }
 
                 response = Response(data=payload,
                                     status=status.HTTP_200_OK
@@ -2068,7 +2056,7 @@ class GetDebitMandateByMsisdn(APIView):
         date = request.META.get("HTTP_DATE")
 
         if not date:
-            logger.info("get_debitmandatebyaccount_id_400",
+            logger.info("get_debitmandatebymsisdn_400",
                         message="DATE Header not supplied",
                         status=status.HTTP_400_BAD_REQUEST,
                         msisdn=msisdn,
@@ -2085,34 +2073,25 @@ class GetDebitMandateByMsisdn(APIView):
         try:
             account = CustomerWallet.objects.get(msisdn=msisdn)
 
-            debit_mandate = DebitMandate.objects\
-                .get(mandate_reference=debit_mandate_reference)\
-                .filter(account=account)
-            # debit_mandate = DebitMandate.objects.all()
+            debit_mandate = DebitMandate.objects \
+                .all().filter(account=account). \
+                get(mandate_reference=debit_mandate_reference)
             account_status = account.status
 
             if account_status == CustomerWallet.active:
-                test = 0
-                if debit_mandate:
-                    test = 1
-                # payload = {
-                #         "amount_limit": debit_mandate.amount_limit,
-                #         "minimum_amount_due": debit_mandate.amount_limit,
-                #         "currency": debit_mandate.currency,
-                #         "frequency_type": debit_mandate.frequency_type,
-                #         "mandate_reference": debit_mandate.mandate_reference,
-                #         "descriptionText": "",
-                #         "requestDate": debit_mandate.request_date,
-                #         "start_date": debit_mandate.start_date,
-                #         "end_date": debit_mandate.end_date,
-                #         "mandate_status": debit_mandate.mandate_status,
-                #         "creationDate": debit_mandate.created_at,
-                #         "modificationDate": debit_mandate.modified_at
-                #     }
-
                 payload = {
-                        "test": test
-                     }
+                    "currency": debit_mandate.currency,
+                    "amountLimit": debit_mandate.amount_limit,
+                    "startDate": debit_mandate.start_date,
+                    "endDate": debit_mandate.end_date,
+                    "numberOfPayments": debit_mandate.number_of_payments,
+                    "frequencyType": debit_mandate.frequency_type,
+                    "mandateStatus": debit_mandate.mandate_status,
+                    "requestDate": debit_mandate.request_date,
+                    "mandateReference": debit_mandate.mandate_reference,
+                    "creationDate": debit_mandate.created_at,
+                    "modificationDate": debit_mandate.modified_at
+                }
 
                 response = Response(data=payload,
                                     status=status.HTTP_200_OK
