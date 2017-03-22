@@ -5,6 +5,7 @@ from celery import shared_task
 from django.conf import settings
 from requests import RequestException
 from structlog import get_logger
+import json
 
 from app_dir.wallet_transactions.models import Transaction
 from .models import Notification
@@ -35,7 +36,6 @@ def send_normal_notification(notification_id, transaction_id):
     notification_id = str(notification_id)
 
     notification_payload = {
-        "to": notification.customer.token,
         "notification": {
             "body": message,
             "title": title
@@ -47,10 +47,11 @@ def send_normal_notification(notification_id, transaction_id):
             "notification_id": notification_id,
             "transaction_id": transaction_id
         },
+        "to": notification.customer.token
     }
     try:
         response = requests.post(settings.FCM_URL,
-                                 data=notification_payload,
+                                 data=json.dumps(notification_payload),
                                  headers=FCM_API_HEADERS
                                  )
         transaction = Transaction.objects.get(
