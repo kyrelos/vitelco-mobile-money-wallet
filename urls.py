@@ -7,7 +7,7 @@ from app_dir.wallet_api.views import APIRootView
 from app_dir.wallet_transactions import url_batch_transaction_urls
 from app_dir.wallet_transactions.views import GetTransactionState, \
     GetStatementByTransactionID
-from app_dir.bill_management import urls as bill_urls
+from app_dir.bill_management import urls as bill_management_urls
 
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
@@ -22,6 +22,11 @@ urlpatterns = [
                 namespace='account',
                 app_name="customer_wallet_management"
                 )),
+    url(r'^api/v1/bills/',
+        include(bill_management_urls,
+                namespace='bills',
+                app_name="bill_management"
+                )),
     url(r'^api/v1/transactions/', include(url_transaction_urls)),
     url(r'^api/v1/batchtransactions/', include(url_batch_transaction_urls)),
     url(r'^api/v1/requeststates/(?P<server_correlation_id>[\w\-]+)',
@@ -30,6 +35,4 @@ urlpatterns = [
     url(r'^api/v1/statemententries/(?P<trid>[0-9a-zA-z\-]+)',
         GetStatementByTransactionID.as_view(),
         name="get_statement_by_trid"),
-    url(r'^api/v1/bills/(?P<bill_reference>[\w\-]+)/payments',
-        include(bill_urls))
 ]
