@@ -95,3 +95,4 @@ supervisord.conf
 *.pyc
 celerybeat.pid
 static/
+devops/roles/common/
