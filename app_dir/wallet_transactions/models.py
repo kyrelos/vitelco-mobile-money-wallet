@@ -41,7 +41,7 @@ class Transaction(models.Model):
         (disbursement, disbursement),
         (merchantpay, merchantpay),
     )
-    trid = models.UUIDField(unique=True, default=uuid.uuid4, editable=False)
+    trid = models.UUIDField(unique=True, default=uuid.uuid4)
     currency = models.CharField(max_length=10, default="KES")
     description_text = models.CharField(max_length=100, null=True, blank=True)
     request_date = models.DateTimeField(default=datetime(2017, 3, 22, 11, 2, 19, 767092))
