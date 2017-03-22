@@ -57,6 +57,7 @@
     dest=/etc/supervisor/conf.d/{{ APP_NAME }}.conf
     state=link force=yes
 
+# use letsencrypt ssl cert
 - name: configure nginx ssl cert
   template: src=nginx.crt dest=/etc/nginx/nginx.crt
   tags:
