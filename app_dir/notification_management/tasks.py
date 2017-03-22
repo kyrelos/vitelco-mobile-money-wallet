@@ -84,7 +84,8 @@ def send_normal_notification(notification_id, transaction_id):
                                                      destination_notification_payload),
                                              headers=FCM_API_HEADERS
                                              )
-        if source_response.status_code in (200, 202) and destination_response \
+        if source_response.status_code in (200, 202) and \
+                        destination_response.status_code \
                 in (200, 202):
             notification.state = "success"
             notification.save()
