@@ -89,6 +89,21 @@ class APIRootView(APIView):
                     kwargs={"account_id":
                                 "753bcd19-7230-40ba-a975-09ac94ace0d2"}
                 ),
+                "Create Debit Mandates with msisdn": reverse(
+                    "account:debit_mandate_by_msisdn",
+                    request=request,
+                    current_app="customer_wallet_management",
+                    kwargs={"msisdn":
+                                "7254711111111"}
+                ),
+
+                "Create Debit Mandates with account Id": reverse(
+                    "account:debit_mandate_by_account_id",
+                    request=request,
+                    current_app="customer_wallet_management",
+                    kwargs={"account_id":
+                                "753bcd19-7230-40ba-a975-09ac94ace0d2"}
+                ),
 
             },
             "Notification": {

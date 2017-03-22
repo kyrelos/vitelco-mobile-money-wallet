@@ -16,8 +16,9 @@ from structlog import get_logger
 from app_dir.customer_wallet_management.models import CustomerWallet
 from app_dir.wallet_transactions.serializers import BatchTransactionSerializer
 
-from .models import Transaction, BatchTransaction, BatchTransactionLookup
-from .serializers import TransactionSerializer
+from .models import Transaction, BatchTransaction, BatchTransactionLookup, \
+    DebitMandate
+from .serializers import TransactionSerializer, DebitMandateSerializer
 
 logger = get_logger("transactions")
 
@@ -125,9 +126,9 @@ class GetTransaction(APIView):
                         key="DATE"
                         )
             return send_error_response(
-                    message="DATE Header not supplied",
-                    key="DATE",
-                    status=status.HTTP_400_BAD_REQUEST
+                message="DATE Header not supplied",
+                key="DATE",
+                status=status.HTTP_400_BAD_REQUEST
             )
 
         try:
@@ -165,10 +166,10 @@ class GetTransaction(APIView):
                         )
 
             return send_error_response(
-                    message="Requested resource not available",
-                    key="transaction_reference",
-                    value=transaction_reference,
-                    status=status.HTTP_404_NOT_FOUND
+                message="Requested resource not available",
+                key="transaction_reference",
+                value=transaction_reference,
+                status=status.HTTP_404_NOT_FOUND
             )
 
         except ValueError:
@@ -179,10 +180,10 @@ class GetTransaction(APIView):
                         )
 
             return send_error_response(
-                    message="Malformed UUID",
-                    key="transaction_reference",
-                    value=transaction_reference,
-                    status=status.HTTP_404_NOT_FOUND
+                message="Malformed UUID",
+                key="transaction_reference",
+                value=transaction_reference,
+                status=status.HTTP_404_NOT_FOUND
             )
 
 
@@ -190,7 +191,7 @@ class GetTransactionState(APIView):
     """
     This API retrieves a transaction state given serverCorrelationId
     HTTP Method: GET
-    URI: /api/v1/requeststates/{servierCorrelationId}
+    URI: /api/v1/requeststates/{serverCorrelationId}
     Required HTTP Headers:
     DATE: todays date
     AUTHORIZATION: api-key
@@ -232,14 +233,14 @@ class GetTransactionState(APIView):
                         key="DATE"
                         )
             return send_error_response(
-                    message="DATE Header not supplied",
-                    key="DATE",
-                    status=status.HTTP_400_BAD_REQUEST
+                message="DATE Header not supplied",
+                key="DATE",
+                status=status.HTTP_400_BAD_REQUEST
             )
 
         try:
             transaction = Transaction.objects.get(
-                    server_correlation_id=server_correlation_id)
+                server_correlation_id=server_correlation_id)
             transaction_state = transaction.state
             transaction_type = transaction.transaction_type
             transaction_amount = transaction.amount
@@ -274,10 +275,10 @@ class GetTransactionState(APIView):
                         )
 
             return send_error_response(
-                    message="Requested resource not available",
-                    key="serverCorrelationId",
-                    value=server_correlation_id,
-                    status=status.HTTP_404_NOT_FOUND
+                message="Requested resource not available",
+                key="serverCorrelationId",
+                value=server_correlation_id,
+                status=status.HTTP_404_NOT_FOUND
             )
 
         except ValueError:
@@ -288,10 +289,10 @@ class GetTransactionState(APIView):
                         )
 
             return send_error_response(
-                    message="Malformed UUID string",
-                    key="serverCorrelationId",
-                    value=server_correlation_id,
-                    status=status.HTTP_400_BAD_REQUEST
+                message="Malformed UUID string",
+                key="serverCorrelationId",
+                value=server_correlation_id,
+                status=status.HTTP_400_BAD_REQUEST
             )
 
 
@@ -303,16 +304,16 @@ class GetBatchTransaction(APIView):
     def get(self, request, batch_trid=None, state=None):
         if not batch_trid:
             logger.info(
-                    "get_transaction_invalid_uuid",
-                    status=status.HTTP_400_BAD_REQUEST,
-                    batch_trid=batch_trid,
-                    key="batch_trid"
+                "get_transaction_invalid_uuid",
+                status=status.HTTP_400_BAD_REQUEST,
+                batch_trid=batch_trid,
+                key="batch_trid"
             )
 
             return send_error_response(
-                    message="Invalid UUID",
-                    key="batch_transaction_reference",
-                    status=status.HTTP_400_BAD_REQUEST
+                message="Invalid UUID",
+                key="batch_transaction_reference",
+                status=status.HTTP_400_BAD_REQUEST
             )
 
         kwargs = {}
@@ -355,16 +356,16 @@ class GetBatchTransaction(APIView):
         date = request.META.get("HTTP_DATE")
         if not date and not settings.DEBUG:
             logger.info(
-                    "get_bulk_transaction_400",
-                    message="DATE Header not supplied",
-                    status=status.HTTP_400_BAD_REQUEST,
-                    key="DATE"
+                "get_bulk_transaction_400",
+                message="DATE Header not supplied",
+                status=status.HTTP_400_BAD_REQUEST,
+                key="DATE"
             )
 
             return send_error_response(
-                    message="DATE Header not supplied",
-                    key="DATE",
-                    status=status.HTTP_400_BAD_REQUEST
+                message="DATE Header not supplied",
+                key="DATE",
+                status=status.HTTP_400_BAD_REQUEST
             )
 
         try:
@@ -374,17 +375,17 @@ class GetBatchTransaction(APIView):
 
             if not batch_transactions:
                 logger.info(
-                        "get_batch_transaction_404",
-                        status=status.HTTP_404_NOT_FOUND,
-                        batch_trid=batch_trid,
-                        key="batch_trid"
+                    "get_batch_transaction_404",
+                    status=status.HTTP_404_NOT_FOUND,
+                    batch_trid=batch_trid,
+                    key="batch_trid"
                 )
 
                 return send_error_response(
-                        message="Requested resource not available",
-                        key="batch_transaction_reference",
-                        value=batch_trid,
-                        status=status.HTTP_404_NOT_FOUND
+                    message="Requested resource not available",
+                    key="batch_transaction_reference",
+                    value=batch_trid,
+                    status=status.HTTP_404_NOT_FOUND
                 )
 
             payload = {
@@ -394,30 +395,30 @@ class GetBatchTransaction(APIView):
 
             for transaction in batch_transactions:
                 payload['transactions'].append(
-                        model_to_dict(transaction.transaction))
+                    model_to_dict(transaction.transaction))
 
             response = Response(
-                    data=payload, status=status.HTTP_200_OK
+                data=payload, status=status.HTTP_200_OK
             )
             logger.info(
-                    "get_batch_transaction_200",
-                    status=status.HTTP_200_OK,
-                    batch_trid=batch_trid
+                "get_batch_transaction_200",
+                status=status.HTTP_200_OK,
+                batch_trid=batch_trid
             )
             return response
         except ValueError:
             logger.info(
-                    "get_transaction_malformed_uuid",
-                    status=status.HTTP_404_NOT_FOUND,
-                    batch_trid=batch_trid,
-                    key="batch_trid"
+                "get_transaction_malformed_uuid",
+                status=status.HTTP_404_NOT_FOUND,
+                batch_trid=batch_trid,
+                key="batch_trid"
             )
 
             return send_error_response(
-                    message="Malformed UUID",
-                    key="batch_transaction_reference",
-                    value=batch_trid,
-                    status=status.HTTP_404_NOT_FOUND
+                message="Malformed UUID",
+                key="batch_transaction_reference",
+                value=batch_trid,
+                status=status.HTTP_404_NOT_FOUND
             )
 
 
@@ -473,9 +474,9 @@ class CreateTransactions(APIView):
                         key=e.message
                         )
             return send_error_response(
-                    message="Required Headers not supplied",
-                    key=e.message,
-                    status=status.HTTP_400_BAD_REQUEST
+                message="Required Headers not supplied",
+                key=e.message,
+                status=status.HTTP_400_BAD_REQUEST
             )
         try:
             data = request.data
@@ -487,12 +488,12 @@ class CreateTransactions(APIView):
             amount = float(data["amount"])
             transaction_type = data["type"]
             create_transaction_data = dict(
-                    trid=trid,
-                    source=source,
-                    server_correlation_id=server_correlation_id,
-                    destination=destination,
-                    amount=amount,
-                    transaction_type=transaction_type
+                trid=trid,
+                source=source,
+                server_correlation_id=server_correlation_id,
+                destination=destination,
+                amount=amount,
+                transaction_type=transaction_type
             )
             source_balance = source.get_available_balance()
             if transaction_type == 'transfer':
@@ -504,10 +505,10 @@ class CreateTransactions(APIView):
                             )
                 if source_balance < amount:
                     insufficient_funds_response = send_error_response(
-                            message="You have insufficient funds",
-                            key="Balance",
-                            value=source_balance,
-                            status=status.HTTP_402_PAYMENT_REQUIRED
+                        message="You have insufficient funds",
+                        key="Balance",
+                        value=source_balance,
+                        status=status.HTTP_402_PAYMENT_REQUIRED
                     )
                     return insufficient_funds_response
 
@@ -518,10 +519,10 @@ class CreateTransactions(APIView):
             status_code = status.HTTP_400_BAD_REQUEST
 
             error_response = send_error_response(
-                    message=error_message,
-                    key=key,
-                    value=value,
-                    status=status_code
+                message=error_message,
+                key=key,
+                value=value,
+                status=status_code
             )
             logger.info("create_transaction_400",
                         status=status.HTTP_400_BAD_REQUEST,
@@ -533,7 +534,7 @@ class CreateTransactions(APIView):
             count = 0
             while count < 10:
                 transaction, exception = self.create_transaction(
-                        create_transaction_data)
+                    create_transaction_data)
                 if transaction:
                     response_payload = {
                         "objectReference": trid,
@@ -568,10 +569,10 @@ class CreateTransactions(APIView):
                     count += 1
 
             return send_error_response(
-                    message=error_message,
-                    key=error_key,
-                    status=status.HTTP_409_CONFLICT,
-                    value="Duplicate UUID"
+                message=error_message,
+                key=error_key,
+                status=status.HTTP_409_CONFLICT,
+                value="Duplicate UUID"
 
             )
 
@@ -679,30 +680,31 @@ class BatchTransactions(APIView):
                 destination_msisdn = data["creditParty"][0]["value"]
 
                 destination = CustomerWallet.objects.get(
-                        msisdn=destination_msisdn)
+                    msisdn=destination_msisdn)
                 amount = data["amount"]
                 transaction_type = data["type"]
                 create_transaction_data = dict(
-                        source=source,
-                        server_correlation_id=server_correlation_id,
-                        destination=destination,
-                        amount=amount,
-                        transaction_type=transaction_type
+                    source=source,
+                    server_correlation_id=server_correlation_id,
+                    destination=destination,
+                    amount=amount,
+                    transaction_type=transaction_type
                 )
 
                 trx = Transaction.objects.create(
-                        **create_transaction_data)
+                    **create_transaction_data)
 
                 batch_lookup = BatchTransactionLookup.objects.create(
-                        batch_transaction=batch_trx,
-                        transaction=trx)
+                    batch_transaction=batch_trx,
+                    transaction=trx)
 
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             return_errors = dict(
-                    batch_transaction_errors=serializer.error_messages, )
+                batch_transaction_errors=serializer.error_messages, )
             return Response(return_errors,
                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 class GetStatementByTransactionID(APIView):
     """
@@ -761,10 +763,10 @@ class GetStatementByTransactionID(APIView):
                         key="DATE"
                         )
             return send_error_response(
-                    message="DATE Header not supplied",
-                    key="DATE",
-                    value=trid,
-                    status=status.HTTP_400_BAD_REQUEST
+                message="DATE Header not supplied",
+                key="DATE",
+                value=trid,
+                status=status.HTTP_400_BAD_REQUEST
             )
 
         try:
@@ -772,29 +774,29 @@ class GetStatementByTransactionID(APIView):
             from app_dir.customer_wallet_management.models import \
                 CustomerWallet
             debit_party_msisdn = CustomerWallet.objects.get(
-                        wallet_id=transaction.destination.wallet_id).msisdn
+                wallet_id=transaction.destination.wallet_id).msisdn
             credit_party_msisdn = CustomerWallet.objects.get(
-                        wallet_id=transaction.source.wallet_id).msisdn
+                wallet_id=transaction.source.wallet_id).msisdn
             payload = ({
-                        "amount": transaction.amount,
-                        "currency": transaction.currency,
-                        "displayType": transaction.transaction_type,
-                        "transactionStatus": transaction.state,
-                        "descriptionText": transaction.description_text,
-                        "requestDate": transaction.request_date,
-                        "creationDate": transaction.created_at,
-                        "modificationDate": transaction.modified_at,
-                        "transactionReference": transaction.trid,
-                        "transactionReceipt": "",
-                        "debitParty": [{
-                            "key": "msisdn",
-                            "value": debit_party_msisdn
-                            }],
-                        "creditParty": [{
-                            "key": "msisdn",
-                            "value": credit_party_msisdn
-                            }]
-                        })
+                "amount": transaction.amount,
+                "currency": transaction.currency,
+                "displayType": transaction.transaction_type,
+                "transactionStatus": transaction.state,
+                "descriptionText": transaction.description_text,
+                "requestDate": transaction.request_date,
+                "creationDate": transaction.created_at,
+                "modificationDate": transaction.modified_at,
+                "transactionReference": transaction.trid,
+                "transactionReceipt": "",
+                "debitParty": [{
+                    "key": "msisdn",
+                    "value": debit_party_msisdn
+                }],
+                "creditParty": [{
+                    "key": "msisdn",
+                    "value": credit_party_msisdn
+                }]
+            })
 
             response = Response(data=payload,
                                 status=status.HTTP_200_OK
@@ -814,10 +816,10 @@ class GetStatementByTransactionID(APIView):
                         )
 
             return send_error_response(
-                    message="Requested resource not available",
-                    key="trid",
-                    value=trid,
-                    status=status.HTTP_404_NOT_FOUND
+                message="Requested resource not available",
+                key="trid",
+                value=trid,
+                status=status.HTTP_404_NOT_FOUND
             )
 
         except ValueError:
@@ -827,7 +829,137 @@ class GetStatementByTransactionID(APIView):
                         key="trid"
                         )
             return send_error_response(
-                    message="Malformed UUID",
-                    key="trid",
-                    value=trid,
-                    status=status.HTTP_404_NOT_FOUND)
+                message="Malformed UUID",
+                key="trid",
+                value=trid,
+                status=status.HTTP_404_NOT_FOUND)
+
+
+class DebitMandates(APIView):
+    """
+    This API posts debit mandates the calling msisdn is treated as the payer
+      HTTP Method: POST
+      URI: /api/v1/accounts/msisdn/{msisdn}/debitmandates/
+
+    ===== SAMPLE PAY LOAD ======
+    {
+	"requestdebitmandate":{
+        "currency":"KES",
+        "amount_limit":5000,
+        "start_date":"2017-04-01 18:00:00",
+        "end_date": "2018-03-31 18:00:00",
+        "frequency_type": "monthspecificdate",
+        "mandate_status": "active",
+        "request_date": "2017-03-22 00:00:00",
+        "number_of_payments":12,
+        "debitParty": [
+		{
+		  "key": "msisdn",
+		  "value": "254701814779"
+		}
+	  ]
+	}
+}
+
+
+    """
+    def get(self, request, msisdn, format=None):
+        account = CustomerWallet.objects.filter(msisdn=msisdn)
+        debit_mandates = DebitMandate.objects.filter(account=account)
+        serializer = DebitMandateSerializer(debit_mandates, many=True)
+        return Response(serializer.data)
+
+    def post(self, request, msisdn, format=None):
+        account = CustomerWallet.objects.get(msisdn=msisdn)
+        req = request.data["requestdebitmandate"]
+
+        payee_msisdn = req["debitParty"][0]["value"]
+        payee = CustomerWallet.objects.get(msisdn=payee_msisdn)
+
+        debit_mandate_data = {
+            "account_id": account,
+            "currency": req["currency"],
+            "amount_limit": req["amount_limit"],
+            "start_date": req["start_date"],
+            "end_date": req["end_date"],
+            "frequency_type": req["frequency_type"],
+            "mandate_status": req["mandate_status"],
+            "request_date": req["request_date"],
+            "number_of_payments": req["number_of_payments"],
+            "payer": account,
+            "payee": payee
+        }
+
+        debit_mandate = DebitMandate.objects.create(
+            **debit_mandate_data)
+
+        if debit_mandate.id:
+            return Response({},
+                            status=status.HTTP_201_CREATED)
+        return Response("Error creating debit mandate",
+                        status=status.HTTP_400_BAD_REQUEST)
+
+class CreateDebitMandates(APIView):
+    """
+    This API posts debit mandates the calling msisdn is treated as the payer
+      HTTP Method: POST
+      URI: /api/v1/accounts/{accountId}/debitmandates/
+
+    ===== SAMPLE PAY LOAD ======
+    {
+	"requestdebitmandate":{
+        "currency":"KES",
+        "amount_limit":5000,
+        "start_date":"2017-04-01 18:00:00",
+        "end_date": "2018-03-31 18:00:00",
+        "frequency_type": "monthspecificdate",
+        "mandate_status": "active",
+        "request_date": "2017-03-22 00:00:00",
+        "number_of_payments":12,
+        "debitParty": [
+		{
+		  "key": "msisdn",
+		  "value": "254701814779"
+		}
+	  ]
+	}
+}
+
+
+    """
+
+    def get(self, request, account_id, format=None):
+        account = CustomerWallet.objects.filter(wallet_id=account_id)
+        debit_mandates = DebitMandate.objects.filter(account=account)
+        serializer = DebitMandateSerializer(debit_mandates, many=True)
+        return Response(serializer.data)
+
+    def post(self, request, account_id, format=None):
+        account = CustomerWallet.objects.filter(wallet_id=account_id)
+        req = request.data["requestdebitmandate"]
+
+        payee_msisdn = req["debitParty"][0]["value"]
+        payee = CustomerWallet.objects.get(msisdn=payee_msisdn)
+
+        debit_mandate_data = {
+            "account_id": account,
+            "currency": req["currency"],
+            "amount_limit": req["amount_limit"],
+            "start_date": req["start_date"],
+            "end_date": req["end_date"],
+            "frequency_type": req["frequency_type"],
+            "mandate_status": req["mandate_status"],
+            "request_date": req["request_date"],
+            "number_of_payments": req["number_of_payments"],
+            "payer": account,
+            "payee": payee
+        }
+
+        debit_mandate = DebitMandate.objects.create(
+            **debit_mandate_data)
+
+        if debit_mandate.id:
+            return Response({},
+                            status=status.HTTP_201_CREATED)
+        return Response("Error creating debit mandate",
+                        status=status.HTTP_400_BAD_REQUEST)
