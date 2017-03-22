@@ -31,6 +31,7 @@ def send_normal_notification(notification_id, transaction_id):
     notification = Notification.objects.get(notid=notification_id)
     message = notification.message
     notification_type = notification.notification_type
+    transaction_id = str(transaction_id)
 
     notification_payload = {
         "to": notification.customer.token,
