@@ -69,8 +69,8 @@ def send_normal_notification(notification_id, transaction_id):
         else:
             notification.state = "failed"
             notification.save()
-            transaction.fail_transaction()
-            transaction.save()
+            # transaction.fail_transaction()
+            # transaction.save()
             logger.info('notification_failure',
                         data=notification_payload,
                         status_code=response.status_code,
