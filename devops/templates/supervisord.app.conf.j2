@@ -14,7 +14,7 @@ programs=gunicorn ,celery, celerybeat
 user={{ APP_USER }}
 directory={{ APP_DIR }}
 environment=DJANGO_SETTINGS_MODULE="settings.{{ APP_ENVIRONMENT }}",NEW_RELIC_CONFIG_FILE="/etc/newrelic.ini",NEW_RELIC_ENVIRONMENT="{{ APP_ENVIRONMENT }}"
-command=newrelic-admin run-program {{ APP_VIRTUALENV }}/bin/gunicorn wsgi:application
+command={{ APP_VIRTUALENV }}/bin/newrelic-admin run-program {{ APP_VIRTUALENV }}/bin/gunicorn wsgi:application
     --workers=3
     --timeout=120
     --bind="{{ GUNICORN_BIND_ADDRESS }}"
