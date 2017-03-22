@@ -1,13 +1,15 @@
 [staging:vars]
-ansible_ssh_user=vagrant
+ansible_user=ubuntu
 
 
 [app_servers]
-10.0.0.77
+ec2-54-154-229-112.eu-west-1.compute.amazonaws.com
 
 [db_servers]
-10.0.0.77
+ec2-54-154-229-112.eu-west-1.compute.amazonaws.com
 
 [staging:children]
 app_servers
 db_servers
+
+
