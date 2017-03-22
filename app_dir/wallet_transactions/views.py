@@ -5,11 +5,13 @@ from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError
 from django.forms import model_to_dict
-from django.http import Http404
+from django.http import Http404, request
 from django.db.models import Q
+from requests import RequestException
 from rest_framework import generics, status
 from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
+from rest_framework.reverse import reverse
 from rest_framework.views import APIView
 from structlog import get_logger
 
@@ -675,29 +677,20 @@ class BatchTransactions(APIView):
         if serializer.is_valid():
             batch_trx = serializer.save()
             for data in request.data["transactions"]:
-                server_correlation_id = uuid.uuid4()
-                source_msisdn = data["debitParty"][0]["value"]
-                source = CustomerWallet.objects.get(msisdn=source_msisdn)
-                destination_msisdn = data["creditParty"][0]["value"]
 
-                destination = CustomerWallet.objects.get(
-                    msisdn=destination_msisdn)
-                amount = data["amount"]
-                transaction_type = data["type"]
-                create_transaction_data = dict(
-                    source=source,
-                    server_correlation_id=server_correlation_id,
-                    destination=destination,
-                    amount=amount,
-                    transaction_type=transaction_type
-                )
+                try:
+                    transaction_response = self.create_transaction(data)
+                except RequestException as e:
+                    logger.exception("create_transaction_exception",
+                                     exception=e.message)
 
-                trx = Transaction.objects.create(
-                    **create_transaction_data)
-
-                batch_lookup = BatchTransactionLookup.objects.create(
-                    batch_transaction=batch_trx,
-                    transaction=trx)
+                if transaction_response.status_code == 202:
+                    response_data = transaction_response.data
+                    trx = Transaction.objects.get(
+                        trid=response_data["objectReference"])
+                    batch_lookup = BatchTransactionLookup.objects.create(
+                        batch_transaction=batch_trx,
+                        transaction=trx)
 
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
@@ -705,6 +698,17 @@ class BatchTransactions(APIView):
                 batch_transaction_errors=serializer.error_messages, )
             return Response(return_errors,
                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def create_transaction(self, data):
+        server_correlation_id = str(uuid.uuid4())
+        headers = {
+            "X_CORRELATIONID": server_correlation_id,
+            "Authorization": "api-key"
+        }
+        response = request.post(reverse('create_transaction'), data=data,
+                                headers=headers)
+
+        return response
 
 
 class GetStatementByTransactionID(APIView):
@@ -864,6 +868,7 @@ class DebitMandates(APIView):
 
 
     """
+
     def get(self, request, msisdn, format=None):
         account = CustomerWallet.objects.filter(msisdn=msisdn)
         debit_mandates = DebitMandate.objects.filter(account=account)
@@ -899,6 +904,7 @@ class DebitMandates(APIView):
                             status=status.HTTP_201_CREATED)
         return Response("Error creating debit mandate",
                         status=status.HTTP_400_BAD_REQUEST)
+
 
 class CreateDebitMandates(APIView):
     """
