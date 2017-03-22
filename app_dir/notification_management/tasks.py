@@ -12,7 +12,7 @@ from .models import Notification
 logger = get_logger('celery')
 
 FCM_API_HEADERS = {
-        "Authorization": settings.FCM_API_KEY,
+        "Authorization": "key="+settings.FCM_API_KEY,
         "Content-Type": "application/json",
         "Accept": 'application/json'
     }
