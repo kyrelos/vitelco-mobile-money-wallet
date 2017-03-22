@@ -13,8 +13,8 @@ programs=gunicorn ,celery, celerybeat
 [program:gunicorn]
 user={{ APP_USER }}
 directory={{ APP_DIR }}
-environment=DJANGO_SETTINGS_MODULE="settings.{{ APP_ENVIRONMENT }}"
-command=authbind {{ APP_VIRTUALENV }}/bin/gunicorn wsgi:application
+environment=DJANGO_SETTINGS_MODULE="settings.{{ APP_ENVIRONMENT }}",NEW_RELIC_CONFIG_FILE="/etc/newrelic.ini",NEW_RELIC_ENVIRONMENT="{{ APP_ENVIRONMENT }}"
+command=newrelic-admin run-program {{ APP_VIRTUALENV }}/bin/gunicorn wsgi:application
     --workers=3
     --timeout=120
     --bind="{{ GUNICORN_BIND_ADDRESS }}"
@@ -24,6 +24,7 @@ stderr_logfile={{ APP_DIR }}/log/%(program_name)s.log
 autorestart=true
 stopasgroup=true
 startsecs=5
+
 
 [program:celery]
 user={{ APP_USER }}
