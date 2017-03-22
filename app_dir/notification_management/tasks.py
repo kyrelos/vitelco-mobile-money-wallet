@@ -63,7 +63,7 @@ def send_normal_notification(notification_id, transaction_id):
             logger.info('notification_success',
                         data=notification_payload,
                         status_code=response.status_code,
-                        response=response.json()
+                        response=str(response.text)
                         )
 
         else:
@@ -74,7 +74,7 @@ def send_normal_notification(notification_id, transaction_id):
             logger.info('notification_failure',
                         data=notification_payload,
                         status_code=response.status_code,
-                        response=response.json(),
+                        response=str(response.text),
 
                         )
     except RequestException as e:
@@ -127,7 +127,7 @@ def send_push_notification(notification_id, transaction_id):
             logger.info('send_push_notification_success',
                         data=notification_payload,
                         status_code=response.status_code,
-                        response=response.json()
+                        response=str(response.text)
                         )
 
         else:
@@ -141,7 +141,7 @@ def send_push_notification(notification_id, transaction_id):
             logger.info('send_push_notification_failure',
                         data=notification_payload,
                         status_code=response.status_code,
-                        response=response.json(),
+                        response=response.text,
 
                         )
     except RequestException as e:
