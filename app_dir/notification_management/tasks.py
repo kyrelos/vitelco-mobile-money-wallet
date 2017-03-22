@@ -60,8 +60,8 @@ def send_normal_notification(notification_id, transaction_id):
         if response.status_code in (200, 202):
             notification.state = "success"
             notification.save()
-            transaction.complete_transaction()
-            transaction.save()
+            # transaction.complete_transaction()
+            # transaction.save()
 
             logger.info('notification_success',
                         data=notification_payload,
@@ -122,7 +122,7 @@ def send_push_notification(notification_id, transaction_id):
     }
     try:
         response = requests.post(settings.FCM_URL,
-                                 data=notification_payload,
+                                 data=json.dumps(notification_payload),
                                  headers=FCM_API_HEADERS
                                  )
         if response.status_code in (200, 202):
