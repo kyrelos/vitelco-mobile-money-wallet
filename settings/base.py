@@ -51,6 +51,7 @@ LOCAL_APPS = (
     'app_dir.notification_management.apps.NotificationManagementConfig',
     'app_dir.customer_wallet_management.apps.CustomerWalletManagementConfig',
     'app_dir.wallet_transactions.apps.WalletTransactionsConfig',
+    'app_dir.bill_management.apps.BillManagementConfig',
 
 )
 
