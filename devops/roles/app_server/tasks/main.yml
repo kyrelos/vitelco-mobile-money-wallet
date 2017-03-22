@@ -57,22 +57,21 @@
     dest=/etc/supervisor/conf.d/{{ APP_NAME }}.conf
     state=link force=yes
 
+# use letsencrypt ssl cert
 - name: configure nginx ssl cert
-  template: src=files/nginx.crt dest=/etc/nginx/nginx.crt
+  template: src=nginx.crt dest=/etc/nginx/nginx.crt
   tags:
     - ssl
 
 - name: configure nginx ssl key
-  template: src=files/nginx.key dest=/etc/nginx/nginx.key
+  template: src=nginx.key dest=/etc/nginx/nginx.key
   tags:
     - ssl
 
 - name: configure dhparams
-  template: src=files/dhparam.pem dest=/etc/nginx/dhparam.pem
+  template: src=dhparam.pem dest=/etc/nginx/dhparam.pem
   tags:
     - ssl
-
-
 
 - name: Create nginx site configuration
   template: src=nginx.site.j2
@@ -96,3 +95,11 @@
     src=../../../templates/bash_aliases
     dest=/home/vagrant/.bash_aliases
   when: APP_ENVIRONMENT == "development"
+
+- name: download lego letsencrypt client
+  shell: wget -nc --directory-prefix=/home https://github.com/xenolf/lego/releases/download/v0.3.1/lego_linux_amd64.tar.xz
+  tags: letsencrypt
+
+- name: install lego letsencrypt client
+  shell: tar -xvf /home/lego_linux_amd64.tar.xz -C /usr/local/bin
+  tags: letsencrypt

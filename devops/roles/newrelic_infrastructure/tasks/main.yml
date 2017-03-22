@@ -1,0 +1,34 @@
+---
+# tasks
+- name: Write newrelic-infra.yml
+  template: dest=/tmp/newrelic-infra.yml
+            src=newrelic-infra.yml.j2
+            backup=yes
+  tags: env_sub
+
+- name: Write newrelic.ini file
+  template: dest=/tmp/newrelic.ini
+            src=newrelic.ini.j2
+            backup=yes
+  tags: env_sub
+
+- name: enable newrelic gpg key
+  shell: curl -vkL https://download.newrelic.com/infrastructure_agent/gpg/newrelic-infra.gpg | sudo apt-key add -
+
+- name: add newrelic apt repo
+  shell: printf "deb [arch=amd64] https://download.newrelic.com/infrastructure_agent/linux/apt trusty main" | sudo tee -a /etc/apt/sources.list.d/newrelic-infra.list
+
+- name: apt update
+  shell: sudo apt-get -y update
+
+- name: install newrelic infra agent 
+  shell: sudo apt-get -y install newrelic-infra
+  when: APP_ENVIRONMENT != "development"
+
+# the file /home/ubuntu/newrelic_licesnse_key.txt with a valid newrelic license key 
+# needs to already be present in the server
+- name: get newrelic license key from a file that's already in the server
+  shell: value=$(</home/ubuntu/newrelic_licesnse_key.txt) && sed "s/NEWRELIC_LICENSE_KEY/$value/g" < /tmp/newrelic-infra.yml >/etc/newrelic-infra.yml executable="/bin/bash"
+
+- name: get newrelic license key from a file that's already in the serverII
+  shell: value=$(</home/ubuntu/newrelic_licesnse_key.txt) && sed "s/NEWRELIC_LICENSE_KEY/$value/g" < /tmp/newrelic.ini >/etc/newrelic.ini executable="/bin/bash"

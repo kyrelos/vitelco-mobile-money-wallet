@@ -16,6 +16,7 @@
       locale_address: en_US.UTF-8
       locale_telephone: en_US.UTF-8
       locale_measurement: en_US.UTF-8
+    - role: newrelic_infrastructure
 
 
 - { hosts: app_servers, sudo: yes, roles: [ bennojoy.nginx], tags: [ bennojoy.nginx ]}
