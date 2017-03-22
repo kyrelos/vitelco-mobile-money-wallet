@@ -45,12 +45,12 @@ class Transaction(models.Model):
     currency = models.CharField(max_length=10, default="KES")
     description_text = models.CharField(max_length=100, null=True, blank=True)
     source = models.ForeignKey(
-            CustomerWallet,
-            related_name="transaction_source"
+        CustomerWallet,
+        related_name="transaction_source"
     )
     destination = models.ForeignKey(
-            CustomerWallet,
-            related_name="transaction_destination"
+        CustomerWallet,
+        related_name="transaction_destination"
     )
     amount = models.IntegerField()
     server_correlation_id = models.UUIDField(unique=True)
@@ -68,8 +68,8 @@ class Transaction(models.Model):
 
     def __unicode__(self):
         return "{source}: {destination}".format(
-                source=self.source,
-                destination=self.destination
+            source=self.source,
+            destination=self.destination
         )
 
     class Meta:
@@ -117,9 +117,9 @@ class BatchTransaction(models.Model):
 
     def __unicode__(self):
         return "{name}: {msisdn} {batch_trid}".format(
-                name=self.merchant.name,
-                msisdn=self.merchant.msisdn,
-                batch_trid=self.batch_trid
+            name=self.merchant.name,
+            msisdn=self.merchant.msisdn,
+            batch_trid=self.batch_trid
         )
 
     class Meta:
@@ -139,8 +139,8 @@ class BatchTransactionLookup(models.Model):
 
     def __unicode__(self):
         return "{from_}: {to}".format(
-                from_=self.batch_transaction.merchant,
-                to=self.transaction.destination
+            from_=self.batch_transaction.merchant,
+            to=self.transaction.destination
         )
 
     class Meta:
@@ -165,10 +165,79 @@ class WalletTopupTransaction(models.Model):
 
     def __unicode__(self):
         return "{from_}: {to}".format(
-                from_=self.bank_name,
-                to=self.wallet
+            from_=self.bank_name,
+            to=self.wallet
         )
 
     class Meta:
         verbose_name = 'Wallet Top-up Transaction'
         verbose_name_plural = 'Wallet Top-up Transactions'
+
+
+class DebitMandate(models.Model):
+    "This model stores all the debit mandates for particular accounts"
+
+    weekly, fortnight, monthspecificdate, twomonths, threemonths, \
+    fourmonths, sixmonths, yearly, lastdaymonth, lastdaymonthworking, \
+    lastmonday, lasttuesday, lastwednesday, lastthursday, lastfriday, \
+    lastsaturday, lastsunday, specificdaymonthly = "weekly", "fortnight", \
+                                                   "monthspecificdate", \
+                                                   "twomonths", \
+                                                   "threemonths", \
+                                                   "fourmonths", \
+                                                   "sixmonths", "yearly", \
+                                                   "lastdaymonth", \
+                                                   "lastdaymonthworking", \
+                                                   "lastmonday", \
+                                                   "lasttuesday", \
+                                                   "lastwednesday", \
+                                                   "lastthursday", \
+                                                   "lastfriday", \
+                                                   "lastsaturday", \
+                                                   "lastsunday", \
+                                                   "specificdaymonthly"
+
+    FREQUECY_TYPE = (
+        (weekly, weekly),
+        (fortnight, fortnight),
+        (monthspecificdate, monthspecificdate),
+        (twomonths, twomonths, ),
+        (threemonths, threemonths),
+        (fourmonths, fourmonths),
+        (sixmonths, sixmonths),
+        (yearly, yearly),
+        (lastdaymonth, lastdaymonth),
+        (lastdaymonthworking, lastdaymonthworking),
+        (lastmonday, lastmonday),
+        (lasttuesday, lasttuesday),
+        (lastwednesday, lastwednesday),
+        (lastthursday, lastthursday),
+        (lastfriday, lastfriday),
+        (lastsaturday, lastsaturday),
+        (lastsunday, lastsunday),
+        (specificdaymonthly, specificdaymonthly)
+    )
+
+    MANDATE_STATUS = (
+        ("active", "active"),
+        ("inactive", "inactive")
+    )
+    payer = models.ForeignKey(CustomerWallet, related_name="payer", null=True)
+    payee = models.ForeignKey(CustomerWallet, related_name="payee", null=True)
+    account = models.ForeignKey(CustomerWallet)
+    currency = models.CharField(default="KES", max_length=10)
+    amount_limit = models.IntegerField()
+    start_date = models.DateTimeField()
+    end_date = models.DateTimeField()
+    number_of_payments = models.IntegerField()
+    frequency_type = models.CharField(max_length=20,
+                                     choices=FREQUECY_TYPE)
+    mandate_status = models.CharField(max_length=20,
+                                      choices=MANDATE_STATUS)
+    request_date = models.DateTimeField()
+
+    def __unicode__(self):
+        return "{payer}: {payee}".format(
+                payer=self.payer,
+                payee=self.payee
+        )

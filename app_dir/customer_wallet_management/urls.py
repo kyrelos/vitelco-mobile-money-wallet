@@ -1,5 +1,6 @@
 from django.conf.urls import url
 from . import views
+from app_dir.wallet_transactions.views import DebitMandates
 
 urlpatterns = [
     url(r'^$',
@@ -38,4 +39,8 @@ urlpatterns = [
     url(r'^(?P<wallet_id>[0-9a-zA-z\-]+)/statemententries/$',
         views.GetStatementEntriesByAccountID.as_view(),
         name="get_statement_by_account_id"),
+    url(r'^msisdn/(?P<msisdn>[0-9a-zA-Z\-]+)/debitmandates$',
+        DebitMandates.as_view(),
+        name='debit_mandate_by_msisdn'),
+
 ]
