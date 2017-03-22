@@ -137,6 +137,14 @@ class CustomerWallet(models.Model):
 
         return bills
 
+    @property
+    def get_token(self):
+        from app_dir.notification_management.models import \
+            NotificationDeviceMap
+        device = NotificationDeviceMap.objects.get(msisdn=self.msisdn)
+        token = device.token
+        return token
+
     class Meta:
         verbose_name = 'Account'
         verbose_name_plural = 'Accounts'
