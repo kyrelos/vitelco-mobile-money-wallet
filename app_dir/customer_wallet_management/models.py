@@ -15,11 +15,12 @@ class CustomerWallet(models.Model):
     type: type of the customer
     """
     active, dormant, inactive = "active", "dormant", "inactive"
-    normal, merchant = "normal", "merchant"
+    normal, merchant, agent = "normal", "merchant", "agent"
 
     CUSTOMER_TYPES = (
         (normal, normal),
-        (merchant, merchant)
+        (merchant, merchant),
+        (agent, agent)
     )
 
     CUSTOMER_STATUS_TYPES = (
