@@ -12,7 +12,6 @@ from structlog import get_logger
 logger = get_logger('celery')
 
 API_HEADERS = {
-    "Authorization": settings.API_KEY,
     "Content-Type": "application/json",
     "Accept": 'application/json'
 }
