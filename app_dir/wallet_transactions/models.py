@@ -230,12 +230,15 @@ class DebitMandate(models.Model):
     amount_limit = models.IntegerField()
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
+    mandate_reference = models.UUIDField(unique=True, default=uuid.uuid4)
     number_of_payments = models.IntegerField()
     frequency_type = models.CharField(max_length=20,
                                      choices=FREQUECY_TYPE)
     mandate_status = models.CharField(max_length=20,
                                       choices=MANDATE_STATUS)
     request_date = models.DateTimeField()
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
+    modified_at = models.DateTimeField(auto_now=True, null=True)
 
     def __unicode__(self):
         return "{payer}: {payee}".format(
