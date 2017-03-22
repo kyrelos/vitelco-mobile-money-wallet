@@ -22,6 +22,7 @@ def process_transaction(transaction_id):
     :param notification_id:
     :return:
     """
+    transaction_id = str(transaction_id)
     logger.info('process_transaction_start', trid=transaction_id)
     transaction = Transaction.objects.get(trid=transaction_id)
     current_state = transaction.state
@@ -35,10 +36,11 @@ def process_transaction(transaction_id):
                     message="Please enter Pin to complete transaction"
 
             )
-            send_push_notification.delay(notification.notid, transaction_id)
+            send_push_notification.delay(str(notification.notid),
+                                             transaction_id)
             logger.info('process_transaction_notify_push',
                         trid=transaction_id,
-                        notid=notification.notid
+                        notid=str(notification.notid)
                         )
 
         else:
@@ -53,7 +55,7 @@ def process_transaction(transaction_id):
             send_normal_notification.delay(notification.notid, transaction_id)
             logger.info('process_transaction_notify_normal',
                         trid=transaction_id,
-                        notid=notification.notid
+                        notid=str(notification.notid)
                         )
 
 
