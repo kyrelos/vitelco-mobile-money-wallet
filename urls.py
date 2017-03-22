@@ -7,7 +7,7 @@ from app_dir.wallet_api.views import APIRootView
 from app_dir.wallet_transactions import url_batch_transaction_urls
 from app_dir.wallet_transactions.views import GetTransactionState, \
     GetStatementByTransactionID
-from app_dir.bill_management import urls as notification_urls
+from app_dir.bill_management import urls as bill_urls
 
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
@@ -30,5 +30,6 @@ urlpatterns = [
     url(r'^api/v1/statemententries/(?P<trid>[0-9a-zA-z\-]+)',
         GetStatementByTransactionID.as_view(),
         name="get_statement_by_trid"),
-    url(r'^api/v1/bills/(?P<bill_reference>[\w\-]+)/payments', include(notification_urls))
+    url(r'^api/v1/bills/(?P<bill_reference>[\w\-]+)/payments',
+        include(bill_urls))
 ]
