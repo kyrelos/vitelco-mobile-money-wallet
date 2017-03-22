@@ -14,10 +14,10 @@ from .models import Notification
 logger = get_logger('celery')
 
 FCM_API_HEADERS = {
-        "Authorization": "key="+settings.FCM_API_KEY,
-        "Content-Type": "application/json",
-        "Accept": 'application/json'
-    }
+    "Authorization": "key=" + settings.FCM_API_KEY,
+    "Content-Type": "application/json",
+    "Accept": 'application/json'
+}
 
 
 @shared_task
@@ -31,7 +31,6 @@ def send_normal_notification(notification_id, transaction_id):
 
     title = "Vitelco Transaction"
     notification = Notification.objects.get(notid=notification_id)
-    message = notification.message
     transaction_id = str(transaction_id)
     transaction = Transaction.objects.get(trid=transaction_id)
     source = transaction.source
@@ -40,31 +39,31 @@ def send_normal_notification(notification_id, transaction_id):
     source_message = "You have sent {currency} {amount} to " \
                      "{name} {destination} successfully. " \
                      "Transaction Reference: {trid}".format(
-                        currency=transaction.currency,
-                        amount=transaction.amount,
-                        name=destination.name,
-                        destination=destination.msisdn,
-                        trid=transaction.trid
+            currency=transaction.currency,
+            amount=transaction.amount,
+            name=destination.name,
+            destination=destination.msisdn,
+            trid=transaction.trid
 
-                        )
+    )
 
     destination_message = "You have received {currency} {amount} from " \
                           "{name} {source} successfully. " \
                           "Transaction Reference: {trid}".format(
-                            currency=transaction.currency,
-                            amount=transaction.amount,
-                            name=source.name,
-                            source=source.msisdn,
-                            trid=transaction.trid
+            currency=transaction.currency,
+            amount=transaction.amount,
+            name=source.name,
+            source=source.msisdn,
+            trid=transaction.trid
 
-                            )
+    )
 
     source_notification_payload = {
         "notification": {
             "body": source_message,
             "title": title
         },
-        "to": source.token
+        "to": source.get_token
     }
 
     destination_notification_payload = {
@@ -72,19 +71,20 @@ def send_normal_notification(notification_id, transaction_id):
             "body": destination_message,
             "title": title
         },
-        "to": destination.token
+        "to": destination.get_token
     }
     try:
         source_response = requests.post(settings.FCM_URL,
-                                 data=json.dumps(source_notification_payload),
-                                 headers=FCM_API_HEADERS
-                                 )
-        destination_response = requests.post(settings.FCM_URL,
                                         data=json.dumps(
-                                            destination_notification_payload),
+                                            source_notification_payload),
                                         headers=FCM_API_HEADERS
                                         )
-        if source_response.status_code in (200, 202) and destination_response\
+        destination_response = requests.post(settings.FCM_URL,
+                                             data=json.dumps(
+                                                     destination_notification_payload),
+                                             headers=FCM_API_HEADERS
+                                             )
+        if source_response.status_code in (200, 202) and destination_response \
                 in (200, 202):
             notification.state = "success"
             notification.save()
@@ -137,13 +137,18 @@ def send_push_notification(notification_id, transaction_id):
     """
     transaction_id = str(transaction_id)
     notification_id = str(notification_id)
+    transaction = Transaction.objects.get(
+            trid=transaction_id
+    )
 
-    notification = Notification.objects.get(notid=notification_id)
+    notification = Notification.objects.get(
+            notid=notification_id
+    )
     message = notification.message
     notification_type = notification.notification_type
 
     notification_payload = {
-        "to": notification.customer.token,
+        "to": transaction.destination.get_token,
         "data": {
             "v_message": message,
             "v_message_type": notification_type,
@@ -169,9 +174,6 @@ def send_push_notification(notification_id, transaction_id):
         else:
             notification.state = "failed"
             notification.save()
-            transaction = Transaction.objects.get(
-                    trid=transaction_id
-            )
             transaction.fail_transaction()
             transaction.save()
             logger.info('send_push_notification_failure',
