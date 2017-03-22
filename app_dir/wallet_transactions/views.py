@@ -15,6 +15,7 @@ from structlog import get_logger
 
 from app_dir.customer_wallet_management.models import CustomerWallet
 from app_dir.wallet_transactions.serializers import BatchTransactionSerializer
+from app_dir.wallet_transactions.tasks import process_transaction
 
 from .models import Transaction, BatchTransaction, BatchTransactionLookup, \
     DebitMandate
@@ -496,21 +497,20 @@ class CreateTransactions(APIView):
                 transaction_type=transaction_type
             )
             source_balance = source.get_available_balance()
-            if transaction_type == 'transfer':
-                logger.info("create_transaction_balance",
-                            balance=source_balance,
-                            amount=amount,
-                            source=str(source.wallet_id),
-                            destination=str(destination.wallet_id)
-                            )
-                if source_balance < amount:
-                    insufficient_funds_response = send_error_response(
-                        message="You have insufficient funds",
-                        key="Balance",
-                        value=source_balance,
-                        status=status.HTTP_402_PAYMENT_REQUIRED
-                    )
-                    return insufficient_funds_response
+            logger.info("create_transaction_balance",
+                        balance=source_balance,
+                        amount=amount,
+                        source=str(source.wallet_id),
+                        destination=str(destination.wallet_id)
+                        )
+            if source_balance < amount:
+                insufficient_funds_response = send_error_response(
+                    message="You have insufficient funds",
+                    key="Balance",
+                    value=source_balance,
+                    status=status.HTTP_402_PAYMENT_REQUIRED
+                )
+                return insufficient_funds_response
 
         except KeyError as e:
             error_message = "Missing required field"
@@ -546,6 +546,7 @@ class CreateTransactions(APIView):
                         "error": None
 
                     }
+                    process_transaction.delay(trid)
                     logger.info("create_transaction_202",
                                 status=status.HTTP_202_ACCEPTED,
                                 trid=trid,
