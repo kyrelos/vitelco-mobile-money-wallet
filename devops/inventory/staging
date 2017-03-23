@@ -3,9 +3,9 @@ ansible_user=ubuntu
 
 
 [app_servers]
-ec2-54-154-229-112.eu-west-1.compute.amazonaws.com
-ec2-54-194-242-205.eu-west-1.compute.amazonaws.com
-ec2-54-154-119-50.eu-west-1.compute.amazonaws.com
+ec2-54-77-252-5.eu-west-1.compute.amazonaws.com
+ec2-54-154-145-227.eu-west-1.compute.amazonaws.com
+ec2-54-154-251-29.eu-west-1.compute.amazonaws.com
 
 [db_servers]
 
