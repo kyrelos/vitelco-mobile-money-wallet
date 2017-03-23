@@ -836,7 +836,7 @@ class GetStatementByTransactionID(APIView):
             logger.info("get_statemententries_404",
                         message="DATE Header not supplied",
                         status=status.HTTP_400_BAD_REQUEST,
-                        trid=trid,
+                        trid=str(trid),
                         key="DATE"
                         )
             return send_error_response(
@@ -881,14 +881,14 @@ class GetStatementByTransactionID(APIView):
             logger.info("get_statemententries_200",
                         status=status.HTTP_200_OK,
                         key="trid",
-                        trid=trid
+                        trid=str(trid)
                         )
             return response
 
         except ObjectDoesNotExist:
             logger.info("get_stamententries_404",
                         status=status.HTTP_404_NOT_FOUND,
-                        trid=trid,
+                        trid=str(trid),
                         key="trid"
                         )
 
@@ -902,7 +902,7 @@ class GetStatementByTransactionID(APIView):
         except ValueError:
             logger.info("get_stamententries_404",
                         status=status.HTTP_404_NOT_FOUND,
-                        trid=trid,
+                        trid=str(trid),
                         key="trid"
                         )
             return send_error_response(

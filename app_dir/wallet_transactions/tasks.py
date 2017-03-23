@@ -37,7 +37,7 @@ def process_transaction(transaction_id):
     if current_state == "pending":
         transaction.start_transaction()
         transaction.save()
-        if transaction.transaction_type in ["merchantpay", "billpay"]:
+        if transaction.transaction_type in ["merchantPayment", "billPay"]:
             notification = Notification.objects.create(
                 notification_type="push",
                 customer=transaction.destination,
