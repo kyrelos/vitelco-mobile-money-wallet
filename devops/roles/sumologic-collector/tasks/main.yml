@@ -13,7 +13,7 @@
 
 - name: 'add collector sources configuration'
   template:
-    src='{{ sumologic_collector_source_template }}'
+    src=sumo-sources.json.j2
     dest=/etc/sumo-sources.json
   register: sumologic_collector_add_sources_configuration
 
