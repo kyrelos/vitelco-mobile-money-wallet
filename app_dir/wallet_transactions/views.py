@@ -318,34 +318,35 @@ class GetBatchTransaction(APIView):
         "reference": "0ca4f513-6728-4502-810c-f7132b4dc4f4",
         "transactions": [
             {
-            "request_date": "2017-03-21",
-            "currency": "KES",
-            "trid": "e7815dcf-a2eb-4b92-bbdf-8f465125258a",
-            "destination": 4,
-            "state": "reversed",
-            "transaction_type": "deposit",
-            "source": 2,
-            "amount": 10000,
-            "server_correlation_id": "ea34585f-b153-456a-bf8d-b2134d3f7b0f",
-            "description_text": null,
-            "callback_url": null,
-            "id": 1
+                "request_date": "2017-03-21",
+                "currency": "KES",
+                "trid": "e7815dcf-a2eb-4b92-bbdf-8f465125258a",
+                "destination": 4,
+                "state": "reversed",
+                "transaction_type": "deposit",
+                "source": 2,
+                "amount": 10000,
+                "server_correlation_id": "ea34585f-b153-456a-bf8d-b2134d3f7b0f",
+                "description_text": null,
+                "callback_url": null,
+                "id": 1
             },
             {
-            "request_date": "2017-03-21",
-            "currency": "KES",
-            "trid": "a898e9cb-a570-4611-ada0-1511906b5b0e",
-            "destination": 4,
-            "state": "completed",
-            "transaction_type": "deposit",
-            "source": 2,
-            "amount": 1000,
-            "server_correlation_id": "856cca14-b428-4ce2-9ef0-39413894851a",
-            "description_text": null,
-            "callback_url": null,
-            "id": 2
+                "request_date": "2017-03-21",
+                "currency": "KES",
+                "trid": "a898e9cb-a570-4611-ada0-1511906b5b0e",
+                "destination": 4,
+                "state": "completed",
+                "transaction_type": "deposit",
+                "source": 2,
+                "amount": 1000,
+                "server_correlation_id": "856cca14-b428-4ce2-9ef0-39413894851a",
+                "description_text": null,
+                "callback_url": null,
+                "id": 2
             }
-        }
+        ]
+    }
 
     HTTP Method: GET
     URI: api/v1/batchtransactions/completions
