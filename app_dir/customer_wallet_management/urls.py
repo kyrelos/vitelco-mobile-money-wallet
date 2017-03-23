@@ -10,7 +10,7 @@ urlpatterns = [
     url(r'^(?P<pk>[0-9]+)/$',
         views.CustomerWalletViewSet.as_view(),
         name="customer_wallet_detail"),
-    url(r'^msisdn/(?P<msisdn>[+][0-9]+)/status$',
+    url(r'^msisdn/(?P<msisdn>[+][0-9]+)/status/$',
         views.GetAccountStatusByMsisdn.as_view(),
         name="get_account_status_by_msisdn"),
     url(r'^(?P<wallet_id>[0-9a-zA-z\-]+)/status$',

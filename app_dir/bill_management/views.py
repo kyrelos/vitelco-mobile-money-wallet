@@ -175,7 +175,7 @@ class CreateBillPaymentByMsisdn(APIView):
     Example payload:
     {
         "currency": "KES",
-        "paidamount": "10000",
+        "paidAmount": "10000",
     }
 
 
@@ -204,5 +204,50 @@ class CreateBillPaymentByMsisdn(APIView):
 
     """
 
+    def post(self, request):
+        pass
+
+class CreateBillPaymentByBillReference(APIView):
+    """
+    This API creates a bill payment
+
+    URI: /api/v1/bills/{billReference}/payments
+
+    HTTP Headers:
+    `Content-Type: application/json,
+     Accept: application/json,
+     Date: 21-03-2017,
+     X-CorrelationID: afc71b32-9a8d-4260-8cdc-c6f452b9b09f`
+
+    Example payload:
+    {
+        "currency": "KES",
+        "paidAmount": "10000",
+    }
+
+
+    Example response:
+    {
+  "serverCorrelationId": "afc71b32-9a8d-4260-8cdc-c6f452b9b09a",
+  "status": "pending",
+  "pendingReason": "string",
+  "notificationMethod": "callback",
+  "objectReference": "afc71b32-9a8d-4260-8cdc-c6f452b9b09g",
+  "expiryTime": "string",
+  "pollLimit": 0,
+  "error": {
+    "errorCategory": "businessRule",
+    "errorCode": "genericError",
+    "errorDescription": "string",
+    "errorDateTime": "string",
+    "errorParameters": [
+      {
+        "key": "string",
+        "value": "string"
+      }
+    ]
+  }
+}
+    """
     def post(self, request):
         pass
