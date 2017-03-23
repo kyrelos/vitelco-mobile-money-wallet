@@ -28,7 +28,7 @@ server {
     }
     {% endfor %}
     if ($redirect_var = 1) {
-      return 307 https://vitelco-demo.jumo.world$request_uri;
+      return 307 https://gsma-hackathon.jumo.world$request_uri;
     }
 
     location ~ /.well-known {
@@ -80,7 +80,7 @@ server {
 
     {% else %}
     # use redirect status code 307 to preserve http method
-    return 307 https://vitelco-demo.jumo.world$request_uri;
+    return 307 https://gsma-hackathon.jumo.world$request_uri;
     {% endif %}
 }
 
