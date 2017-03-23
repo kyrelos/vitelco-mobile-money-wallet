@@ -89,7 +89,7 @@ class GetAccountStatusByMsisdn(APIView):
     """
       This API retrieves the customer's account status given a msisdn
       HTTP Method: GET
-      URI: /api/v1/accounts/msisdn/{msisdn}/status/
+      URI: /accounts/msisdn/{msisdn}/status/
 
       Required HTTP Headers:
       DATE: todays date
@@ -171,7 +171,7 @@ class GetAccountStatusByAccountId(APIView):
     """
       This API retrieves the customer's account status given a UUID
       HTTP Method: GET
-      URI: /api/v1/accounts/{uuid}/status/
+      URI: /accounts/{uuid}/status/
 
       Required HTTP Headers:
       DATE: todays date
@@ -265,7 +265,7 @@ class GetAccountNameByMsisdn(APIView):
     """
     This API retrieves the customers name details given a msisdn
     HTTP Method: GET
-    URI: /api/v1/accounts/msisdn/{msisdn}/accountname/
+    URI: /accounts/msisdn/{msisdn}/accountname/
     Required HTTP Headers:
     DATE: todays date
     AUTHORIZATION: api-key
@@ -373,7 +373,7 @@ class GetAccountNameByAccountId(APIView):
     This API retrieves the customers name details given a account_id
 
     HTTP Method: GET
-    URI: /api/v1/accounts/{account_id}/accountname/
+    URI: /accounts/{account_id}/accountname/
     Required HTTP Headers:
     DATE: todays date
     AUTHORIZATION: api-key
@@ -480,7 +480,7 @@ class AccountBalanceByMsisdn(APIView):
     """
     This API fetches the customers balance details given a msisdn
     HTTP Method: GET
-    URI: /api/v1/accounts/msisdn/{msisdn}/balance/
+    URI: /accounts/msisdn/{msisdn}/balance/
     Required HTTP Headers:
     DATE: todays date
     AUTHORIZATION: api-key
@@ -581,7 +581,7 @@ class AccountBalanceByAccountId(APIView):
     """
     This API fetches the customers balance details given an account_id
     HTTP Method: GET
-    URI: /api/v1/accounts/{account_id}/balance/
+    URI: /accounts/{account_id}/balance/
     Required HTTP Headers:
     DATE: todays date
     AUTHORIZATION: api-key
@@ -695,7 +695,7 @@ class AccountTransactionsByMsisdn(APIView):
     """
     This API fetches the customers transactions given an msisdn
     HTTP Method: GET
-    URI: /api/v1/accounts/msisdn/{msisdn}/transactions/
+    URI: /accounts/msisdn/{msisdn}/transactions/
     Required HTTP Headers:
     DATE: todays date
     AUTHORIZATION: api-key
@@ -1058,7 +1058,7 @@ class AccountTransactionsByAccountId(APIView):
     """
     This API fetches the customers transactions given an msisdn
     HTTP Method: GET
-    URI: /api/v1/accounts/{accountId}/transactions/
+    URI: /accounts/{accountId}/transactions/
     Required HTTP Headers:
     DATE: todays date
     AUTHORIZATION: api-key
@@ -1421,7 +1421,7 @@ class GetStatementEntriesByMsisdn(APIView):
     """
     This API fetches the customers last five transactions given the msisdn
     HTTP Method: GET
-    URI: /api/v1/accounts/msisdn/{msisdn}/statemententries/
+    URI: /accounts/msisdn/{msisdn}/statemententries/
     Required HTTP Headers:
     DATE: todays date
     AUTHORIZATION: api-key
@@ -1555,7 +1555,7 @@ class GetStatementEntriesByAccountID(APIView):
     """
     This API fetches the customers last five transactions given the accountID
     HTTP Method: GET
-    URI: /api/v1/accounts/msisdn/{msisdn}/statemententries/
+    URI: /accounts/msisdn/{msisdn}/statemententries/
     Required HTTP Headers:
     DATE: todays date
     AUTHORIZATION: api-key
@@ -1701,7 +1701,7 @@ class GetBillsByMsisdn(APIView):
     """
     This API fetches bills tied to a particular MSISDN
     HTTP Method: GET
-    URI: /api/v1/accounts/{accountid}/bills/
+    URI: /accounts/{accountid}/bills/
     Required HTTP Headers:
     DATE: todays date
     AUTHORIZATION: api-key
@@ -1806,7 +1806,7 @@ class GetBillsByAccountID(APIView):
     """
     This API fetches bills tied to a particular AccountID
     HTTP Method: GET
-    URI: /api/v1/accounts/msisdn/{msisdn}/bills/
+    URI: /accounts/msisdn/{msisdn}/bills/
     Required HTTP Headers:
     DATE: todays date
     AUTHORIZATION: api-key
@@ -1920,7 +1920,7 @@ class GetDebitMandateByAccountId(APIView):
     """
     This API fetches the customers transactions given an msisdn
     HTTP Method: GET
-    URI: /api/v1/accounts/{accountId}/debitmandates/{debitMandateReference}
+    URI: /accounts/{accountId}/debitmandates/{debitMandateReference}
     Required HTTP Headers:
     DATE: todays date
     AUTHORIZATION: api-key
@@ -2039,7 +2039,7 @@ class GetDebitMandateByMsisdn(APIView):
     """
     This API fetches the customers transactions given an msisdn
     HTTP Method: GET
-    URI: /api/v1/accounts/{msisdn}/debitmandates/{debitMandateReference}
+    URI: /accounts/{msisdn}/debitmandates/{debitMandateReference}
     Required HTTP Headers:
     DATE: todays date
     AUTHORIZATION: api-key

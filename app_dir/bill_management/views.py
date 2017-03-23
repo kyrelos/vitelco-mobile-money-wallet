@@ -60,7 +60,7 @@ class CreateBill(APIView):
     """
     This API creates a bill object
 
-    URL: /api/v1/bills/
+    URL: /bills/
 
     HTTP Headers:
     `Content-Type: application/json,
@@ -202,7 +202,7 @@ class CreateBillPaymentByMsisdn(APIView):
     """
     This API creates a bill payment
 
-    URI: /api/v1/accounts/msisdn/{msisdn}/bills/{billReference}/payments
+    URI: /accounts/msisdn/{msisdn}/bills/{billReference}/payments
 
     HTTP Headers:
     `Content-Type: application/json,

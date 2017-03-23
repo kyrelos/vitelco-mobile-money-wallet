@@ -17,4 +17,4 @@ DATABASES = {
 SESSION_COOKIE_SECURE = False
 CSRF_COOKIE_SECURE = False
 
-TRANSACTIONS_URL = "http://10.0.0.77/api/v1/transactions/"
+TRANSACTIONS_URL = "http://10.0.0.77/transactions/"

@@ -89,7 +89,7 @@ class GetTransaction(APIView):
     """
     This API retrieves a transaction given the transaction reference
     HTTP Method: GET
-    URI: /api/v1/transactions/{transactionReference}
+    URI: /transactions/{transactionReference}
     Required HTTP Headers:
     DATE: todays date
     AUTHORIZATION: api-key
@@ -197,7 +197,7 @@ class GetTransactionState(APIView):
     """
     This API retrieves a transaction state given serverCorrelationId
     HTTP Method: GET
-    URI: /api/v1/requeststates/{serverCorrelationId}
+    URI: /requeststates/{serverCorrelationId}
     Required HTTP Headers:
     DATE: todays date
     AUTHORIZATION: api-key
@@ -489,7 +489,7 @@ class CreateTransactions(APIView):
     """
       This API posts a transaction
       HTTP Method: POST
-      URI: /api/v1/transactions/
+      URI: /transactions/
 
       Required HTTP Headers:
       DATE: todays date
@@ -671,7 +671,7 @@ class BatchTransactions(APIView):
     """
     This API posts batch transactions
       HTTP Method: POST
-      URI: /api/v1/batchtransactions/
+      URI: /batchtransactions/
 
     ===== SAMPLE PAY LOAD ======
     {
@@ -799,7 +799,7 @@ class GetStatementByTransactionID(APIView):
     """
     This API fetches the customers last five transactions given the accountID
     HTTP Method: GET
-    URI: /api/v1/statemententries/{transactionReference}
+    URI: /statemententries/{transactionReference}
     Required HTTP Headers:
     DATE: todays date
     AUTHORIZATION: api-key
@@ -928,7 +928,7 @@ class DebitMandates(APIView):
     """
     This API posts debit mandates the calling msisdn is treated as the payer
       HTTP Method: POST
-      URI: /api/v1/accounts/msisdn/{msisdn}/debitmandates/
+      URI: /accounts/msisdn/{msisdn}/debitmandates/
 
     ===== SAMPLE PAY LOAD ======
             {
@@ -1006,7 +1006,7 @@ class CreateDebitMandates(APIView):
     """
     This API posts debit mandates the calling msisdn is treated as the payer
       HTTP Method: POST
-      URI: /api/v1/accounts/{accountId}/debitmandates/
+      URI: /accounts/{accountId}/debitmandates/
 
     ===== SAMPLE PAY LOAD ======
             {
