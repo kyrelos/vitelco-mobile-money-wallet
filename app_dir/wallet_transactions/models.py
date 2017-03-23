@@ -19,10 +19,10 @@ class Transaction(models.Model):
                                                          "failed", \
                                                          "reversed"
 
-    reversal, billpay, deposit, transfer, = "reversal", "billpay", \
+    reversal, bill_pay, deposit, transfer, = "reversal", "billPay", \
                                             "deposit", "transfer"
-    withdrawal, disbursement, merchantpay = "withdrawal", "disbursement", \
-                                            "merchantpay"
+    withdrawal, disbursement, merchant_payment = "withdrawal", "disbursement", \
+                                            "merchantPayment"
 
     TRANSACTION_STATES = (
         (pending, pending),
@@ -34,12 +34,12 @@ class Transaction(models.Model):
 
     TRANSACTION_TYPES = (
         (reversal, reversal),
-        (billpay, billpay),
+        (bill_pay, bill_pay),
         (deposit, deposit),
         (transfer, transfer),
         (withdrawal, withdrawal),
         (disbursement, disbursement),
-        (merchantpay, merchantpay),
+        (merchant_payment, merchant_payment),
     )
     trid = models.UUIDField(unique=True, default=uuid.uuid4)
     currency = models.CharField(max_length=10, default="KES")
