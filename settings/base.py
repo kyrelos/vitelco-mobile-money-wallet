@@ -149,7 +149,7 @@ LOGGING = {
     'formatters': {
         'verbose': {
             'format': '%(asctime)s %(levelname)s module=%(module)s, '
-            'process_id=%(process)d, %(message)s'
+            'process_id=%(process)d, environment="jumo-ntw", %(message)s'
         }
     },
     'loggers': {

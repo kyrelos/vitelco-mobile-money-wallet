@@ -1,0 +1,6 @@
+---
+- hosts: all
+  roles:
+  - role: modcloth.sumologic-collector
+    sumologic_installer_file: files/sumo.deb
+    sumologic_installer_url: https://collectors.eu.sumologic.com/rest/download/deb/64

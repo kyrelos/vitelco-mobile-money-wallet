@@ -2,6 +2,13 @@
 - hosts: app_servers
   gather_facts: no
   sudo: no
+  serial: 1
+
+  # enable zero downtime deployments
+  pre_tasks:
+    - name: graceful shutdown nginx for dns roud robin
+      service: name=nginx state=stopped enabled=yes
+      sudo: yes
 
   tasks:
     - name: Check out code on app server
@@ -79,3 +86,8 @@
 
     - name: restart monit
       service: name=monit state=restarted
+
+  post_tasks:
+    - name: start nginx
+      service: name=nginx state=started enabled=yes
+      sudo: yes

@@ -23,6 +23,14 @@
 
 - { hosts: app_servers, sudo: yes, roles: [ app_server ], tags: [ app_server ]}
 
+- hosts: app_servers
+  sudo: yes
+  roles:
+    - role: sumologic-collector
+      sumologic_installer_url: https://collectors.eu.sumologic.com/rest/download/deb/64
+      sumologic_collector_name: jumo_ntw_logs_Collector
+      when: APP_ENVIRONMENT != 'development'
+      tags: [sumologic]
 
 - hosts: db_servers
   sudo: yes
@@ -43,4 +51,3 @@
           priv: ALL
       tags: 
         - db_server
-

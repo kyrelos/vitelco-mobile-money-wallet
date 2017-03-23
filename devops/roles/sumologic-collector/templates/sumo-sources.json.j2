@@ -1,0 +1,16 @@
+{
+  "api.version": "v1",
+  "sources": [
+    {
+      "name": "jumo_ntw_logs",
+      "sourceType": "LocalFile",
+      "automaticDateParsing": true,
+      "multilineProcessingEnabled": false,
+      "useAutolineMatching": true,
+      "forceTimeZone": false,
+      "timeZone": "UTC",
+      "category": "jumo-NTW",
+      "pathExpression": "{{ APP_DIR }}/log/*.log$"
+    }
+  ]
+}
