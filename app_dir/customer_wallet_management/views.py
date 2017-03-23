@@ -1708,7 +1708,7 @@ class GetBillsByMsisdn(APIView):
     CONTENT-TYPE: application/json
     Success response:
     HTTP status code: 200
-    {
+    [{
         "currency" : "",
         "amountDue" : "",
         "dueDate" : "",
@@ -1719,7 +1719,7 @@ class GetBillsByMsisdn(APIView):
         "key" : "",
         "value" : ""
         } ]
-    }
+    }]
     Error response: [404, 400, account in inactive state,
                     DATE header not supplied]
     {
@@ -1770,7 +1770,11 @@ class GetBillsByMsisdn(APIView):
                         [{
                             "key": "billerMsisdn",
                             "value": biller_msisdn
-                        }]
+                        },
+                            {
+                                "key": "billStatus",
+                                "value": bill.bill_status
+                            }]
                 })
 
             response = Response(data=payload,
