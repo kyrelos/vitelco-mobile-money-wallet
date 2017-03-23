@@ -308,10 +308,10 @@ class GetBatchTransaction(APIView):
     Will return a list of all transactions connected to that bulk transction
 
     HTTP Method: GET
-    URI: api/v1/batchtransactions/
+    URI: /batchtransactions/
 
     Example request:
-    api/v1/batchtransactions/0ca4f513-6728-4502-810c-f7132b4dc4f4
+    /batchtransactions/0ca4f513-6728-4502-810c-f7132b4dc4f4
 
     Expected Response:
     {
@@ -495,6 +495,7 @@ class CreateTransactions(APIView):
       DATE: todays date
       AUTHORIZATION: api-key
       CONTENT-TYPE: application/json
+      X-CorrelationID: afc71b32-9a8d-4260-8cdc-c6f452b9b09f`
 
       Example Payload:
 
@@ -671,6 +672,11 @@ class BatchTransactions(APIView):
     """
     This API posts batch transactions
       HTTP Method: POST
+      HTTP Headers:
+    `Content-Type: application/json,
+     Accept: application/json,
+     Date: 21-03-2017,
+     X-CorrelationID: afc71b32-9a8d-4260-8cdc-c6f452b9b09f`
       URI: /batchtransactions/
 
     ===== SAMPLE PAY LOAD ======
@@ -927,6 +933,11 @@ class GetStatementByTransactionID(APIView):
 class DebitMandates(APIView):
     """
     This API posts debit mandates the calling msisdn is treated as the payer
+    HTTP Headers:
+    `Content-Type: application/json,
+     Accept: application/json,
+     Date: 21-03-2017,
+     X-CorrelationID: afc71b32-9a8d-4260-8cdc-c6f452b9b09f`
       HTTP Method: POST
       URI: /accounts/msisdn/{msisdn}/debitmandates/
 
@@ -1006,6 +1017,11 @@ class CreateDebitMandates(APIView):
     """
     This API posts debit mandates the calling msisdn is treated as the payer
       HTTP Method: POST
+      HTTP Headers:
+    `Content-Type: application/json,
+     Accept: application/json,
+     Date: 21-03-2017,
+     X-CorrelationID: afc71b32-9a8d-4260-8cdc-c6f452b9b09f`
       URI: /accounts/{accountId}/debitmandates/
 
     ===== SAMPLE PAY LOAD ======
