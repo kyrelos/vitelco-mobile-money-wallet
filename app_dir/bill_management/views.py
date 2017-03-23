@@ -1,6 +1,8 @@
 import json
 import uuid
 from datetime import datetime
+
+from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
 
 import requests
@@ -93,6 +95,7 @@ class CreateBill(APIView):
     """
 
     def post(self, request):
+
         try:
             data = request.data
             biller_msisdn = data["creditParty"][0]["value"]
@@ -119,6 +122,28 @@ class CreateBill(APIView):
             error_message = "Missing required field"
             key = e.message
             value = None
+            status_code = status.HTTP_400_BAD_REQUEST
+            error_response = send_error_response(
+                message=error_message,
+                key=key,
+                value=value,
+                status=status_code
+            )
+
+            logger.info("create_bill_400",
+                        status=status.HTTP_400_BAD_REQUEST,
+                        key=key
+                        )
+
+            return error_response
+        except ObjectDoesNotExist as e:
+            exception = str(e)
+            logger.info("create_bill_object_does_not_exist",
+                        exception=exception,
+                        )
+            error_message = "MSISDN does not exist"
+            key = "CreditParty | DebitParty"
+            value = e.message
             status_code = status.HTTP_400_BAD_REQUEST
             error_response = send_error_response(
                 message=error_message,
@@ -161,6 +186,13 @@ class CreateBill(APIView):
         except IntegrityError as e:
             exception = str(e).split("DETAIL:")[1]
             logger.info("create_bill_duplicate_uuid",
+                        exception=exception,
+                        )
+            return False, exception
+
+        except ObjectDoesNotExist as e:
+            exception = str(e)
+            logger.info("create_bill_object_does_not_exist",
                         exception=exception,
                         )
             return False, exception
