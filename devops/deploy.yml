@@ -42,6 +42,7 @@
         - check
         - collectstatic
         - migrate
+      run_once: yes
 
     - name: Configure supervisord
       template: src=templates/supervisord.app.conf.j2 

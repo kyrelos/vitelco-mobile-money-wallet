@@ -1,7 +1,8 @@
 from django.conf.urls import url
-from app_dir.bill_management.views import CreateBillPayment
+from app_dir.bill_management.views import CreateBill
 
 urlpatterns = [
-    url(r'$', CreateBillPayment.as_view(),
+    url(r'$', CreateBill.as_view(),
         name='create_bill')
+
 ]

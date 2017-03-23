@@ -30,6 +30,6 @@ urlpatterns = [
     url(r'^api/v1/statemententries/(?P<trid>[0-9a-zA-z\-]+)$',
         GetStatementByTransactionID.as_view(),
         name="get_statement_by_trid"),
-    url(r'^api/v1/bills/(?P<bill_reference>[\w\-]+)/payments$',
+    url(r'^api/v1/bills/',
         include(bill_urls))
 ]

@@ -48,15 +48,13 @@ def send_error_response(message="404",
     return response
 
 
-class CreateBillPayment(APIView):
+class CreateBill(APIView):
     """
-    This API posts a bill payment given a billReference
+    This API creates a bill object
 
-    URL: /api/v1/bills/{afc71b32-9a8d-4260-8cdc-c6f452b9b09f}/payments
+    URL: /api/v1/bills/
 
-    billReference must be a UUID value
-
-    Headers:
+    HTTP Headers:
     `Content-Type: application/json,
      Accept: application/json,
      Date: 21-03-2017,
@@ -65,10 +63,9 @@ class CreateBillPayment(APIView):
     Example payload:
     {
         "currency": "KES",
-        "amount": "10000",
+        "amountDue": "10000",
         "minAmountDue": "1",
         "dueDate": "2017-02-28 16:00:00",
-        "billReference": "afc71b32-9a8d-4260-8cdc-c6f452b9b09f",
         "debitParty": [
         {
         "key": "msisdn",
@@ -78,47 +75,39 @@ class CreateBillPayment(APIView):
         {
         "key": "msisdn",
         "value": "+25691508523697"
-        }]
+        }],
+        billDescription: "Bill description"
         }
+
+
+    Example response:
+    {
+        "bill_reference": "afc71b32-9a8d-4260-8cdc-c6f452b9b09g"
+    }
     """
 
-    def post(self, request, bill_reference):
-        error_message = None
-        error_key = None
-        try:
-            server_correlation_id = request.META['HTTP_X_CORRELATIONID']
-            date = request.META["HTTP_DATE"]
-        except KeyError as e:
-            logger.info("create_transaction_400",
-                        message="Required Headers not supplied",
-                        status=status.HTTP_400_BAD_REQUEST,
-                        key=e.message
-                        )
-            return send_error_response(
-                message="Required Headers not supplied",
-                key=e.message,
-                status=status.HTTP_400_BAD_REQUEST
-            )
+    def post(self, request):
         try:
             data = request.data
             biller_msisdn = data["creditParty"][0]["value"]
             biller = CustomerWallet.objects.get(msisdn=biller_msisdn)
             billee_msisdn = data["debitParty"][0]["value"]
             billee = CustomerWallet.objects.get(msisdn=billee_msisdn)
-            amount_due = data["amount"]
+            amount_due = data["amountDue"]
             currency = data["currency"]
-            bill_reference = bill_reference
             due_date = data["dueDate"]
+            bill_description = data.get('billDescription'),
+            min_amount_due = data.get('minAmountDue')
 
             create_bill_data = dict(
                 biller=biller,
                 billee=billee,
-                bill_reference=bill_reference,
                 amount_due=amount_due,
                 currency=currency,
-                due_date=due_date
+                due_date=due_date,
+                bill_description=bill_description,
+                min_amount_due=min_amount_due,
             )
-
 
         except KeyError as e:
             error_message = "Missing required field"
@@ -141,36 +130,31 @@ class CreateBillPayment(APIView):
         else:
             bill = self.create_bill(create_bill_data)
             if bill:
+                bill_reference = str(bill.bill_reference)
                 response_payload = {
-                    "objectReference": bill_reference,
-                    "serverCorrelationId": server_correlation_id,
-                    "status": "pending",
-                    "notificationMethod": "callback",
-                    "expiryTime": "",
-                    "pollLimit": 0,
-                    "error": None
+                    "billReference": bill_reference,
 
                 }
-            logger.info("create_transaction_202",
-                        status=status.HTTP_202_ACCEPTED,
-                        bill_reference=bill_reference,
-                        response_payload=response_payload
+                logger.info("create_bill_201",
+                            status=status.HTTP_201_CREATED,
+                            bill_reference=bill_reference,
+                            response_payload=response_payload
                         )
             return Response(response_payload,
-                            status=status.HTTP_202_ACCEPTED
+                            status=status.HTTP_201_CREATED
                             )
 
     @staticmethod
     def create_bill(create_bill_data):
         try:
             transaction = Bill.objects.create(**create_bill_data)
-            logger.info("create_transaction_success",
+            logger.info("create_bill_success",
                         bill_reference=create_bill_data.get('bill_reference')
                         )
             return True, transaction
         except IntegrityError as e:
             exception = str(e).split("DETAIL:")[1]
-            logger.info("create_transaction_duplicate_uuid",
+            logger.info("create_bill_duplicate_uuid",
                         exception=exception,
                         )
             return False, exception
