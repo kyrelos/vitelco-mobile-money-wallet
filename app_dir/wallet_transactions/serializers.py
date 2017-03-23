@@ -35,16 +35,10 @@ class BatchTransactionSerializer(serializers.ModelSerializer):
     This is a serializer for the CreateNotification view.
     """
 
-    merchant = serializers.SlugRelatedField(
-        many=False,
-        read_only=False,
-        slug_field='wallet_id',
-        queryset=CustomerWallet.objects.all()
-    )
 
     class Meta:
         model = BatchTransaction
-        fields = ["batch_trid", "merchant", "processing", "batch_title",
+        fields = ["batch_trid", "processing", "batch_title",
                   "batch_status"]
 
 

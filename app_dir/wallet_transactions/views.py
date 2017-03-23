@@ -6,9 +6,9 @@ import requests
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError
-from django.forms import model_to_dict
-from django.http import Http404, request
 from django.db.models import Q
+from django.forms import model_to_dict
+from django.http import Http404
 from requests import RequestException
 from rest_framework import generics, status
 from rest_framework.permissions import IsAdminUser
@@ -19,12 +19,11 @@ from structlog import get_logger
 
 from app_dir.customer_wallet_management.models import CustomerWallet
 from app_dir.wallet_transactions.serializers import BatchTransactionSerializer
-from app_dir.wallet_transactions.tasks import process_transaction, \
-    process_debit_mandate
-
-from .models import Transaction, BatchTransaction, BatchTransactionLookup, \
-    DebitMandate
-from .serializers import TransactionSerializer, DebitMandateSerializer
+from app_dir.wallet_transactions.tasks import process_debit_mandate, \
+    process_transaction
+from .models import BatchTransaction, BatchTransactionLookup, DebitMandate, \
+    Transaction
+from .serializers import TransactionSerializer
 
 logger = get_logger("transactions")
 
@@ -684,8 +683,9 @@ class BatchTransactions(APIView):
   "batchTitle": "BatchMWCDemo",
   "batchDescription": "DemoMWCBatch",
   "processingFlag": true,
+  "scheduledStartDate": "2017-02-28 18:00:00",
+  "creationDate": "2017-01-27 07:25:55",
    "batchStatus": "created",
-   "merchant":"<merchant_id>"
   "transactions":[
             {
           "amount": "456522",
@@ -741,38 +741,60 @@ class BatchTransactions(APIView):
         return Response(serializer.data)
 
     def post(self, request, format=None):
-
         batch_transaction = {
-            "merchant": request.data["merchant"],
             "batch_title": request.data["batchTitle"],
             "batch_description": request.data["batchDescription"],
             "status": request.data["batchStatus"],
-            "processing": request.data["processingFlag"]
+            "processing": request.data["processingFlag"],
+
         }
+        now = datetime.now().isoformat()
 
         serializer = BatchTransactionSerializer(data=batch_transaction)
 
         if serializer.is_valid():
             batch_trx = serializer.save()
+            completed_count = 0
+            failed_count = 0
             for data in request.data["transactions"]:
                 try:
                     transaction_response = self.create_transaction(
-                        json.dumps(data), request)
+                            json.dumps(data), request)
                     if transaction_response.status_code in (202, 201):
                         response_data = transaction_response.json()
                         trx = Transaction.objects.get(
-                            trid=response_data["objectReference"])
+                                trid=response_data["objectReference"])
                         batch_lookup = BatchTransactionLookup.objects.create(
-                            batch_transaction=batch_trx,
-                            transaction=trx)
+                                batch_transaction=batch_trx,
+                                transaction=trx)
+                        completed_count += 1
+
+                    else:
+                        failed_count += 1
                 except RequestException as e:
+                    failed_count += 1
                     logger.exception("create_transaction_exception",
                                      exception=e.message)
                 except ValueError as e:
+                    failed_count += 1
                     logger.exception("create_transaction_exception",
                                      exception=e.message)
+            serializer.validated_data["batch_status"] = "completed"
+            serializer.save()
+            batch_response = {
+                "batchId": str(serializer.data.get("batch_trid")),
+                "batchStatus": serializer.data.get("batch_status",
+                                                   "completed"),
+                "creationDate": now,
+                "approvalDate": now,
+                "completionDate": now,
+                "rejectionCount": failed_count,
+                "parsingSuccessCount": completed_count,
+                "completedCount": completed_count,
 
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            }
+
+            return Response(batch_response, status=status.HTTP_201_CREATED)
         else:
             return_errors = dict(
                 batch_transaction_errors=serializer.error_messages, )

@@ -104,11 +104,11 @@ class BatchTransaction(models.Model):
     """
     BATCH_STATUS = (
         ("created", "created"),
-        ("finished", "finished"),
+        ("approved", "approved"),
+        ("completed", "completed")
     )
 
     batch_trid = models.UUIDField(unique=True, default=uuid.uuid4)
-    merchant = models.ForeignKey(CustomerWallet)
     processing = models.BooleanField(default=False)
     batch_title = models.TextField(null=False, default="BATCHTRX")
     batch_status = models.CharField(choices=BATCH_STATUS, max_length=20,
