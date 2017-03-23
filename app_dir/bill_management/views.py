@@ -118,13 +118,13 @@ class CreateBill(APIView):
         except ObjectDoesNotExist:
             logger.info("get_accountstatus_404",
                         status=status.HTTP_404_NOT_FOUND,
-                        biller="",
-                        key="biller"
+                        msisdn=request.data["creditParty"][0]["value"],
+                        key="msisdn"
                         )
             return send_error_response(
                 message="Invalid msisdn",
-                key="biller",
-                value="",
+                key="msisdn",
+                value=request.data["creditParty"][0]["value"],
                 status=status.HTTP_404_NOT_FOUND)
 
         except KeyError as e:
