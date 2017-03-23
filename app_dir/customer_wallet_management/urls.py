@@ -2,6 +2,7 @@ from django.conf.urls import url
 from . import views
 from app_dir.wallet_transactions.views import DebitMandates, \
     CreateDebitMandates
+from app_dir.bill_management.views import CreateBillPaymentByMsisdn
 
 urlpatterns = [
     url(r'^$',
@@ -60,4 +61,8 @@ urlpatterns = [
         r'(?P<debit_mandate_reference>[0-9a-zA-z\-]+)$',
         views.GetDebitMandateByMsisdn.as_view(),
         name="get_debit_mandate_by_msisdn"),
+    url(r'^msisdn/(?P<msisdn>[+][0-9]+)/bills/'
+        r'(?P<bill_reference>[0-9a-zA-z\-]+)',
+        CreateBillPaymentByMsisdn.as_view(),
+        name="create_bill_payment"),
 ]

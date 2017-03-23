@@ -1,6 +1,12 @@
+import json
 import uuid
 from datetime import datetime
+from django.utils import timezone
+
+import requests
 from django.db import IntegrityError
+from requests import RequestException
+from rest_framework.reverse import reverse
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -139,7 +145,7 @@ class CreateBill(APIView):
                             status=status.HTTP_201_CREATED,
                             bill_reference=bill_reference,
                             response_payload=response_payload
-                        )
+                            )
             return Response(response_payload,
                             status=status.HTTP_201_CREATED
                             )
@@ -180,29 +186,100 @@ class CreateBillPaymentByMsisdn(APIView):
 
 
     Example response:
-    {
-  "serverCorrelationId": "afc71b32-9a8d-4260-8cdc-c6f452b9b09a",
-  "status": "pending",
-  "pendingReason": "string",
-  "notificationMethod": "callback",
-  "objectReference": "afc71b32-9a8d-4260-8cdc-c6f452b9b09g",
-  "expiryTime": "string",
-  "pollLimit": 0,
-  "error": {
-    "errorCategory": "businessRule",
-    "errorCode": "genericError",
-    "errorDescription": "string",
-    "errorDateTime": "string",
-    "errorParameters": [
-      {
-        "key": "string",
-        "value": "string"
-      }
-    ]
-  }
+   {
+  "status": "success",
+  "bill_reference": "b8f8f652-6ab0-4789-8c36-c0bfa0087031",
+  "serverCorrelationId": "c7717afc-610d-426d-8884-6816bcb6ad1b"
 }
 
     """
 
-    def post(self, request):
-        pass
+    def post(self, request, msisdn, bill_reference):
+
+        logger.info("create_bill_payments_using_msisdn",
+                    msisdn=msisdn,
+                    bill_reference=bill_reference
+                    )
+
+        billee = CustomerWallet.objects.get(msisdn=msisdn)
+        bill = Bill.objects.get(bill_reference=bill_reference)
+
+        timestamp = timezone.now()
+
+        url = reverse("create_transactions", request=request)
+
+        if billee == bill.billee and bill.bill_status != "paid":
+
+            debit_party_msisdn = billee.msisdn
+            credit_party_msisdn = bill.biller.msisdn
+
+            currency = request.data["currency"]
+            amount = request.data["paidamount"]
+
+            transaction_payload = {
+                "requestingOrganisationTransactionReference": "MWCAPIWorkshop001",
+                "debitParty": [
+                    {"value": debit_party_msisdn,
+                     "key": "msisdn"}
+                ],
+                "currency": currency,
+                "amount": amount,
+                "requestDate": timestamp.isoformat(), "creditParty": [
+                    {"value": credit_party_msisdn,
+                     "key": "msisdn"}
+                ],
+                "type": "transfer"
+            }
+
+            try:
+                server_correlation_id = str(uuid.uuid4())
+                headers = {
+                    "X-CORRELATIONID": server_correlation_id,
+                    "Authorization": "api-key",
+                    "Content-type": "application/json"
+                }
+                logger.info("create_bill_payment_request",
+                            url=url,
+                            payload=transaction_payload)
+
+                response = requests.post(url,
+                                         data=json.dumps(
+                                             transaction_payload),
+                                         headers=headers
+                                         )
+                if response.status_code in (202, 201):
+                    bill.bill_status = "paid"
+                    bill.save()
+
+                    logger.info("create_bill_payment_response",
+                                response=str(response.text),
+                                status_code=str(response.status_code))
+
+                    response_payload = {
+                        "serverCorrelationId": str(server_correlation_id),
+                        "bill_reference": bill_reference,
+                        "status": "success"
+                    }
+
+                    return Response(response_payload,
+                                    status=status.HTTP_201_CREATED
+                                    )
+
+            except RequestException as e:
+                logger.exception("create_bill_payment_exception",
+                                 exception=e.message)
+
+            except ValueError as e:
+                logger.exception("create_bill_payment_exception",
+                                 exception=e.message)
+
+        else:
+            response_payload = {
+                "bill_reference": bill_reference,
+                "status": "failed",
+                "message": "bill already paid"
+            }
+
+            return Response(response_payload,
+                            status=status.HTTP_200_OK
+                            )

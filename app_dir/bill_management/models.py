@@ -14,8 +14,12 @@ class Bill(models.Model):
     The URI format is as follows
     follows - '/accounts/{Account Identifiers}/bills'. Only GET (read)
     operations are permitted for the Bills object.
-
     """
+
+    BILL_STATUS =(
+        ("unpaid", "updaid"),
+        ("paid", "paid")
+    )
     biller = models.ForeignKey(CustomerWallet, related_name="biller")
     billee = models.ForeignKey(CustomerWallet, related_name="billee")
     currency = models.CharField(max_length=10, default="KES")
@@ -26,6 +30,11 @@ class Bill(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
     bill_description = models.CharField(max_length=100, null=True, blank=True)
+    bill_status = models.CharField(
+        choices=BILL_STATUS,
+        default="unpaid",
+        max_length=20
+    )
 
     def __unicode__(self):
         return "{biller}: {billee}".format(
