@@ -31,7 +31,20 @@ class APIRootView(APIView):
                         "server_correlation_id":
                             "753bcd19-7230-40ba-a975-09ac94ace0d2"
                     }
-                )
+                ),
+                "Get transactions by msisdn": reverse(
+                        "account:get_account_transactions_by_msisdn",
+                        request=request,
+                        current_app="customer_wallet_management",
+                        kwargs={"msisdn": "+254711111111"}
+                ),
+                "Get transactions by accountId": reverse(
+                        "account:get_account_transactions_by_account_id",
+                        request=request,
+                        current_app="customer_wallet_management",
+                        kwargs={"account_id":
+                                    "753bcd19-7230-40ba-a975-09ac94ace0d2"}
+                ),
 
             },
             "BatchTransactions": {
@@ -109,19 +122,7 @@ class APIRootView(APIView):
                     kwargs={"account_id":
                                 "753bcd19-7230-40ba-a975-09ac94ace0d2"}
                 ),
-                "Get Account transactions by msisdn": reverse(
-                        "account:get_account_transactions_by_msisdn",
-                        request=request,
-                        current_app="customer_wallet_management",
-                        kwargs={"msisdn": "+254711111111"}
-                ),
-                "Get Account transactions by accountId": reverse(
-                        "account:get_account_transactions_by_account_id",
-                        request=request,
-                        current_app="customer_wallet_management",
-                        kwargs={"account_id":
-                                    "753bcd19-7230-40ba-a975-09ac94ace0d2"}
-                ),
+
                 "Get Account statement entries by msisdn": reverse(
                         "account:get_statement_by_msisdn",
                         request=request,

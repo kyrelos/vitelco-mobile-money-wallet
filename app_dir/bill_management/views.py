@@ -76,7 +76,7 @@ class CreateBill(APIView):
         "key": "msisdn",
         "value": "+25691508523697"
         }],
-        billDescription: "Bill description"
+        "billDescription": "Bill description"
         }
 
 
@@ -128,7 +128,7 @@ class CreateBill(APIView):
 
             return error_response
         else:
-            bill = self.create_bill(create_bill_data)
+            created, bill = self.create_bill(create_bill_data)
             if bill:
                 bill_reference = str(bill.bill_reference)
                 response_payload = {
