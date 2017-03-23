@@ -653,6 +653,18 @@ class CreateTransactions(APIView):
                         exception=exception,
                         )
             return False, exception
+        except ObjectDoesNotExist as e:
+            exception = str(e)
+            logger.info("create_transaction_object_does_not_exist",
+                        exception=exception,
+                        )
+            return False, exception
+        except ValueError as e:
+            exception = str(e)
+            logger.info("create_transactions_value_error",
+                        exception=exception,
+                        )
+            return False, exception
 
 
 class BatchTransactions(APIView):
