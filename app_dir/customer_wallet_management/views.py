@@ -210,7 +210,7 @@ class GetAccountStatusByAccountId(APIView):
             logger.info("get_accountstatus_400",
                         message="DATE Header not supplied",
                         status=status.HTTP_400_BAD_REQUEST,
-                        wallet_id=wallet_id,
+                        wallet_id=str(wallet_id),
                         key="DATE"
                         )
             return send_error_response(
@@ -232,14 +232,14 @@ class GetAccountStatusByAccountId(APIView):
                                 )
             logger.info("get_accountstatus_200",
                         status=status.HTTP_200_OK,
-                        wallet_id=wallet_id
+                        wallet_id=str(wallet_id)
                         )
             return response
 
         except ObjectDoesNotExist:
             logger.info("get_accountstatus_404",
                         status=status.HTTP_404_NOT_FOUND,
-                        wallet_id=wallet_id,
+                        wallet_id=str(wallet_id),
                         key="wallet_id"
                         )
             return send_error_response(
@@ -251,7 +251,7 @@ class GetAccountStatusByAccountId(APIView):
         except ValueError:
             logger.info("get_accountstatus_400",
                         status=status.HTTP_400_BAD_REQUEST,
-                        wallet_id=wallet_id,
+                        wallet_id=str(wallet_id),
                         key="wallet_id"
                         )
             return send_error_response(
@@ -445,13 +445,13 @@ class GetAccountNameByAccountId(APIView):
                                     )
                 logger.info("get_accountname_200",
                             status=status.HTTP_200_OK,
-                            account_id=account_id
+                            account_id=str(account_id)
                             )
                 return response
             else:
                 logger.info("get_accountname_404",
                             status=status.HTTP_404_NOT_FOUND,
-                            account_id=account_id,
+                            account_id=str(account_id),
                             key="msisdn_inactive"
                             )
                 return send_error_response(
@@ -464,7 +464,7 @@ class GetAccountNameByAccountId(APIView):
         except ObjectDoesNotExist:
             logger.info("get_accountname_404",
                         status=status.HTTP_404_NOT_FOUND,
-                        account_id=account_id,
+                        account_id=str(account_id),
                         key="account_id"
                         )
 
@@ -618,7 +618,7 @@ class AccountBalanceByAccountId(APIView):
             logger.info("get_accountbalancebyaccountid_400",
                         message="DATE Header not supplied",
                         status=status.HTTP_400_BAD_REQUEST,
-                        account_id=account_id,
+                        account_id=str(account_id),
                         key="DATE"
                         )
             return send_error_response(
@@ -631,7 +631,7 @@ class AccountBalanceByAccountId(APIView):
             logger.info("get_accountbalancebyaccountid_400",
                         message="account_id invalid",
                         status=status.HTTP_400_BAD_REQUEST,
-                        account_id=account_id,
+                        account_id=str(account_id),
                         key="account_id"
                         )
             return send_error_response(
@@ -660,13 +660,13 @@ class AccountBalanceByAccountId(APIView):
                 logger.info("get_accountbalancebyaccountid_200",
                             status=status.HTTP_200_OK,
                             key="account_id",
-                            account_id=account_id
+                            account_id=str(account_id)
                             )
                 return response
             else:
                 logger.info("get_accountbalancebyaccountid_404",
                             status=status.HTTP_404_NOT_FOUND,
-                            account_id=account_id,
+                            account_id=str(account_id),
                             key="account_inactive"
                             )
                 return send_error_response(
@@ -679,7 +679,7 @@ class AccountBalanceByAccountId(APIView):
         except ObjectDoesNotExist:
             logger.info("get_accountbalancebyaccountid_404",
                         status=status.HTTP_404_NOT_FOUND,
-                        account_id=account_id,
+                        account_id=str(account_id),
                         key="account_id"
                         )
 
@@ -1211,7 +1211,7 @@ class AccountTransactionsByAccountId(APIView):
             logger.info("get_accounttransactionsbyaccount_id_400",
                         message="DATE Header not supplied",
                         status=status.HTTP_400_BAD_REQUEST,
-                        wallet_id=account_id,
+                        wallet_id=str(account_id),
                         key="DATE"
                         )
             return send_error_response(
@@ -1386,13 +1386,13 @@ class AccountTransactionsByAccountId(APIView):
                 logger.info("get_accounttransactionsbyaccount_id_200",
                             status=status.HTTP_200_OK,
                             key="wallet_id",
-                            wallet_id=account_id
+                            wallet_id=str(account_id)
                             )
                 return response
             else:
                 logger.info("get_accounttransactionsbyaccount_id_404",
                             status=status.HTTP_404_NOT_FOUND,
-                            wallet_id=account_id,
+                            wallet_id=str(account_id),
                             key="account_inactive"
                             )
                 return send_error_response(
@@ -1405,7 +1405,7 @@ class AccountTransactionsByAccountId(APIView):
         except ObjectDoesNotExist:
             logger.info("get_accounttransactionsbymsisdn_404",
                         status=status.HTTP_404_NOT_FOUND,
-                        wallet_id=account_id,
+                        wallet_id=str(account_id),
                         key="wallet_id"
                         )
 
@@ -1604,7 +1604,7 @@ class GetStatementEntriesByAccountID(APIView):
             logger.info("get_statemententries_400",
                         message="DATE Header not supplied",
                         status=status.HTTP_400_BAD_REQUEST,
-                        wallet_id=wallet_id,
+                        wallet_id=str(wallet_id),
                         key="DATE"
                         )
             return send_error_response(
@@ -1654,13 +1654,13 @@ class GetStatementEntriesByAccountID(APIView):
                 logger.info("get_statemententries_200",
                             status=status.HTTP_200_OK,
                             key="wallet_id",
-                            wallet_id=wallet_id
+                            wallet_id=str(wallet_id)
                             )
                 return response
             else:
                 logger.info("get_statemententries_404",
                             status=status.HTTP_404_NOT_FOUND,
-                            wallet_id=wallet_id,
+                            wallet_id=str(wallet_id),
                             key="account_inactive"
                             )
                 return send_error_response(
@@ -1673,7 +1673,7 @@ class GetStatementEntriesByAccountID(APIView):
         except ObjectDoesNotExist:
             logger.info("get_stamententries_404",
                         status=status.HTTP_404_NOT_FOUND,
-                        wallet_id=wallet_id,
+                        wallet_id=str(wallet_id),
                         key="wallet_id"
                         )
 
@@ -1687,7 +1687,7 @@ class GetStatementEntriesByAccountID(APIView):
         except ValueError:
             logger.info("get_stamententries_400",
                         status=status.HTTP_400_BAD_REQUEST,
-                        wallet_id=wallet_id,
+                        wallet_id=str(wallet_id),
                         key="wallet_id"
                         )
             return send_error_response(
@@ -1843,7 +1843,7 @@ class GetBillsByAccountID(APIView):
             logger.info("get_bills_404",
                         message="DATE Header not supplied",
                         status=status.HTTP_400_BAD_REQUEST,
-                        wallet_id=wallet_id,
+                        wallet_id=str(wallet_id),
                         key="DATE"
                         )
             return send_error_response(
@@ -1881,14 +1881,14 @@ class GetBillsByAccountID(APIView):
             logger.info("get_bills_200",
                         status=status.HTTP_200_OK,
                         key="wallet_id",
-                        wallet_id=wallet_id
+                        wallet_id=str(wallet_id)
                         )
             return response
 
         except ObjectDoesNotExist:
             logger.info("get_bills_404",
                         status=status.HTTP_404_NOT_FOUND,
-                        wallet_id=wallet_id,
+                        wallet_id=str(wallet_id),
                         key="wallet_id"
                         )
 
@@ -1902,7 +1902,7 @@ class GetBillsByAccountID(APIView):
         except ValueError:
             logger.info("get_bills_404",
                         status=status.HTTP_404_NOT_FOUND,
-                        wallet_id=wallet_id,
+                        wallet_id=str(wallet_id),
                         key="wallet_id"
                         )
             return send_error_response(
@@ -2000,13 +2000,13 @@ class GetDebitMandateByAccountId(APIView):
                 logger.info("get_debitmandatebyaccount_id_200",
                             status=status.HTTP_200_OK,
                             key="wallet_id",
-                            wallet_id=account_id
+                            wallet_id=str(account_id)
                             )
                 return response
             else:
                 logger.info("get_debitmandatebyaccount_id_404",
                             status=status.HTTP_404_NOT_FOUND,
-                            wallet_id=account_id,
+                            wallet_id=str(account_id),
                             key="account_inactive"
                             )
                 return send_error_response(
@@ -2019,7 +2019,7 @@ class GetDebitMandateByAccountId(APIView):
         except ObjectDoesNotExist:
             logger.info("get_debitmandatebyaccount_id_404",
                         status=status.HTTP_404_NOT_FOUND,
-                        wallet_id=account_id,
+                        wallet_id=str(account_id),
                         key="wallet_id"
                         )
 
