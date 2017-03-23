@@ -59,7 +59,7 @@ server {
 server {
     listen {{ APP_PORT }};
     server_name http_in;
-    {% if APP_ENVIRONMENT == "development" %}
+    {% if APP_ENVIRONMENT == "staging" %}
     location ~ /.well-known {
         allow all;
     }
