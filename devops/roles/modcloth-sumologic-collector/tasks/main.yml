@@ -1,0 +1,32 @@
+---
+- include: install-RedHat.yml
+  when: ansible_os_family == "RedHat"
+
+- name: 'download sumocollector installer'
+  get_url:
+    url='{{ sumologic_installer_url }}'
+    dest='{{ sumologic_installer_remote_file }}'
+    force='yes'
+
+- name: 'run collector installer'
+  apt: deb='{{ sumologic_installer_remote_file }}'
+
+- name: 'add collector configuration'
+  template:
+    src=sumo.conf.j2
+    dest=/etc/sumo.conf
+  register: sumologic_collector_add_configuration
+
+- name: 'add collector sources configuration'
+  template:
+    src='{{ sumologic_collector_source_template }}'
+    dest=/etc/sumo-sources.json
+  register: sumologic_collector_add_sources_configuration
+  when: sumologic_collector_source_template is defined
+
+- name: 'restart collector'
+  service:
+    name=collector
+    state=restarted
+  when:  sumologic_collector_add_configuration|changed
+         or sumologic_collector_add_sources_configuration|changed

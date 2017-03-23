@@ -1,0 +1,7 @@
+---
+# Debian
+sumologic_installer_remote_file: /tmp/sumo.deb
+
+# RedHat
+sumologic_installer_rpm_local_folder: /tmp
+sumocollector_installer_rpm: https://collectors.sumologic.com/rest/download/rpm/64

@@ -1,0 +1,17 @@
+---
+galaxy_info:
+  author: Jesse Szwwedko
+  description: Role for installing and configuring a Sumologic Collector
+  company: ModCloth, Inc.
+  license: MIT
+  min_ansible_version: 1.7
+  platforms:
+  - name: Ubuntu
+    versions:
+    - all
+  - name: Debian
+    versions:
+    - all
+  categories:
+  - monitoring
+dependencies: []
