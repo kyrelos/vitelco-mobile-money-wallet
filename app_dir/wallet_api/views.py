@@ -204,6 +204,15 @@ class APIRootView(APIView):
                         kwargs={"wallet_id":
                                     "753bcd19-7230-40ba-a975-09ac94ace0d2"}
                 ),
+                "Create Bill Payment": reverse(
+                    "account:create_bill_payment",
+                    request=request,
+                    current_app="customer_wallet_management",
+                    kwargs={
+                        "msisdn": "+254711111111",
+                        "bill_reference":
+                                "753bcd19-7230-40ba-a975-09ac94ace0d2"}
+                ),
 
             }
         }
