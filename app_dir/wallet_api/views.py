@@ -205,19 +205,6 @@ class APIRootView(APIView):
                                     "753bcd19-7230-40ba-a975-09ac94ace0d2"}
                 ),
 
-            },
-            "Notification": {
-                "ListCreate Notifications": reverse(
-                    "notify:notifications",
-                    request=request,
-                    current_app="notification_management"
-                ),
-                "Update Notifications": reverse(
-                    "notify:update_notifications",
-                    request=request,
-                    current_app="notification_management",
-
-                )
             }
         }
         return Response(api_registry)
