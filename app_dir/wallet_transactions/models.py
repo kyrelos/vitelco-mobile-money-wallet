@@ -117,9 +117,7 @@ class BatchTransaction(models.Model):
     modified_at = models.DateTimeField(auto_now=True)
 
     def __unicode__(self):
-        return "{name}: {msisdn} {batch_trid}".format(
-            name=self.merchant.name,
-            msisdn=self.merchant.msisdn,
+        return "{batch_trid}".format(
             batch_trid=self.batch_trid
         )
 
