@@ -99,7 +99,7 @@ ROOT_URLCONF = 'urls'
 CORS_ORIGIN_ALLOW_ALL = True
 from corsheaders.defaults import default_headers
 
-CORS_ALLOW_HEADERS = default_headers + ('X-CORRELATIONID',)
+CORS_ALLOW_HEADERS = default_headers + ('X-CORRELATIONID', "DATE")
 
 WSGI_APPLICATION = 'wsgi.application'
 
