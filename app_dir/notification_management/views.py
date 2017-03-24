@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from app_dir.notification_management.tasks import send_normal_notification
+from app_dir.wallet_transactions.models import Transaction
 from .models import Notification, NotificationDeviceMap
 from .serializers import NotificationSerializer
 from rest_framework.permissions import IsAdminUser
@@ -82,10 +83,16 @@ class UpdateNotification(APIView):
                 notification_id = request_data['notification_id']
 
                 transaction_id = request_data['transaction_id']
+
                 pin = request_data['pin']
                 push_status = request_data['status']
                 if str(pin) == "1234":
-                    send_normal_notification.delay(notification_id, transaction_id)
+                    transaction = Transaction.objects.get(
+                        transaction_id=transaction_id)
+                    transaction.complete_transaction()
+                    transaction.save()
+                    send_normal_notification.delay(notification_id,
+                                                   transaction_id)
 
                 response = Response(status=status.HTTP_200_OK)
                 return response

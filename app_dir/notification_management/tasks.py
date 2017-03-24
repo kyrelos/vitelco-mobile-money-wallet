@@ -167,9 +167,6 @@ def send_push_notification(notification_id, transaction_id):
         if response.status_code in (200, 202):
             notification.state = "success"
             notification.save()
-            transaction.complete_transaction()
-            transaction.save()
-            send_normal_notification.delay(notification.notid, transaction_id)
 
             logger.info('send_push_notification_success',
                         data=notification_payload,
