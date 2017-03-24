@@ -171,9 +171,9 @@ class CreateBill(APIView):
                             bill_reference=bill_reference,
                             response_payload=response_payload
                             )
-            return Response(response_payload,
-                            status=status.HTTP_201_CREATED
-                            )
+                return Response(response_payload,
+                                status=status.HTTP_201_CREATED
+                        )
 
     @staticmethod
     def create_bill(create_bill_data):
