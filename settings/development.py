@@ -1,7 +1,7 @@
 from .base import *
 
 INSTALLED_APPS += ('django_extensions',)
-ALLOWED_HOSTS = ["10.0.0.77"]
+ALLOWED_HOSTS = ["10.0.0.77", "127.0.0.1"]
 
 DATABASES = {
     'default': {
@@ -17,4 +17,4 @@ DATABASES = {
 SESSION_COOKIE_SECURE = False
 CSRF_COOKIE_SECURE = False
 
-TRANSACTIONS_URL = "http://10.0.0.77/api/v1/transactions/"
+TRANSACTIONS_URL = "http://10.0.0.77/transactions/"

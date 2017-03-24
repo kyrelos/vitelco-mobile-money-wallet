@@ -18,7 +18,7 @@ logger = get_logger("accounts")
 def send_error_response(message="404",
                         key="msisdn",
                         value=None,
-                        status=None,
+                        status_code=None,
                         ):
     """
     Creates and outputs given error message
@@ -47,7 +47,7 @@ def send_error_response(message="404",
     }
 
     response = Response(data=error_payload,
-                        status=status
+                        status=status_code
                         )
     return response
 
@@ -89,7 +89,7 @@ class GetAccountStatusByMsisdn(APIView):
     """
       This API retrieves the customer's account status given a msisdn
       HTTP Method: GET
-      URI: /api/v1/accounts/msisdn/{msisdn}/status/
+      URI: /accounts/msisdn/{msisdn}/status/
 
       Required HTTP Headers:
       DATE: todays date
@@ -127,14 +127,14 @@ class GetAccountStatusByMsisdn(APIView):
         if not date:
             logger.info("get_accountstatus_400",
                         message="DATE Header not supplied",
-                        status=status.HTTP_400_BAD_REQUEST,
+                        status_code=status.HTTP_400_BAD_REQUEST,
                         msisdn=msisdn,
                         key="DATE"
                         )
             return send_error_response(
                 message="DATE Header not supplied",
                 key="DATE",
-                status=status.HTTP_400_BAD_REQUEST
+                status_code=status.HTTP_400_BAD_REQUEST
             )
 
         try:
@@ -149,14 +149,14 @@ class GetAccountStatusByMsisdn(APIView):
                                 status=status.HTTP_200_OK
                                 )
             logger.info("get_accountstatus_200",
-                        status=status.HTTP_200_OK,
+                        status_code=status.HTTP_200_OK,
                         msisdn=msisdn
                         )
             return response
 
         except ObjectDoesNotExist:
             logger.info("get_accountstatus_404",
-                        status=status.HTTP_404_NOT_FOUND,
+                        status_code=status.HTTP_404_NOT_FOUND,
                         msisdn=msisdn,
                         key="msisdn"
                         )
@@ -164,14 +164,14 @@ class GetAccountStatusByMsisdn(APIView):
                 message="Requested resource not available",
                 key="msisdn",
                 value=msisdn,
-                status=status.HTTP_404_NOT_FOUND)
+                status_code=status.HTTP_404_NOT_FOUND)
 
 
 class GetAccountStatusByAccountId(APIView):
     """
       This API retrieves the customer's account status given a UUID
       HTTP Method: GET
-      URI: /api/v1/accounts/{uuid}/status/
+      URI: /accounts/{uuid}/status/
 
       Required HTTP Headers:
       DATE: todays date
@@ -209,14 +209,14 @@ class GetAccountStatusByAccountId(APIView):
         if not date:
             logger.info("get_accountstatus_400",
                         message="DATE Header not supplied",
-                        status=status.HTTP_400_BAD_REQUEST,
+                        status_code=status.HTTP_400_BAD_REQUEST,
                         wallet_id=str(wallet_id),
                         key="DATE"
                         )
             return send_error_response(
                 message="DATE Header not supplied",
                 key="DATE",
-                status=status.HTTP_400_BAD_REQUEST
+                status_code=status.HTTP_400_BAD_REQUEST
             )
 
         try:
@@ -231,14 +231,14 @@ class GetAccountStatusByAccountId(APIView):
                                 status=status.HTTP_200_OK
                                 )
             logger.info("get_accountstatus_200",
-                        status=status.HTTP_200_OK,
+                        status_code=status.HTTP_200_OK,
                         wallet_id=str(wallet_id)
                         )
             return response
 
         except ObjectDoesNotExist:
             logger.info("get_accountstatus_404",
-                        status=status.HTTP_404_NOT_FOUND,
+                        status_code=status.HTTP_404_NOT_FOUND,
                         wallet_id=str(wallet_id),
                         key="wallet_id"
                         )
@@ -246,11 +246,11 @@ class GetAccountStatusByAccountId(APIView):
                 message="Requested resource not available",
                 key="wallet_id",
                 value=wallet_id,
-                status=status.HTTP_404_NOT_FOUND)
+                status_code=status.HTTP_404_NOT_FOUND)
 
         except ValueError:
             logger.info("get_accountstatus_400",
-                        status=status.HTTP_400_BAD_REQUEST,
+                        status_code=status.HTTP_400_BAD_REQUEST,
                         wallet_id=str(wallet_id),
                         key="wallet_id"
                         )
@@ -258,14 +258,14 @@ class GetAccountStatusByAccountId(APIView):
                 message="Malformed UUID",
                 key="wallet_id",
                 value=wallet_id,
-                status=status.HTTP_400_BAD_REQUEST)
+                status_code=status.HTTP_400_BAD_REQUEST)
 
 
 class GetAccountNameByMsisdn(APIView):
     """
     This API retrieves the customers name details given a msisdn
     HTTP Method: GET
-    URI: /api/v1/accounts/msisdn/{msisdn}/accountname/
+    URI: /accounts/msisdn/{msisdn}/accountname/
     Required HTTP Headers:
     DATE: todays date
     AUTHORIZATION: api-key
@@ -305,14 +305,14 @@ class GetAccountNameByMsisdn(APIView):
         if not date:
             logger.info("get_accountname_400",
                         message="DATE Header not supplied",
-                        status=status.HTTP_400_BAD_REQUEST,
+                        status_code=status.HTTP_400_BAD_REQUEST,
                         msisdn=msisdn,
                         key="DATE"
                         )
             return send_error_response(
                 message="DATE Header not supplied",
                 key="DATE",
-                status=status.HTTP_400_BAD_REQUEST
+                status_code=status.HTTP_400_BAD_REQUEST
             )
 
         try:
@@ -336,13 +336,13 @@ class GetAccountNameByMsisdn(APIView):
                                     status=status.HTTP_200_OK
                                     )
                 logger.info("get_accountname_200",
-                            status=status.HTTP_200_OK,
+                            status_code=status.HTTP_200_OK,
                             msisdn=msisdn
                             )
                 return response
             else:
                 logger.info("get_accountname_404",
-                            status=status.HTTP_404_NOT_FOUND,
+                            status_code=status.HTTP_404_NOT_FOUND,
                             msisdn=msisdn,
                             key="msisdn_inactive"
                             )
@@ -350,12 +350,12 @@ class GetAccountNameByMsisdn(APIView):
                     message="Requested resource not active",
                     key="msisdn",
                     value=msisdn,
-                    status=status.HTTP_404_NOT_FOUND
+                    status_code=status.HTTP_404_NOT_FOUND
                 )
 
         except ObjectDoesNotExist:
             logger.info("get_accountname_404",
-                        status=status.HTTP_404_NOT_FOUND,
+                        status_code=status.HTTP_404_NOT_FOUND,
                         msisdn=msisdn,
                         key="msisdn"
                         )
@@ -364,7 +364,7 @@ class GetAccountNameByMsisdn(APIView):
                 message="Requested resource not available",
                 key="msisdn",
                 value=msisdn,
-                status=status.HTTP_404_NOT_FOUND
+                status_code=status.HTTP_404_NOT_FOUND
             )
 
 
@@ -373,7 +373,7 @@ class GetAccountNameByAccountId(APIView):
     This API retrieves the customers name details given a account_id
 
     HTTP Method: GET
-    URI: /api/v1/accounts/{account_id}/accountname/
+    URI: /accounts/{account_id}/accountname/
     Required HTTP Headers:
     DATE: todays date
     AUTHORIZATION: api-key
@@ -413,14 +413,14 @@ class GetAccountNameByAccountId(APIView):
         if not date:
             logger.info("get_accountname_400",
                         message="DATE Header not supplied",
-                        status=status.HTTP_400_BAD_REQUEST,
+                        status_code=status.HTTP_400_BAD_REQUEST,
                         account_id=account_id,
                         key="DATE"
                         )
             return send_error_response(
                 message="DATE Header not supplied",
                 key="DATE",
-                status=status.HTTP_400_BAD_REQUEST
+                status_code=status.HTTP_400_BAD_REQUEST
             )
 
         try:
@@ -444,13 +444,13 @@ class GetAccountNameByAccountId(APIView):
                                     status=status.HTTP_200_OK
                                     )
                 logger.info("get_accountname_200",
-                            status=status.HTTP_200_OK,
+                            status_code=status.HTTP_200_OK,
                             account_id=str(account_id)
                             )
                 return response
             else:
                 logger.info("get_accountname_404",
-                            status=status.HTTP_404_NOT_FOUND,
+                            status_code=status.HTTP_404_NOT_FOUND,
                             account_id=str(account_id),
                             key="msisdn_inactive"
                             )
@@ -458,12 +458,12 @@ class GetAccountNameByAccountId(APIView):
                     message="Requested resource not active",
                     key="account_id",
                     value=account_id,
-                    status=status.HTTP_404_NOT_FOUND
+                    status_code=status.HTTP_404_NOT_FOUND
                 )
 
         except ObjectDoesNotExist:
             logger.info("get_accountname_404",
-                        status=status.HTTP_404_NOT_FOUND,
+                        status_code=status.HTTP_404_NOT_FOUND,
                         account_id=str(account_id),
                         key="account_id"
                         )
@@ -472,7 +472,7 @@ class GetAccountNameByAccountId(APIView):
                 message="Requested resource not available",
                 key="account_id",
                 value=account_id,
-                status=status.HTTP_404_NOT_FOUND
+                status_code=status.HTTP_404_NOT_FOUND
             )
 
 
@@ -480,7 +480,7 @@ class AccountBalanceByMsisdn(APIView):
     """
     This API fetches the customers balance details given a msisdn
     HTTP Method: GET
-    URI: /api/v1/accounts/msisdn/{msisdn}/balance/
+    URI: /accounts/msisdn/{msisdn}/balance/
     Required HTTP Headers:
     DATE: todays date
     AUTHORIZATION: api-key
@@ -516,7 +516,7 @@ class AccountBalanceByMsisdn(APIView):
         if not date:
             logger.info("get_accountbalancebymsisdn_400",
                         message="DATE Header not supplied",
-                        status=status.HTTP_400_BAD_REQUEST,
+                        status_code=status.HTTP_400_BAD_REQUEST,
                         msisdn=msisdn,
                         key="DATE"
                         )
@@ -524,7 +524,7 @@ class AccountBalanceByMsisdn(APIView):
                 message="DATE Header not supplied",
                 key="DATE",
                 value=msisdn,
-                status=status.HTTP_400_BAD_REQUEST
+                status_code=status.HTTP_400_BAD_REQUEST
             )
 
         # try to get the wallet id this msisdn maps to
@@ -544,14 +544,14 @@ class AccountBalanceByMsisdn(APIView):
                                     status=status.HTTP_200_OK
                                     )
                 logger.info("get_accountbalancebymsisdn_200",
-                            status=status.HTTP_200_OK,
+                            status_code=status.HTTP_200_OK,
                             key="msisdn",
                             msisdn=msisdn
                             )
                 return response
             else:
                 logger.info("get_accountbalancebymsisdn_404",
-                            status=status.HTTP_404_NOT_FOUND,
+                            status_code=status.HTTP_404_NOT_FOUND,
                             msisdn=msisdn,
                             key="account_inactive"
                             )
@@ -559,12 +559,12 @@ class AccountBalanceByMsisdn(APIView):
                     message="Requested resource not active",
                     key="msisdn",
                     value=msisdn,
-                    status=status.HTTP_404_NOT_FOUND
+                    status_code=status.HTTP_404_NOT_FOUND
                 )
 
         except ObjectDoesNotExist:
             logger.info("get_accountbalancebymsisdn_404",
-                        status=status.HTTP_404_NOT_FOUND,
+                        status_code=status.HTTP_404_NOT_FOUND,
                         msisdn=msisdn,
                         key="msisdn"
                         )
@@ -573,7 +573,7 @@ class AccountBalanceByMsisdn(APIView):
                 message="Requested resource not available",
                 key="msisdn",
                 value=msisdn,
-                status=status.HTTP_404_NOT_FOUND
+                status_code=status.HTTP_404_NOT_FOUND
             )
 
 
@@ -581,7 +581,7 @@ class AccountBalanceByAccountId(APIView):
     """
     This API fetches the customers balance details given an account_id
     HTTP Method: GET
-    URI: /api/v1/accounts/{account_id}/balance/
+    URI: /accounts/{account_id}/balance/
     Required HTTP Headers:
     DATE: todays date
     AUTHORIZATION: api-key
@@ -617,20 +617,20 @@ class AccountBalanceByAccountId(APIView):
         if not date:
             logger.info("get_accountbalancebyaccountid_400",
                         message="DATE Header not supplied",
-                        status=status.HTTP_400_BAD_REQUEST,
+                        status_code=status.HTTP_400_BAD_REQUEST,
                         account_id=str(account_id),
                         key="DATE"
                         )
             return send_error_response(
                 message="DATE Header not supplied",
                 key="DATE",
-                status=status.HTTP_400_BAD_REQUEST
+                status_code=status.HTTP_400_BAD_REQUEST
             )
 
         if not is_valid_uuid(account_id):
             logger.info("get_accountbalancebyaccountid_400",
                         message="account_id invalid",
-                        status=status.HTTP_400_BAD_REQUEST,
+                        status_code=status.HTTP_400_BAD_REQUEST,
                         account_id=str(account_id),
                         key="account_id"
                         )
@@ -638,7 +638,7 @@ class AccountBalanceByAccountId(APIView):
                 message="account_id invalid",
                 key="account_id",
                 value=account_id,
-                status=status.HTTP_400_BAD_REQUEST
+                status_code=status.HTTP_400_BAD_REQUEST
             )
 
         # try to get the account for this account id
@@ -658,14 +658,14 @@ class AccountBalanceByAccountId(APIView):
                                     status=status.HTTP_200_OK
                                     )
                 logger.info("get_accountbalancebyaccountid_200",
-                            status=status.HTTP_200_OK,
+                            status_code=status.HTTP_200_OK,
                             key="account_id",
                             account_id=str(account_id)
                             )
                 return response
             else:
                 logger.info("get_accountbalancebyaccountid_404",
-                            status=status.HTTP_404_NOT_FOUND,
+                            status_code=status.HTTP_404_NOT_FOUND,
                             account_id=str(account_id),
                             key="account_inactive"
                             )
@@ -673,12 +673,12 @@ class AccountBalanceByAccountId(APIView):
                     message="Requested resource not active",
                     key="account_id",
                     value=account_id,
-                    status=status.HTTP_404_NOT_FOUND
+                    status_code=status.HTTP_404_NOT_FOUND
                 )
 
         except ObjectDoesNotExist:
             logger.info("get_accountbalancebyaccountid_404",
-                        status=status.HTTP_404_NOT_FOUND,
+                        status_code=status.HTTP_404_NOT_FOUND,
                         account_id=str(account_id),
                         key="account_id"
                         )
@@ -687,7 +687,7 @@ class AccountBalanceByAccountId(APIView):
                 message="Requested resource not available",
                 key="account_id",
                 value=account_id,
-                status=status.HTTP_404_NOT_FOUND
+                status_code=status.HTTP_404_NOT_FOUND
             )
 
 
@@ -695,7 +695,7 @@ class AccountTransactionsByMsisdn(APIView):
     """
     This API fetches the customers transactions given an msisdn
     HTTP Method: GET
-    URI: /api/v1/accounts/msisdn/{msisdn}/transactions/
+    URI: /accounts/msisdn/{msisdn}/transactions/
     Required HTTP Headers:
     DATE: todays date
     AUTHORIZATION: api-key
@@ -847,7 +847,7 @@ class AccountTransactionsByMsisdn(APIView):
         if not date:
             logger.info("get_accounttransactionsbymsisdn_400",
                         message="DATE Header not supplied",
-                        status=status.HTTP_400_BAD_REQUEST,
+                        status_code=status.HTTP_400_BAD_REQUEST,
                         msisdn=msisdn,
                         key="DATE"
                         )
@@ -855,7 +855,7 @@ class AccountTransactionsByMsisdn(APIView):
                 message="DATE Header not supplied",
                 key="DATE",
                 value=msisdn,
-                status=status.HTTP_400_BAD_REQUEST
+                status_code=status.HTTP_400_BAD_REQUEST
             )
 
         # try to get the wallet id this msisdn maps to
@@ -1021,14 +1021,14 @@ class AccountTransactionsByMsisdn(APIView):
                                     status=status.HTTP_200_OK
                                     )
                 logger.info("get_accounttransactionsbymsisdn_200",
-                            status=status.HTTP_200_OK,
+                            status_code=status.HTTP_200_OK,
                             key="msisdn",
                             msisdn=msisdn
                             )
                 return response
             else:
                 logger.info("get_accounttransactionsbymsisdn_404",
-                            status=status.HTTP_404_NOT_FOUND,
+                            status_code=status.HTTP_404_NOT_FOUND,
                             msisdn=msisdn,
                             key="account_inactive"
                             )
@@ -1036,12 +1036,12 @@ class AccountTransactionsByMsisdn(APIView):
                     message="Requested resource not active",
                     key="msisdn",
                     value=msisdn,
-                    status=status.HTTP_404_NOT_FOUND
+                    status_code=status.HTTP_404_NOT_FOUND
                 )
 
         except ObjectDoesNotExist:
             logger.info("get_accounttransactionsbymsisdn_404",
-                        status=status.HTTP_404_NOT_FOUND,
+                        status_code=status.HTTP_404_NOT_FOUND,
                         msisdn=msisdn,
                         key="msisdn"
                         )
@@ -1050,7 +1050,7 @@ class AccountTransactionsByMsisdn(APIView):
                 message="Requested resource not available",
                 key="msisdn",
                 value=msisdn,
-                status=status.HTTP_404_NOT_FOUND
+                status_code=status.HTTP_404_NOT_FOUND
             )
 
 
@@ -1058,7 +1058,7 @@ class AccountTransactionsByAccountId(APIView):
     """
     This API fetches the customers transactions given an msisdn
     HTTP Method: GET
-    URI: /api/v1/accounts/{accountId}/transactions/
+    URI: /accounts/{accountId}/transactions/
     Required HTTP Headers:
     DATE: todays date
     AUTHORIZATION: api-key
@@ -1210,7 +1210,7 @@ class AccountTransactionsByAccountId(APIView):
         if not date:
             logger.info("get_accounttransactionsbyaccount_id_400",
                         message="DATE Header not supplied",
-                        status=status.HTTP_400_BAD_REQUEST,
+                        status_code=status.HTTP_400_BAD_REQUEST,
                         wallet_id=str(account_id),
                         key="DATE"
                         )
@@ -1218,7 +1218,7 @@ class AccountTransactionsByAccountId(APIView):
                 message="DATE Header not supplied",
                 key="DATE",
                 value=account_id,
-                status=status.HTTP_400_BAD_REQUEST
+                status_code=status.HTTP_400_BAD_REQUEST
             )
 
         # try to get the wallet id this msisdn maps to
@@ -1384,27 +1384,27 @@ class AccountTransactionsByAccountId(APIView):
                                     status=status.HTTP_200_OK
                                     )
                 logger.info("get_accounttransactionsbyaccount_id_200",
-                            status=status.HTTP_200_OK,
+                            status_code=status.HTTP_200_OK,
                             key="wallet_id",
                             wallet_id=str(account_id)
                             )
                 return response
             else:
                 logger.info("get_accounttransactionsbyaccount_id_404",
-                            status=status.HTTP_404_NOT_FOUND,
+                            status_code=status.HTTP_404_NOT_FOUND,
                             wallet_id=str(account_id),
                             key="account_inactive"
                             )
                 return send_error_response(
                     message="Requested resource not active",
                     key="wallet_id",
-                    wallet_id=account_id,
-                    status=status.HTTP_404_NOT_FOUND
+                    value=account_id,
+                    status_code=status.HTTP_404_NOT_FOUND
                 )
 
         except ObjectDoesNotExist:
             logger.info("get_accounttransactionsbymsisdn_404",
-                        status=status.HTTP_404_NOT_FOUND,
+                        status_code=status.HTTP_404_NOT_FOUND,
                         wallet_id=str(account_id),
                         key="wallet_id"
                         )
@@ -1413,7 +1413,7 @@ class AccountTransactionsByAccountId(APIView):
                 message="Requested resource not available",
                 key="wallet_id",
                 value=account_id,
-                status=status.HTTP_404_NOT_FOUND
+                status_code=status.HTTP_404_NOT_FOUND
             )
 
 
@@ -1421,7 +1421,7 @@ class GetStatementEntriesByMsisdn(APIView):
     """
     This API fetches the customers last five transactions given the msisdn
     HTTP Method: GET
-    URI: /api/v1/accounts/msisdn/{msisdn}/statemententries/
+    URI: /accounts/msisdn/{msisdn}/statemententries/
     Required HTTP Headers:
     DATE: todays date
     AUTHORIZATION: api-key
@@ -1469,7 +1469,7 @@ class GetStatementEntriesByMsisdn(APIView):
         if not date:
             logger.info("get_statemententries_404",
                         message="DATE Header not supplied",
-                        status=status.HTTP_400_BAD_REQUEST,
+                        status_code=status.HTTP_400_BAD_REQUEST,
                         msisdn=msisdn,
                         key="DATE"
                         )
@@ -1477,7 +1477,7 @@ class GetStatementEntriesByMsisdn(APIView):
                 message="DATE Header not supplied",
                 key="DATE",
                 value=msisdn,
-                status=status.HTTP_400_BAD_REQUEST
+                status_code=status.HTTP_400_BAD_REQUEST
             )
 
         # try to get the wallet id this msisdn maps to
@@ -1518,14 +1518,14 @@ class GetStatementEntriesByMsisdn(APIView):
                                     status=status.HTTP_200_OK
                                     )
                 logger.info("get_statemententries_200",
-                            status=status.HTTP_200_OK,
+                            status_code=status.HTTP_200_OK,
                             key="msisdn",
                             msisdn=msisdn
                             )
                 return response
             else:
                 logger.info("get_statemententries_404",
-                            status=status.HTTP_404_NOT_FOUND,
+                            status_code=status.HTTP_404_NOT_FOUND,
                             msisdn=msisdn,
                             key="account_inactive"
                             )
@@ -1533,12 +1533,12 @@ class GetStatementEntriesByMsisdn(APIView):
                     message="Requested resource not active",
                     key="msisdn",
                     value=msisdn,
-                    status=status.HTTP_404_NOT_FOUND
+                    status_code=status.HTTP_404_NOT_FOUND
                 )
 
         except ObjectDoesNotExist:
             logger.info("get_stamententries_404",
-                        status=status.HTTP_404_NOT_FOUND,
+                        status_code=status.HTTP_404_NOT_FOUND,
                         msisdn=msisdn,
                         key="msisdn"
                         )
@@ -1547,7 +1547,7 @@ class GetStatementEntriesByMsisdn(APIView):
                 message="Requested resource not available",
                 key="msisdn",
                 value=msisdn,
-                status=status.HTTP_404_NOT_FOUND
+                status_code=status.HTTP_404_NOT_FOUND
             )
 
 
@@ -1555,7 +1555,7 @@ class GetStatementEntriesByAccountID(APIView):
     """
     This API fetches the customers last five transactions given the accountID
     HTTP Method: GET
-    URI: /api/v1/accounts/msisdn/{msisdn}/statemententries/
+    URI: /accounts/msisdn/{msisdn}/statemententries/
     Required HTTP Headers:
     DATE: todays date
     AUTHORIZATION: api-key
@@ -1603,7 +1603,7 @@ class GetStatementEntriesByAccountID(APIView):
         if not date:
             logger.info("get_statemententries_400",
                         message="DATE Header not supplied",
-                        status=status.HTTP_400_BAD_REQUEST,
+                        status_code=status.HTTP_400_BAD_REQUEST,
                         wallet_id=str(wallet_id),
                         key="DATE"
                         )
@@ -1611,7 +1611,7 @@ class GetStatementEntriesByAccountID(APIView):
                 message="DATE Header not supplied",
                 key="DATE",
                 value=wallet_id,
-                status=status.HTTP_400_BAD_REQUEST
+                status_code=status.HTTP_400_BAD_REQUEST
             )
 
         # try to get the wallet id this msisdn maps to
@@ -1652,14 +1652,14 @@ class GetStatementEntriesByAccountID(APIView):
                                     status=status.HTTP_200_OK
                                     )
                 logger.info("get_statemententries_200",
-                            status=status.HTTP_200_OK,
+                            status_code=status.HTTP_200_OK,
                             key="wallet_id",
                             wallet_id=str(wallet_id)
                             )
                 return response
             else:
                 logger.info("get_statemententries_404",
-                            status=status.HTTP_404_NOT_FOUND,
+                            status_code=status.HTTP_404_NOT_FOUND,
                             wallet_id=str(wallet_id),
                             key="account_inactive"
                             )
@@ -1667,12 +1667,12 @@ class GetStatementEntriesByAccountID(APIView):
                     message="Requested resource not active",
                     key="wallet_id",
                     value=wallet_id,
-                    status=status.HTTP_404_NOT_FOUND
+                    status_code=status.HTTP_404_NOT_FOUND
                 )
 
         except ObjectDoesNotExist:
             logger.info("get_stamententries_404",
-                        status=status.HTTP_404_NOT_FOUND,
+                        status_code=status.HTTP_404_NOT_FOUND,
                         wallet_id=str(wallet_id),
                         key="wallet_id"
                         )
@@ -1681,12 +1681,12 @@ class GetStatementEntriesByAccountID(APIView):
                 message="Requested resource not available",
                 key="wallet_id",
                 value=wallet_id,
-                status=status.HTTP_404_NOT_FOUND
+                status_code=status.HTTP_404_NOT_FOUND
             )
 
         except ValueError:
             logger.info("get_stamententries_400",
-                        status=status.HTTP_400_BAD_REQUEST,
+                        status_code=status.HTTP_400_BAD_REQUEST,
                         wallet_id=str(wallet_id),
                         key="wallet_id"
                         )
@@ -1694,14 +1694,14 @@ class GetStatementEntriesByAccountID(APIView):
                 message="Malformed UUID",
                 key="wallet_id",
                 value=wallet_id,
-                status=status.HTTP_400_BAD_REQUEST)
+                status_code=status.HTTP_400_BAD_REQUEST)
 
 
 class GetBillsByMsisdn(APIView):
     """
     This API fetches bills tied to a particular MSISDN
     HTTP Method: GET
-    URI: /api/v1/accounts/{accountid}/bills/
+    URI: /accounts/{accountid}/bills/
     Required HTTP Headers:
     DATE: todays date
     AUTHORIZATION: api-key
@@ -1741,7 +1741,7 @@ class GetBillsByMsisdn(APIView):
         if not date:
             logger.info("get_bills_400",
                         message="DATE Header not supplied",
-                        status=status.HTTP_400_BAD_REQUEST,
+                        status_code=status.HTTP_400_BAD_REQUEST,
                         msisdn=msisdn,
                         key="DATE"
                         )
@@ -1749,7 +1749,7 @@ class GetBillsByMsisdn(APIView):
                 message="DATE Header not supplied",
                 key="DATE",
                 value=msisdn,
-                status=status.HTTP_400_BAD_REQUEST
+                status_code=status.HTTP_400_BAD_REQUEST
             )
 
         try:
@@ -1781,7 +1781,7 @@ class GetBillsByMsisdn(APIView):
                                 status=status.HTTP_200_OK
                                 )
             logger.info("get_billss_200",
-                        status=status.HTTP_200_OK,
+                        status_code=status.HTTP_200_OK,
                         key="msisdn",
                         msisdn=msisdn
                         )
@@ -1789,7 +1789,7 @@ class GetBillsByMsisdn(APIView):
 
         except ObjectDoesNotExist:
             logger.info("get_bills_404",
-                        status=status.HTTP_404_NOT_FOUND,
+                        status_code=status.HTTP_404_NOT_FOUND,
                         msisdn=msisdn,
                         key="msisdn"
                         )
@@ -1798,7 +1798,7 @@ class GetBillsByMsisdn(APIView):
                 message="Requested resource not available",
                 key="msisdn",
                 value=msisdn,
-                status=status.HTTP_404_NOT_FOUND
+                status_code=status.HTTP_404_NOT_FOUND
             )
 
 
@@ -1806,7 +1806,7 @@ class GetBillsByAccountID(APIView):
     """
     This API fetches bills tied to a particular AccountID
     HTTP Method: GET
-    URI: /api/v1/accounts/msisdn/{msisdn}/bills/
+    URI: /accounts/msisdn/{msisdn}/bills/
     Required HTTP Headers:
     DATE: todays date
     AUTHORIZATION: api-key
@@ -1846,7 +1846,7 @@ class GetBillsByAccountID(APIView):
         if not date:
             logger.info("get_bills_404",
                         message="DATE Header not supplied",
-                        status=status.HTTP_400_BAD_REQUEST,
+                        status_code=status.HTTP_400_BAD_REQUEST,
                         wallet_id=str(wallet_id),
                         key="DATE"
                         )
@@ -1854,7 +1854,7 @@ class GetBillsByAccountID(APIView):
                 message="DATE Header not supplied",
                 key="DATE",
                 value=wallet_id,
-                status=status.HTTP_400_BAD_REQUEST
+                status_code=status.HTTP_400_BAD_REQUEST
             )
 
         # try to get the wallet id this msisdn maps to
@@ -1883,7 +1883,7 @@ class GetBillsByAccountID(APIView):
                                 status=status.HTTP_200_OK
                                 )
             logger.info("get_bills_200",
-                        status=status.HTTP_200_OK,
+                        status_code=status.HTTP_200_OK,
                         key="wallet_id",
                         wallet_id=str(wallet_id)
                         )
@@ -1891,7 +1891,7 @@ class GetBillsByAccountID(APIView):
 
         except ObjectDoesNotExist:
             logger.info("get_bills_404",
-                        status=status.HTTP_404_NOT_FOUND,
+                        status_code=status.HTTP_404_NOT_FOUND,
                         wallet_id=str(wallet_id),
                         key="wallet_id"
                         )
@@ -1900,12 +1900,12 @@ class GetBillsByAccountID(APIView):
                 message="Requested resource not available",
                 key="wallet_id",
                 value=wallet_id,
-                status=status.HTTP_404_NOT_FOUND
+                status_code=status.HTTP_404_NOT_FOUND
             )
 
         except ValueError:
             logger.info("get_bills_404",
-                        status=status.HTTP_404_NOT_FOUND,
+                        status_code=status.HTTP_404_NOT_FOUND,
                         wallet_id=str(wallet_id),
                         key="wallet_id"
                         )
@@ -1913,14 +1913,14 @@ class GetBillsByAccountID(APIView):
                 message="Malformed UUID",
                 key="wallet_id",
                 value=wallet_id,
-                status=status.HTTP_404_NOT_FOUND)
+                status_code=status.HTTP_404_NOT_FOUND)
 
 
 class GetDebitMandateByAccountId(APIView):
     """
     This API fetches the customers transactions given an msisdn
     HTTP Method: GET
-    URI: /api/v1/accounts/{accountId}/debitmandates/{debitMandateReference}
+    URI: /accounts/{accountId}/debitmandates/{debitMandateReference}
     Required HTTP Headers:
     DATE: todays date
     AUTHORIZATION: api-key
@@ -1963,7 +1963,7 @@ class GetDebitMandateByAccountId(APIView):
         if not date:
             logger.info("get_debitmandatebyaccount_id_400",
                         message="DATE Header not supplied",
-                        status=status.HTTP_400_BAD_REQUEST,
+                        status_code=status.HTTP_400_BAD_REQUEST,
                         wallet_id=account_id,
                         key="DATE"
                         )
@@ -1971,7 +1971,7 @@ class GetDebitMandateByAccountId(APIView):
                 message="DATE Header not supplied",
                 key="DATE",
                 value=account_id,
-                status=status.HTTP_400_BAD_REQUEST
+                status_code=status.HTTP_400_BAD_REQUEST
             )
 
         # try to get the wallet id this msisdn maps to
@@ -2002,27 +2002,27 @@ class GetDebitMandateByAccountId(APIView):
                                     status=status.HTTP_200_OK
                                     )
                 logger.info("get_debitmandatebyaccount_id_200",
-                            status=status.HTTP_200_OK,
+                            status_code=status.HTTP_200_OK,
                             key="wallet_id",
                             wallet_id=str(account_id)
                             )
                 return response
             else:
                 logger.info("get_debitmandatebyaccount_id_404",
-                            status=status.HTTP_404_NOT_FOUND,
+                            status_code=status.HTTP_404_NOT_FOUND,
                             wallet_id=str(account_id),
                             key="account_inactive"
                             )
                 return send_error_response(
                     message="Requested resource not active",
                     key="wallet_id",
-                    wallet_id=account_id,
-                    status=status.HTTP_404_NOT_FOUND
+                    value=account_id,
+                    status_code=status.HTTP_404_NOT_FOUND
                 )
 
         except ObjectDoesNotExist:
             logger.info("get_debitmandatebyaccount_id_404",
-                        status=status.HTTP_404_NOT_FOUND,
+                        status_code=status.HTTP_404_NOT_FOUND,
                         wallet_id=str(account_id),
                         key="wallet_id"
                         )
@@ -2031,7 +2031,7 @@ class GetDebitMandateByAccountId(APIView):
                 message="Requested resource not available",
                 key="wallet_id",
                 value=account_id,
-                status=status.HTTP_404_NOT_FOUND
+                status_code=status.HTTP_404_NOT_FOUND
             )
 
 
@@ -2039,7 +2039,7 @@ class GetDebitMandateByMsisdn(APIView):
     """
     This API fetches the customers transactions given an msisdn
     HTTP Method: GET
-    URI: /api/v1/accounts/{msisdn}/debitmandates/{debitMandateReference}
+    URI: /accounts/{msisdn}/debitmandates/{debitMandateReference}
     Required HTTP Headers:
     DATE: todays date
     AUTHORIZATION: api-key
@@ -2082,7 +2082,7 @@ class GetDebitMandateByMsisdn(APIView):
         if not date:
             logger.info("get_debitmandatebymsisdn_400",
                         message="DATE Header not supplied",
-                        status=status.HTTP_400_BAD_REQUEST,
+                        status_code=status.HTTP_400_BAD_REQUEST,
                         msisdn=msisdn,
                         key="DATE"
                         )
@@ -2090,7 +2090,7 @@ class GetDebitMandateByMsisdn(APIView):
                 message="DATE Header not supplied",
                 key="DATE",
                 value=msisdn,
-                status=status.HTTP_400_BAD_REQUEST
+                status_code=status.HTTP_400_BAD_REQUEST
             )
 
         # try to get the wallet id this msisdn maps to
@@ -2121,27 +2121,27 @@ class GetDebitMandateByMsisdn(APIView):
                                     status=status.HTTP_200_OK
                                     )
                 logger.info("get_debitmandatebymsisdn_200",
-                            status=status.HTTP_200_OK,
+                            status_code=status.HTTP_200_OK,
                             key="msisdn",
                             msisdn=msisdn
                             )
                 return response
             else:
                 logger.info("get_debitmandatebymsisdn_404",
-                            status=status.HTTP_404_NOT_FOUND,
+                            status_code=status.HTTP_404_NOT_FOUND,
                             msisdn=msisdn,
                             key="account_inactive"
                             )
                 return send_error_response(
                     message="Requested resource not active",
                     key="msisdn",
-                    msisdn=msisdn,
-                    status=status.HTTP_404_NOT_FOUND
+                    value=msisdn,
+                    status_code=status.HTTP_404_NOT_FOUND
                 )
 
         except ObjectDoesNotExist:
             logger.info("get_debitmandatebymsisdn_404",
-                        status=status.HTTP_404_NOT_FOUND,
+                        status_code=status.HTTP_404_NOT_FOUND,
                         msisdn=msisdn,
                         key="msisdn"
                         )
@@ -2150,7 +2150,7 @@ class GetDebitMandateByMsisdn(APIView):
                 message="Requested resource not available",
                 key="msisdn",
                 value=msisdn,
-                status=status.HTTP_404_NOT_FOUND
+                status_code=status.HTTP_404_NOT_FOUND
             )
 
 

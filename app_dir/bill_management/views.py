@@ -22,7 +22,7 @@ logger = get_logger("bills")
 def send_error_response(message="404",
                         key="msisdn",
                         value=None,
-                        status=None,
+                        status_code=None,
                         ):
     """
     Creates and outputs given error message
@@ -51,7 +51,7 @@ def send_error_response(message="404",
     }
 
     response = Response(data=error_payload,
-                        status=status
+                        status=status_code
                         )
     return response
 
@@ -60,7 +60,7 @@ class CreateBill(APIView):
     """
     This API creates a bill object
 
-    URL: /api/v1/bills/
+    URL: /bills/
 
     HTTP Headers:
     `Content-Type: application/json,
@@ -127,11 +127,11 @@ class CreateBill(APIView):
                 message=error_message,
                 key=key,
                 value=value,
-                status=status_code
+                status_code=status_code
             )
 
             logger.info("create_bill_400",
-                        status=status.HTTP_400_BAD_REQUEST,
+                        status_code=status.HTTP_400_BAD_REQUEST,
                         key=key
                         )
 
@@ -149,11 +149,11 @@ class CreateBill(APIView):
                 message=error_message,
                 key=key,
                 value=value,
-                status=status_code
+                status_code=status_code
             )
 
             logger.info("create_bill_400",
-                        status=status.HTTP_400_BAD_REQUEST,
+                        status_code=status.HTTP_400_BAD_REQUEST,
                         key=key
                         )
 
@@ -167,13 +167,13 @@ class CreateBill(APIView):
 
                 }
                 logger.info("create_bill_201",
-                            status=status.HTTP_201_CREATED,
+                            status_code=status.HTTP_201_CREATED,
                             bill_reference=bill_reference,
                             response_payload=response_payload
                             )
-            return Response(response_payload,
-                            status=status.HTTP_201_CREATED
-                            )
+                return Response(response_payload,
+                                status=status.HTTP_201_CREATED
+                        )
 
     @staticmethod
     def create_bill(create_bill_data):
@@ -202,7 +202,7 @@ class CreateBillPaymentByMsisdn(APIView):
     """
     This API creates a bill payment
 
-    URI: /api/v1/accounts/msisdn/{msisdn}/bills/{billReference}/payments
+    URI: /accounts/msisdn/{msisdn}/bills/{billReference}/payments
 
     HTTP Headers:
     `Content-Type: application/json,
@@ -324,5 +324,5 @@ class CreateBillPaymentByMsisdn(APIView):
             return send_error_response(message=e.message,
                                        key="bill_reference",
                                        value=bill_reference,
-                                       status=status.HTTP_400_BAD_REQUEST
+                                       status_code=status.HTTP_400_BAD_REQUEST
                                        )

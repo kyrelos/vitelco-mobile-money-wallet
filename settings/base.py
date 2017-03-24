@@ -45,6 +45,7 @@ DEFAULT_APPS = (
 
 THIRD_PARTY_APPS = (
     'gunicorn',
+    'corsheaders',
 )
 
 LOCAL_APPS = (
@@ -59,6 +60,7 @@ INSTALLED_APPS = LOCAL_APPS + DEFAULT_APPS + THIRD_PARTY_APPS
 
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -94,6 +96,10 @@ CELERY_TASK_SERIALIZER = 'json'
 
 
 ROOT_URLCONF = 'urls'
+CORS_ORIGIN_ALLOW_ALL = True
+from corsheaders.defaults import default_headers
+
+CORS_ALLOW_HEADERS = default_headers + ('X-CORRELATIONID', "DATE")
 
 WSGI_APPLICATION = 'wsgi.application'
 

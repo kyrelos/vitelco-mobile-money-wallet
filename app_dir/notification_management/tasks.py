@@ -29,7 +29,6 @@ def send_normal_notification(notification_id, transaction_id):
     :return:
     """
 
-    title = "Vitelco Transaction"
     notification = Notification.objects.get(notid=notification_id)
     transaction_id = str(transaction_id)
     transaction = Transaction.objects.get(trid=transaction_id)
@@ -79,6 +78,9 @@ def send_normal_notification(notification_id, transaction_id):
                                             source_notification_payload),
                                         headers=FCM_API_HEADERS
                                         )
+
+    except RequestException as e:
+
         destination_response = requests.post(settings.FCM_URL,
                                              data=json.dumps(
                                                      destination_notification_payload),
