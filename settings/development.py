@@ -1,7 +1,7 @@
 from .base import *
 
 INSTALLED_APPS += ('django_extensions',)
-ALLOWED_HOSTS = ["10.0.0.77"]
+ALLOWED_HOSTS = ["10.0.0.77", "127.0.0.1"]
 
 DATABASES = {
     'default': {
