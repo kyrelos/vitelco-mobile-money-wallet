@@ -88,7 +88,7 @@ class UpdateNotification(APIView):
                 push_status = request_data['status']
                 if str(pin) == "1234":
                     transaction = Transaction.objects.get(
-                        transaction_id=transaction_id)
+                        trid=transaction_id)
                     transaction.complete_transaction()
                     transaction.save()
                     send_normal_notification.delay(notification_id,
