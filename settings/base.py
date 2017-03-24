@@ -97,6 +97,9 @@ CELERY_TASK_SERIALIZER = 'json'
 
 ROOT_URLCONF = 'urls'
 CORS_ORIGIN_ALLOW_ALL = True
+from corsheaders.defaults import default_headers
+
+CORS_ALLOW_HEADERS = default_headers + ('X-CORRELATIONID',)
 
 WSGI_APPLICATION = 'wsgi.application'
 
