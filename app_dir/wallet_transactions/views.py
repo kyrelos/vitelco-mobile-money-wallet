@@ -592,6 +592,23 @@ class CreateTransactions(APIView):
                         )
 
             return error_response
+
+        except ValueError as e:
+            error_message = "Invalid amount"
+            key = e.message
+            value = None
+            status_code = status.HTTP_400_BAD_REQUEST
+            error_response = send_error_response(
+                    message=error_message,
+                    key=key,
+                    value=value,
+                    status_code=status_code
+            )
+            logger.info("create_transaction_400",
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        key=key
+                        )
+            return error_response
         else:
             count = 0
             while count < 10:
