@@ -51,7 +51,7 @@ def send_error_response(message="404",
     }
 
     response = Response(data=error_payload,
-                        status=status
+                        status=status_code
                         )
     return response
 
