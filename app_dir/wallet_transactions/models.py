@@ -138,8 +138,8 @@ class BatchTransactionLookup(models.Model):
 
     def __unicode__(self):
         return "{from_}: {to}".format(
-            from_=self.batch_transaction.merchant,
-            to=self.transaction.destination
+            from_=self.transaction.source.msisdn,
+            to=self.transaction.destination.msisdn
         )
 
     class Meta:
