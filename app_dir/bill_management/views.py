@@ -4,6 +4,7 @@ from datetime import datetime
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
+from django.core.exceptions import ObjectDoesNotExist
 
 import requests
 from django.db import IntegrityError
@@ -117,6 +118,20 @@ class CreateBill(APIView):
                 bill_description=bill_description,
                 min_amount_due=min_amount_due,
             )
+        except ObjectDoesNotExist:
+            logger.info("get_accountstatus_404",
+                        status=status.HTTP_404_NOT_FOUND,
+                        msisdn=request.data["creditParty"][0]["value"]
+                               + ' or ' +
+                               request.data["debitParty"][0]["value"],
+                        key="msisdn"
+                        )
+            return send_error_response(
+                message="Either debitParty msisdn or "
+                        "creditParty msisdn is invalid",
+                key="msisdn",
+                value="",
+                status=status.HTTP_404_NOT_FOUND)
 
         except KeyError as e:
             error_message = "Missing required field"
