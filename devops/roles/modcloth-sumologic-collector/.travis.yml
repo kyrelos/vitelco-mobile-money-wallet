@@ -1,0 +1,11 @@
+language: python
+env:
+  global:
+  - secure: Or55DSH7PCARJUZQ4ND5r0Mo2QULr1O9X/dI2yKCG1yH/jUBB5WSthUWXnF9cFY9W+lpEK0cGXy0VD5UxflWeyAKgznEpMZNY9luI+wYjARDPD++AC1gj1gT0CTgLWgvYo7m6O3GDGXFYvyojFZm/sRJeI94iISPkuBvKdk47Kc=
+install:
+- pip install -r requirements.txt
+script:
+- ansible-playbook -i 127.0.0.1, -c local -s -e ssh_user=travis -e hostname=travis-tmp-host.demo.modcloth.com
+  -vvvv ./example.yml
+before_install:
+- curl -L -s -o files/sumo.deb $SUMOLOGIC_DEB_LOCATION

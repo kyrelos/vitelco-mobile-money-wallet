@@ -1,0 +1,29 @@
+# {{ ansible_managed }}
+
+{% if sumologic_collector_name is defined %}
+name={{ sumologic_collector_name }}
+{% endif %}
+{% if sumologic_collector_email is defined %}
+email={{ sumologic_collector_email }}
+{% endif %}
+{% if sumologic_collector_password is defined %}
+password={{ sumologic_collector_password }}
+{% endif %}
+{% if sumologic_collector_accessid is defined %}
+accessid={{ sumologic_collector_accessid }}
+{% endif %}
+{% if sumologic_collector_accesskey is defined %}
+accesskey={{ sumologic_collector_accesskey }}
+{% endif %}
+{% if sumologic_collector_source_template is defined %}
+sources=/etc/sumo-sources.json
+{% endif %}
+{% if sumologic_collector_override is defined %}
+override={{ sumologic_collector_override }}
+{% endif %}
+{% if sumologic_collector_ephemeral is defined %}
+ephemeral={{ sumologic_collector_ephemeral }}
+{% endif %}
+{% if sumologic_collector_clobber is defined %}
+clobber={{ sumologic_collector_clobber }}
+{% endif %}

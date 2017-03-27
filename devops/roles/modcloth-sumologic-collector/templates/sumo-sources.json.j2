@@ -1,0 +1,38 @@
+{
+  "api.version": "v1",
+  "sources": [
+    {
+      "name": "app_log",
+      "sourceType": "LocalFile",
+      "automaticDateParsing": true,
+      "multilineProcessingEnabled": false,
+      "useAutolineMatching": true,
+      "forceTimeZone": false,
+      "timeZone": "UTC",
+      "category": "hermes-pesa",
+      "pathExpression": "{{ APP_DIR }}/log/*.log$"
+    },
+    {
+      "name": "nginx_logs",
+      "sourceType": "LocalFile",
+      "automaticDateParsing": true,
+      "multilineProcessingEnabled": false,
+      "useAutolineMatching": true,
+      "forceTimeZone": false,
+      "timeZone": "UTC",
+      "category": "hermes-pesa",
+      "pathExpression": "/var/log/nginx/*.log$"
+    },
+    {
+      "name": "haproxy_logs",
+      "sourceType": "LocalFile",
+      "automaticDateParsing": true,
+      "multilineProcessingEnabled": false,
+      "useAutolineMatching": true,
+      "forceTimeZone": false,
+      "timeZone": "UTC",
+      "category": "hermes-pesa",
+      "pathExpression": "/var/log/haproxy/*.log$"
+    }
+  ]
+}

@@ -51,3 +51,16 @@
           priv: ALL
       tags: 
         - db_server
+
+- hosts: all
+  sudo: yes
+  roles:
+    - role: modcloth-sumologic-collector
+      sumologic_installer_url: https://collectors.eu.sumologic.com/rest/download/deb/64
+      sumologic_collector_accessid: {{ SUMO_COLLECTOR_ACCESSID }}
+      sumologic_collector_accesskey: {{ SUMO_COLLECTOR_ACCESSKEY }}
+      sumologic_collector_name: {{ SUMO_COLLECTOR_NAME }}
+      sumologic_collector_override: true
+      sumologic_collector_source_template: sumo-sources.json.j2
+      when: APP_ENVIRONMENT != 'development'
+      tags: [sumologic]
