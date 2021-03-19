@@ -5,7 +5,7 @@ celery==4.0.2
 raven==6.0
 mock==2.0
 requests==2.13
-djangorestframework==3.6.2
+djangorestframework==3.11.2
 structlog
 django-fsm==2.5
 newrelic==2.82.*
